@@ -1,0 +1,7 @@
+#textEditor
+{
+	background-color: @bgColor;
+	color: @fontColor;
+	selection-background-color: @selectionBgColor;
+	selection-color: @selectionColor;
+}

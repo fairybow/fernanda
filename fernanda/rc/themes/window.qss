@@ -1,0 +1,125 @@
+QMenuBar, QMenu
+{
+	background-color: @bgColor;
+	color: @fontColor;
+	font-weight: 600;
+}
+
+QMenuBar::item:selected, QMenu::item:selected
+{
+	background-color: @bgColorHover;
+}
+
+QSplitter::handle
+{
+	background: @bgColor2;
+}
+
+#pane
+{
+	background-color: @bgColor2;
+	border: 0px solid @borderColor;
+	color: @fontColor2;
+	font-weight: 600;
+}
+
+#textEditor
+{
+	border: none;
+}
+
+#scrollPrevious, #scrollUp, #scrollDown, #scrollNext
+{
+	background-color: @bgColor;
+	border: none;
+	color: @fontColor2;
+	font-weight: 600;
+}
+
+#scrollPrevious:hover, #scrollUp:hover, #scrollDown:hover, #scrollNext:hover
+{
+	background-color: @bgColorHover;
+	color: @fontColor2Hover;
+}
+
+#vScrollBar:vertical
+{
+    background: @bgColorHover;
+	margin: 0px 0 0px 0;
+	width: 18px;
+}
+
+#vScrollBar::handle:vertical
+{
+    background: @bgColor;
+    min-height: 0px;
+}
+
+#vScrollBar::handle:vertical:hover
+{
+    background: @fontColor2;
+}
+
+#vScrollBar::add-line:vertical, #vScrollBar::sub-line:vertical
+{
+    border: none;
+    height: 0px;
+}
+
+#vScrollBar::up-arrow:vertical, #vScrollBar::down-arrow:vertical
+{
+    border: none;
+    height: 0px;
+	width: 0px;
+}
+
+#vScrollBar::add-page:vertical, #vScrollBar::sub-page:vertical
+{
+    background: none;
+}
+
+QStatusBar
+{
+	background-color: @bgColor;
+	border: none;
+}
+
+QStatusBar::item
+{
+	border: none;
+}
+
+#pathDisplay, #positions, #counters
+{
+	color: @fontColor2;
+	font-weight: 600;
+	padding-left: 2px;
+}
+
+#pathDisplay:hover
+{
+	color: @fontColor2Hover;
+}
+
+#aot
+{
+	background-color: @bgColor;
+	border: transparent;
+	border-radius: 3px;
+	min-width: 33px;
+	padding-bottom: 1px;
+	padding-left: 5px;
+	padding-right: 5px;
+	padding-top: 1px;
+}
+
+#aot:hover
+{
+	background-color: @bgColorHover;
+	color: @fontColor2Hover;
+}
+
+QSizeGrip
+{
+	image: url(none);
+}
