@@ -6,15 +6,18 @@
 
 #include "algorithm"
 #include "filesystem"
+#include "functional"
 #include "string"
 
 #include <QtWidgets/QMainWindow>
 #include "ui_fernanda.h"
+#include <QAbstractButton>
 #include <QAction>
 #include <QActionGroup>
 #include <QCloseEvent>
 #include <QDir>
 #include <QFile>
+#include <QFileDialog>
 #include <QFontDatabase>
 #include <QIODevice>
 #include <QLabel>
@@ -22,6 +25,7 @@
 #include <QMenu>
 #include <QModelIndex>
 #include <QObject>
+#include <QProgressBar>
 #include <QMessageBox>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
@@ -29,13 +33,17 @@
 #include <QResizeEvent>
 #include <QScrollBar>
 #include <QSettings>
+#include <QShowEvent>
 #include <QSizePolicy>
 #include <QSlider>
 #include <QSplitter>
+#include <QStackedLayout>
+#include <QStandardPaths>
 #include <QString>
 #include <QStringList>
 #include <QTextCursor>
 #include <QTextStream>
+#include <QTimeLine>
 #include <QTimer>
 #include <QWidgetAction>
 
@@ -66,34 +74,43 @@ private:
     fs::path activeTemp;
     fs::path rollback;
     fs::path backup;
-    fs::path sample;
-    fs::path candide;
-    fs::path candideSubfolder_1;
-    fs::path candideSubfolder_2;
-    fs::path candideSubfolder_3;
-    fs::path candideSubfolder_4;
 
+    bool wasInitialized = false;
     bool linePos = true;
     bool colPos = true;
     bool lineCount = true;
     bool wordCount = true;
     bool charCount = true;
 
-    enum class ChangeTo {
-        BackupPath,
-        OriginalPath,
-        RollbackPath,
-        TempPath
+    enum class PathType {
+        Backup,
+        Original,
+        Rollback,
+        Temp
     };
-    enum class Resource {
+    enum class ResourceType {
         EditorTheme,
         Font,
         WindowTheme
     };
+    enum class ColorScheme {
+        None,
+        Red,
+        Green,
+        StartUp
+    };
+    enum class ClearType {
+        Full,
+        Partial
+    };
 
     QSplitter* splitter = new QSplitter(this);
     Pane* pane = new Pane(this);
+    QLabel* overlay = new QLabel(this);
     TextEditor* textEditor = new TextEditor(this);
+    QLabel* underlay = new QLabel(this);
+    QProgressBar* colorBar = new QProgressBar(this);
+    QTimer* barTimer = new QTimer(this);
     QLabel* pathDisplay = new QLabel(this);
     QLabel* positions = new QLabel(this);
     QLabel* counters = new QLabel(this);
@@ -106,47 +123,62 @@ private:
     QActionGroup* tabStops = new QActionGroup(this);
     QActionGroup* wrapModes = new QActionGroup(this);
 
+    void showEvent(QShowEvent* event);
     void nameObjects();
     void layoutObjects();
     void makeConnections();
-    void onOpen();
+    void checkTempsOnOpen();
     void closeEvent(QCloseEvent* event);
-    void hotkeys();
     void displayPath();
     void makeMenuBar();
     void makeFileMenu();
     void makeViewMenu();
-    const QList<tuple<QString, QString>> resourceIterator(QString path, QString ext, Resource type);
+    void makeHelpMenu();
+    const QList<tuple<QString, QString>> resourceIterator(QString path, QString ext, ResourceType type);
     const QString resourceNameCap(QString path);
-    QActionGroup* createSelectionMenu(QList<tuple<QString, QString>> itemAndLabel, void (Fernanda::* fx)());
+    QActionGroup* createMenuToggles(QList<tuple<QString, QString>>& itemAndLabel, void (Fernanda::* slot)());
     void createUserData(QString dataFolderName);
     void clearTempFiles();
     const QString readFile(QString path);
-    const QString pathMaker(QString path, ChangeTo key);
+    const QString pathMaker(QString path, PathType type);
     void writeFile(QString text, QString path);
-    void createSample();
-    void createSampleFiles();
     void readWriteSampleFiles(QString path, fs::path subfolder);
-    void createUdThemesAndFonts(fs::path path);
+    bool createUdThemesAndFonts();
     void tempSave(QString text, QString path);
     const QString tempOpen(QString path, QString tempPath);
     void swap(QString path);
     const QString createStyleSheetFromTheme(QString styleSheet, QString themeSheet);
-    template<typename T> void saveConfig(QString group, QString value, T x);
-    const QVariant loadConfig(QString group, QString value);
-    void loadResourceConfig(QList<QAction*> actions, QString group, QString value, QString fallback);
-    void loadConfigOnOpen();
+    template<typename T> void saveConfig(QString group, QString valueName, T value);
+    const QVariant loadConfig(QString group, QString valueName, bool preventRandomStrAsTrue = false);
+    void loadResourceConfig(QList<QAction*> actions, QString group, QString valueName, QString fallback);
+    void loadMiscConfigsOnOpen();
+    bool loadProjectDataOnOpen();
     void resizeEvent(QResizeEvent* event);
     void moveEvent(QMoveEvent* event);
     void menuToggles(QWidget* widget, QString group, QString value, bool checked);
     void loadMenuToggles(QAction* action, QString group, QString value, bool fallback);
     void togglePosAndCounts(bool& globalBool, QString group, QString value, bool checked);
+    void startColorBar(ColorScheme scheme);
+    void setColorBarStyle(ColorScheme scheme);
+    void clearAll(ClearType type);
+    bool checkChildStatus(QString possibleParent, QString possibleChild);
+    bool alert(ColorScheme scheme, QString message, QString optButton = "", void (Fernanda::* optButtonAction)() = nullptr, QString optReplaceMainButton = "", QString optReplaceTitle = "");
 
 private slots:
     
-    void textEditorTextChanged(); // move to texteditor?
+    void chooseProjectDataOnOpen();
+    void startUpColorBar();
+    void textEditorTextChanged(); // Move to TextEditor?
+    void fileMenuOpenProject();
+    void fileMenuNewProject();
+    void fileMenuNew();
+    void fileMenuNewSubfolder();
     void fileMenuSave();
     void fileMenuSaveAll();
+    void helpMenuSetProjectsDir();
+    void helpMenuMakeSample();
+    void helpMenuMakeSampleUdRc();
+    void helpMenuAbout();
     void ifPreviousFileIsFile(QString path);
     void ifPathDoesNotEqualPrevPath(QString path);
     void setWindowStyle();
@@ -173,6 +205,8 @@ private slots:
     void toggleCharCount(bool checked);
     void setTabStop();
     void setWrapMode();
+    void colorBarTimerOver();
+    void zoomFontSlider(bool zoomDirection);
 
 signals:
     void sendLineHighlightToggle(bool checked);

@@ -1,26 +1,40 @@
 QMenuBar, QMenu
 {
-	background-color: @bgColor;
+	background: @bgColor;
 	color: @fontColor;
 	font-weight: 600;
 }
 
-QMenuBar::item:selected, QMenu::item:selected
+QMenuBar::item:selected, QMenu::item:selected, #fontSlider:hover
 {
-	background-color: @bgColorHover;
+	background: @bgColorHover;
+	color: @fontColor2Hover;
 }
 
-QSplitter::handle
+#splitter::handle
 {
 	background: @bgColor2;
 }
 
 #pane
 {
-	background-color: @bgColor2;
+	background: @bgColor2;
 	border: 0px solid @borderColor;
 	color: @fontColor2;
 	font-weight: 600;
+}
+
+#cover
+{
+	background: qlineargradient(
+		x1: 0,
+		y1: 0,
+		x2: 1,
+		y2: 0,
+		stop: 0 rgba(66, 66, 66, 0.3),
+		stop: 1 rgba(0, 0, 0, 0)
+	);
+	margin-right: 16px;
 }
 
 #textEditor
@@ -30,7 +44,7 @@ QSplitter::handle
 
 #scrollPrevious, #scrollUp, #scrollDown, #scrollNext
 {
-	background-color: @bgColor;
+	background: @bgColor;
 	border: none;
 	color: @fontColor2;
 	font-weight: 600;
@@ -38,7 +52,7 @@ QSplitter::handle
 
 #scrollPrevious:hover, #scrollUp:hover, #scrollDown:hover, #scrollNext:hover
 {
-	background-color: @bgColorHover;
+	background: @bgColorHover;
 	color: @fontColor2Hover;
 }
 
@@ -46,7 +60,7 @@ QSplitter::handle
 {
     background: @bgColorHover;
 	margin: 0px 0 0px 0;
-	width: 18px;
+	width: 16px;
 }
 
 #vScrollBar::handle:vertical
@@ -58,6 +72,11 @@ QSplitter::handle
 #vScrollBar::handle:vertical:hover
 {
     background: @fontColor2;
+}
+
+#vScrollBar::handle:vertical:pressed
+{
+	background: @fontColor2;
 }
 
 #vScrollBar::add-line:vertical, #vScrollBar::sub-line:vertical
@@ -78,6 +97,12 @@ QSplitter::handle
     background: none;
 }
 
+#colorBar
+{
+	background: transparent;
+	border: none;
+}
+
 QStatusBar
 {
 	background-color: @bgColor;
@@ -96,14 +121,9 @@ QStatusBar::item
 	padding-left: 2px;
 }
 
-#pathDisplay:hover
-{
-	color: @fontColor2Hover;
-}
-
 #aot
 {
-	background-color: @bgColor;
+	background: @bgColor;
 	border: transparent;
 	border-radius: 3px;
 	min-width: 33px;
@@ -115,11 +135,90 @@ QStatusBar::item
 
 #aot:hover
 {
-	background-color: @bgColorHover;
+	background: @bgColorHover;
 	color: @fontColor2Hover;
+}
+
+#fontSlider::groove:horizontal
+{
+	border: 1px solid #fff;
+	background: transparent;
+	height: 6px;
+	margin-left: 18px;
+	margin-right: 18px;
+}
+
+#fontSlider::sub-page:horizontal
+{
+	background: qlineargradient(
+		x1: 0,
+		y1: 0,
+		x2: 1,
+		y2: 0,
+		stop: 0 #7ce1f9,
+		stop: 0.25 #3bb0f3,
+		stop: 0.75 #9194f2,
+		stop: 1 #f9b3f9
+	);
+	border: 1px solid #777;
+	height: 6px;
+	margin-left: 18px;
+}
+
+#fontSlider::add-page:horizontal
+{
+	background: transparent;
+	border: 1px solid #777;
+	height: 6px;
+	margin-right: 18px;
+}
+
+#fontSlider::handle:horizontal
+{
+	background: qlineargradient(
+		x1:0,
+		y1:0,
+		x2:1,
+		y2:1,
+		stop:0 #eee,
+		stop:1 #ccc
+	);
+	border: none;
+	width: 8px;
+	margin-top: -6px;
+	margin-bottom: -6px;
+}
+
+#fontSlider::handle:horizontal:hover
+{
+	background: qlineargradient(
+		x1:0,
+		y1:0,
+		x2:1,
+		y2:1,
+		stop:0 #fff,
+		stop:1 #ddd
+	);
+}
+
+#fontSlider::sub-page:horizontal:disabled
+{
+	background: #bbb;
+	border-color: #999;
+}
+
+#fontSlider::add-page:horizontal:disabled
+{
+	background: #eee;
+	border-color: #999;
+}
+
+#fontSlider::handle:horizontal:disabled
+{
+	background: #eee;
 }
 
 QSizeGrip
 {
-	image: url(none);
+	image: url(:/img/blank.png);
 }

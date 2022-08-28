@@ -38,6 +38,12 @@ void Pane::refresh()
     dataChanged(QModelIndex(), QModelIndex());
 }
 
+void Pane::clearTuples()
+{
+    selectedIndex = tuple<QModelIndex, QString>(QModelIndex(), ""); // idk about this one boys
+    currentFile = tuple<QString, QModelIndex>("", QModelIndex());
+}
+
 void Pane::onClick(QModelIndex index)
 {
     const auto& prev_selection = get<0>(selectedIndex);

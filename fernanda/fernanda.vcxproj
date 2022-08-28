@@ -95,6 +95,9 @@
     <ClCompile Include="texteditor.cpp" />
     <None Include="rc\test\test.fernanda_theme" />
     <None Include="rc\test\test.fernanda_wintheme" />
+    <None Include="rc\themes\bar\red.qss" />
+    <None Include="rc\themes\bar\green.qss" />
+    <None Include="rc\themes\bar\start_up.qss" />
     <None Include="rc\themes\editor.qss" />
     <None Include="rc\themes\editor\amber.fernanda_theme" />
     <None Include="rc\themes\editor\blue.fernanda_theme" />
@@ -125,10 +128,12 @@
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="rc\fonts.qrc" />
-    <QtRcc Include="rc\icons.qrc" />
     <QtRcc Include="rc\sample.qrc" />
-    <QtRcc Include="rc\test.qrc" />
     <QtRcc Include="rc\themes.qrc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="CMakeLists.txt" />
+    <Text Include="rc\themes\palette.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

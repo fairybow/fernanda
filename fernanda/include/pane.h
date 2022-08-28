@@ -26,6 +26,7 @@ public:
 
     void setup(QString path);
     void refresh();
+    void clearTuples();
 
 public slots:
     void navPrevious();

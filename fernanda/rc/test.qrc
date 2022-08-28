@@ -1,7 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>test/Merriweather-Regular.ttf</file>
-        <file>test/test.fernanda_theme</file>
-        <file>test/test.fernanda_wintheme</file>
-    </qresource>
-</RCC>

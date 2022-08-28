@@ -18,6 +18,7 @@
 #include <QString>
 #include <QTextBlock>
 #include <QTextEdit>
+#include <QWheelEvent>
 
 using namespace std;
 
@@ -77,6 +78,7 @@ private:
     void paintEvent(QPaintEvent* event);
     const QColor cursorColor();
     void keyPressEvent(QKeyEvent* event);
+    void wheelEvent(QWheelEvent* event);
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
@@ -90,6 +92,7 @@ private slots:
 signals:
     void askNavPrevious();
     void askNavNext();
+    void askFontSliderZoom(bool zoomDirection);
 };
 
 class LineNumberArea : public QWidget

@@ -33,5 +33,8 @@
         <file>sample/Candide/Footnotes.txt</file>
         <file>sample/Candide/Project Gutenberg License.txt</file>
         <file>sample/Candide/Title Page and Introduction.txt</file>
+        <file>sample/Merriweather.ttf</file>
+        <file>sample/sample.fernanda_theme</file>
+        <file>sample/sample.fernanda_wintheme</file>
     </qresource>
 </RCC>

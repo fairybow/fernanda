@@ -33,6 +33,9 @@
     <Filter Include="Resource Files\themes\test">
       <UniqueIdentifier>{4935a16e-9f73-4f91-a090-2c42f8a45e67}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\themes\bar">
+      <UniqueIdentifier>{a0fee95e-a2d3-412b-a99d-93dfe7b1c320}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="fernanda.ui">
@@ -93,6 +96,15 @@
     <None Include="rc\test\test.fernanda_wintheme">
       <Filter>Resource Files\themes\test</Filter>
     </None>
+    <None Include="rc\themes\bar\green.qss">
+      <Filter>Resource Files\themes\bar</Filter>
+    </None>
+    <None Include="rc\themes\bar\red.qss">
+      <Filter>Resource Files\themes\bar</Filter>
+    </None>
+    <None Include="rc\themes\bar\start_up.qss">
+      <Filter>Resource Files\themes\bar</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="include\fernanda.h">
@@ -122,17 +134,17 @@
     <QtRcc Include="rc\fonts.qrc">
       <Filter>Resource Files</Filter>
     </QtRcc>
-    <QtRcc Include="rc\icons.qrc">
-      <Filter>Resource Files</Filter>
-    </QtRcc>
     <QtRcc Include="rc\sample.qrc">
       <Filter>Resource Files</Filter>
     </QtRcc>
     <QtRcc Include="rc\themes.qrc">
       <Filter>Resource Files</Filter>
     </QtRcc>
-    <QtRcc Include="rc\test.qrc">
-      <Filter>Resource Files</Filter>
-    </QtRcc>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="rc\themes\palette.txt">
+      <Filter>Resource Files\themes</Filter>
+    </Text>
+    <Text Include="CMakeLists.txt" />
   </ItemGroup>
 </Project>

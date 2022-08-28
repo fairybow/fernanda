@@ -8,7 +8,8 @@ void PaneDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, 
     painter->setFont(font);
     auto option_size = QSize(option.rect.height(), option.rect.height());
     auto option_rect = option.rect;
-    auto text_rect = QRect((option_rect.left() + 15), (option_rect.top() + 2), option_rect.width(), option_rect.height());
+    auto text_rect = QRect((option_rect.left()), (option_rect.top() + 2), option_rect.width(), option_rect.height());
+    //auto text_rect = QRect((option_rect.left() + 15), (option_rect.top() + 2), option_rect.width(), option_rect.height());
     auto highlight = QRect(5, option_rect.top(), (option_rect.width() + 50), option_rect.height());
 
     /*auto folder_icon_rect = QRect((option_rect.left() - option_size.width() + 18), (option_rect.top() + 2), option_size.width(), option_size.height());

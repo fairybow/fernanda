@@ -8,5 +8,8 @@
         <file>themes/editor/grey.fernanda_theme</file>
         <file>themes/window/dark.fernanda_wintheme</file>
         <file>themes/window/light.fernanda_wintheme</file>
+        <file>themes/bar/start_up.qss</file>
+        <file>themes/bar/green.qss</file>
+        <file>themes/bar/red.qss</file>
     </qresource>
 </RCC>

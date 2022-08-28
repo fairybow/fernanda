@@ -481,6 +481,26 @@ void TextEditor::keyPressEvent(QKeyEvent* event) // lord jesus how do i make thi
     event->accept();
 }
 
+void TextEditor::wheelEvent(QWheelEvent* event)
+{
+    if (event->modifiers() == Qt::ControlModifier)
+    {
+        if (event->angleDelta().y() > 0)
+        {
+            askFontSliderZoom(true);
+        }
+        else
+        {
+            askFontSliderZoom(false);
+        }
+    }
+    else
+    {
+        QPlainTextEdit::wheelEvent(event);
+    }
+    event->accept();
+}
+
 void TextEditor::updateLineNumberAreaWidth(int /* newBlockCount */)
 {
     setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);

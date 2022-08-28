@@ -1,12 +1,12 @@
 <RCC>
     <qresource prefix="/">
-        <file>fonts/CascadiaCode.ttf</file>
-        <file>fonts/clacon2.ttf</file>
+        <file>fonts/Cascadia Code.ttf</file>
+        <file>fonts/Classic Console Neue.ttf</file>
         <file>fonts/Courier Prime.ttf</file>
-        <file>fonts/FiraCode-Regular.ttf</file>
-        <file>fonts/FSEX302.ttf</file>
-        <file>fonts/Hasklig-Regular.ttf</file>
-        <file>fonts/iosevka-medium.ttf</file>
-        <file>fonts/Perfect DOS VGA 437 Win.ttf</file>
+        <file>fonts/Fira Code.ttf</file>
+        <file>fonts/Fixedsys Excelsior.ttf</file>
+        <file>fonts/Hasklig.ttf</file>
+        <file>fonts/Iosevka Medium.ttf</file>
+        <file>fonts/Perfect DOS.ttf</file>
     </qresource>
 </RCC>
