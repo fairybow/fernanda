@@ -1,6 +1,6 @@
 #include "fernanda.h"
 
-Fernanda::Fernanda(QWidget *parent)
+Fernanda::Fernanda(QWidget* parent)
     : QMainWindow(parent)
 {
     ui.setupUi(this);
@@ -695,8 +695,8 @@ const QVariant Fernanda::loadConfig(QString group, QString valueName, bool preve
         ini.beginGroup(group);
         if (ini.childKeys().contains(valueName))
         {
-            auto val = ini.value(valueName).toString();
-            if (val.isEmpty())
+            auto val = ini.value(valueName);
+            if (val.isNull())
             {
                 return -1;
             }
@@ -704,7 +704,7 @@ const QVariant Fernanda::loadConfig(QString group, QString valueName, bool preve
             {
                 return -1;
             }
-            return ini.value(valueName);
+            return val;
         }
         return -1;
     }
@@ -735,9 +735,6 @@ void Fernanda::loadResourceConfig(QList<QAction*> actions, QString group, QStrin
 
 void Fernanda::loadMiscConfigsOnOpen()
 {
-    // Bug: window position is not being recalled on load (it's defaulting to the rect given below, every time). It must be receiving -1 somehow, but I'm not sure how. Other toggles/values are being recalled correctly.
-    // Tried: removing canConvert option below
-    // Adding "false" to the optional arg for loadConfig
     auto window_position = loadConfig("window", "position");
     if (window_position == -1 || !window_position.canConvert<QRect>())
     {
