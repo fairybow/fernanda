@@ -12,9 +12,8 @@ Fernanda::Fernanda(QWidget* parent)
     makeMenuBar();
     auto has_full_projects_data = loadProjectDataOnOpen();
     if (has_full_projects_data == false)
-    {
         QTimer::singleShot(1250, this, &Fernanda::chooseProjectDataOnOpen);
-    }
+    
     // Bug: After start-up, the first folder clicked in Pane is slow to load. After that, it's fine?
 }
 
@@ -22,11 +21,9 @@ void Fernanda::showEvent(QShowEvent* event)
 {
     QMainWindow::showEvent(event);
     if (wasInitialized == true || event->spontaneous())
-    {
         return;
-    }
     textEditorTextChanged();
-    QTimer::singleShot(1000, this, &Fernanda::startUpColorBar);
+    QTimer::singleShot(1000, this, [&](){ startColorBar(ColorScheme::StartUp); });
     wasInitialized = true;
     // This does not actually halt the colorBar from loading until the window is visible. I think it works when the program starts minimized, but not when window is just obscured by, say, another program. This is probably normal behavior.
 }
@@ -93,10 +90,19 @@ void Fernanda::layoutObjects()
 
 void Fernanda::makeConnections()
 {
-    connect(splitter, &QSplitter::splitterMoved, this, &Fernanda::splitterResize);
+    connect(pane, &Pane::pathDoesNotEqualPrevPath, this, [&]() { autoSaveTimer->start(30000); });
+    connect(splitter, &QSplitter::splitterMoved, this, [&]()
+        {
+            saveConfig<QByteArray>("window", "splitter", splitter->saveState());
+            // Splitter size is saving, but not being recalled by loadConfig
+        });
+    connect(barTimer, &QTimer::timeout, this, [&]()
+        {
+            colorBar->hide();
+            colorBar->reset();
+        });
     connect(pane, &Pane::previousFileIsFile, this, &Fernanda::ifPreviousFileIsFile);
     connect(pane, &Pane::pathDoesNotEqualPrevPath, this, &Fernanda::ifPathDoesNotEqualPrevPath);
-    connect(pane, &Pane::pathDoesNotEqualPrevPath, this, &Fernanda::startAutoSaveTimer);
     connect(textEditor, &TextEditor::askNavPrevious, pane, &Pane::navPrevious);
     connect(textEditor, &TextEditor::askNavNext, pane, &Pane::navNext);
     connect(textEditor, &TextEditor::askFontSliderZoom, this, &Fernanda::zoomFontSlider);
@@ -110,7 +116,6 @@ void Fernanda::makeConnections()
     connect(textEditor, &TextEditor::cursorPositionChanged, this, &Fernanda::updatePositions);
     connect(textEditor, &TextEditor::textChanged, this, &Fernanda::updateCounters);
     connect(aot, &QPushButton::toggled, this, &Fernanda::aotToggled);
-    connect(barTimer, &QTimer::timeout, this, &Fernanda::colorBarTimerOver);
 }
 
 void Fernanda::checkTempsOnOpen()
@@ -137,10 +142,7 @@ void Fernanda::closeEvent(QCloseEvent* event)
         if (close == QMessageBox::No)
         {
             if (state == Qt::WindowState::WindowMaximized)
-            {
-                setWindowState(Qt::WindowState::WindowMaximized);
-                // I would actually prefer to save *any* window state when closeEvent is triggered (before moving to active) and save to ini, then return to that state if close is canceled.
-            }
+                setWindowState(Qt::WindowState::WindowMaximized); // I would actually prefer to save *any* window state when closeEvent is triggered (before moving to active) and save to ini, then return to that state if close is canceled.
             event->ignore();
             return;
         }
@@ -152,42 +154,32 @@ void Fernanda::closeEvent(QCloseEvent* event)
 void Fernanda::displayPath()
 {
     auto& full_index_path = get<1>(pane->selectedIndex);
-    fs::path index_path = full_index_path.toStdString();
+    filesystem::path index_path = full_index_path.toStdString();
     auto index_root = index_path.root_name();
     auto index_drive_letter = QString::fromStdString(index_root.string()) + "\\>";
     auto index_name = index_path.filename();
     auto _index_name = QString::fromStdString(index_name.string());
 
     auto& full_file_path = get<0>(pane->currentFile);
-    fs::path file_path = full_file_path.toStdString();
+    filesystem::path file_path = full_file_path.toStdString();
     auto file_root = file_path.root_name();
     auto file_drive_letter = QString::fromStdString(file_root.string()) + "\\>";
     auto file_name = file_path.filename();
     auto _file_name = QString::fromStdString(file_name.string());
     
-    QString italics_1;
-    QString italics_2;
+    QString italics_1 = "";
+    QString italics_2 = "";
     if (dirtyFiles.contains(full_file_path))
     {
         italics_1 = "<i>";
         italics_2 = "*</i>";
     }
-    else
-    {
-        italics_1 = "";
-        italics_2 = "";
-    }
-    QString par_1;
-    QString par_2;
+    QString par_1 = "";
+    QString par_2 = "";
     if (!full_file_path.isEmpty())
     {
         par_1 = " (";
         par_2 = ")";
-    }
-    else
-    {
-        par_1 = "";
-        par_2 = "";
     }
 
     if (index_path == file_path)
@@ -257,13 +249,13 @@ void Fernanda::makeFileMenu()
 
 void Fernanda::makeViewMenu()
 {
-    QList<tuple<QString, QString>> win_theme_list = resourceIterator(":/themes/window/", "*.fernanda_wintheme", ResourceType::WindowTheme);
+    QList<tuple<QString, QString>> win_theme_list = iterateResources(":/themes/window/", "*.fernanda_wintheme", userData, ResourceType::WindowTheme);
     windowThemes = createMenuToggles(win_theme_list, &Fernanda::setWindowStyle);
 
-    QList<tuple<QString, QString>> editor_theme_list = resourceIterator(":/themes/editor/", "*.fernanda_theme", ResourceType::EditorTheme);
+    QList<tuple<QString, QString>> editor_theme_list = iterateResources(":/themes/editor/", "*.fernanda_theme", userData, ResourceType::EditorTheme);
     editorThemes = createMenuToggles(editor_theme_list, &Fernanda::setEditorStyle);
 
-    QList<tuple<QString, QString>> font_list = resourceIterator(":/fonts/", "*.ttf", ResourceType::Font);
+    QList<tuple<QString, QString>> font_list = iterateResources(":/fonts/", "*.ttf", userData, ResourceType::Font);
     editorFonts = createMenuToggles(font_list, &Fernanda::setEditorFont);
 
     auto* font_size_label = new QAction(tr("&Set editor font size:"), this);
@@ -293,62 +285,102 @@ void Fernanda::makeViewMenu()
 
     auto* toggle_aot = new QAction(tr("&Toggle always-on-top button"), this);
     toggle_aot->setStatusTip(tr("Toggle always-on-top button"));
-    connect(toggle_aot, &QAction::toggled, this, &Fernanda::toggleAOT);
+    connect(toggle_aot, &QAction::toggled, this, [&](bool checked)
+        {
+            menuToggles(aot, "window", "aot_button_visible", checked);
+        });
     toggle_aot->setCheckable(true);
 
     auto* toggle_pane = new QAction(tr("&Toggle file pane"), this);
     toggle_pane->setStatusTip(tr("Toggle file pane"));
-    connect(toggle_pane, &QAction::toggled, this, &Fernanda::togglePane);
+    connect(toggle_pane, &QAction::toggled, this, [&](bool checked)
+        {
+            menuToggles(pane, "window", "pane_visible", checked);
+        });
     toggle_pane->setCheckable(true);
 
     auto* toggle_extra_scrolls = new QAction(tr("&Toggle scroll previous and next buttons"), this);
     toggle_extra_scrolls->setStatusTip(tr("Toggle scroll previous and next buttons"));
-    connect(toggle_extra_scrolls, &QAction::toggled, this, &Fernanda::toggleScrollPrevAndNext);
+    connect(toggle_extra_scrolls, &QAction::toggled, this, [&](bool checked)
+        {
+            menuToggles(textEditor->scrollPrevious, "editor", "scroll_previous_visible", checked);
+            menuToggles(textEditor->scrollNext, "editor", "scroll_next_visible", checked);
+        });
     toggle_extra_scrolls->setCheckable(true);
 
     auto* toggle_statusbar = new QAction(tr("&Toggle statusbar"), this);
     toggle_statusbar->setStatusTip(tr("Toggle statusbar"));
-    connect(toggle_statusbar, &QAction::toggled, this, &Fernanda::toggleStatusbar);
+    connect(toggle_statusbar, &QAction::toggled, this, [&](bool checked)
+        {
+            menuToggles(statusBar(), "window", "statusbar_visible", checked);
+        });
     toggle_statusbar->setCheckable(true);
 
     auto* toggle_line_highlight = new QAction(tr("&Toggle current line highlight"), this);
     toggle_line_highlight->setStatusTip(tr("Toggle current line highlight"));
-    connect(toggle_line_highlight, &QAction::toggled, this, &Fernanda::toggleLineHighlight);
+    connect(toggle_line_highlight, &QAction::toggled, this, [&](bool checked)
+        {
+            sendLineHighlightToggle(checked);
+            saveConfig<bool>("editor", "line_highlight", checked);
+        });
     toggle_line_highlight->setCheckable(true);
 
     auto* toggle_key_filters = new QAction(tr("&Toggle key filters"), this);
     toggle_key_filters->setStatusTip(tr("Toggle key filters"));
-    connect(toggle_key_filters, &QAction::toggled, this, &Fernanda::toggleKeyFilters);
+    connect(toggle_key_filters, &QAction::toggled, this, [&](bool checked)
+        {
+            textEditor->hasKeyFilters = checked;
+            saveConfig<bool>("editor", "key_filters", checked);
+        });
     toggle_key_filters->setCheckable(true);
 
     auto* toggle_line_numbers = new QAction(tr("&Toggle line number area"), this);
     toggle_line_numbers->setStatusTip(tr("Toggle line number area"));
-    connect(toggle_line_numbers, &QAction::toggled, this, &Fernanda::toggleLineNumberArea);
+    connect(toggle_line_numbers, &QAction::toggled, this, [&](bool checked)
+        {
+            sendLineNumberAreaToggle(checked);
+            saveConfig<bool>("editor", "line_number_area", checked);
+        });
     toggle_line_numbers->setCheckable(true);
 
     auto* toggle_line_pos = new QAction(tr("&Toggle line position"), this);
     toggle_line_pos->setStatusTip(tr("Toggle line position"));
-    connect(toggle_line_pos, &QAction::toggled, this, &Fernanda::toggleLinePos);
+    connect(toggle_line_pos, &QAction::toggled, this, [&](bool checked)
+        {
+            togglePosAndCounts(linePos, "window", "show_line_position", checked);
+        });
     toggle_line_pos->setCheckable(true);
 
     auto* toggle_col_pos = new QAction(tr("&Toggle column position"), this);
     toggle_col_pos->setStatusTip(tr("Toggle column position"));
-    connect(toggle_col_pos, &QAction::toggled, this, &Fernanda::toggleColPos);
+    connect(toggle_col_pos, &QAction::toggled, this, [&](bool checked)
+        {
+            togglePosAndCounts(colPos, "window", "show_column_position", checked);
+        });
     toggle_col_pos->setCheckable(true);
 
     auto* toggle_line_count = new QAction(tr("&Toggle line count"), this);
     toggle_line_count->setStatusTip(tr("Toggle line count"));
-    connect(toggle_line_count, &QAction::toggled, this, &Fernanda::toggleLineCount);
+    connect(toggle_line_count, &QAction::toggled, this, [&](bool checked)
+        {
+            togglePosAndCounts(lineCount, "window", "show_line_count", checked);
+        });
     toggle_line_count->setCheckable(true);
 
     auto* toggle_word_count = new QAction(tr("&Toggle word count"), this);
     toggle_word_count->setStatusTip(tr("Toggle word count"));
-    connect(toggle_word_count, &QAction::toggled, this, &Fernanda::toggleWordCount);
+    connect(toggle_word_count, &QAction::toggled, this, [&](bool checked)
+        {
+            togglePosAndCounts(wordCount, "window", "show_word_count", checked);
+        });
     toggle_word_count->setCheckable(true);
 
     auto* toggle_char_count = new QAction(tr("&Toggle character count"), this);
     toggle_char_count->setStatusTip(tr("Toggle character count"));
-    connect(toggle_char_count, &QAction::toggled, this, &Fernanda::toggleCharCount);
+    connect(toggle_char_count, &QAction::toggled, this, [&](bool checked)
+        {
+            togglePosAndCounts(charCount, "window", "show_character_count", checked);
+        });
     toggle_char_count->setCheckable(true);
 
     auto* view = menuBar()->addMenu(tr("&View"));
@@ -362,8 +394,11 @@ void Fernanda::makeViewMenu()
 
     view->addAction(font_size_label);
     view->addAction(font_size);
-    connect(fontSlider, &QSlider::valueChanged, this, &Fernanda::setEditorFontSize);
-
+    connect(fontSlider, &QSlider::valueChanged, this, [&](int value)
+        {
+            setEditorFont();
+            saveConfig<int>("editor", "font_size", value);
+        });
     view->addSeparator();
     auto* tab_stops = view->addMenu(tr("&Set editor tab stop distance"));
     tab_stops->addActions(tabStops->actions());
@@ -440,57 +475,6 @@ void Fernanda::makeHelpMenu()
     help->addAction(about);
 }
 
-const QList<tuple<QString, QString>> Fernanda::resourceIterator(QString path, QString ext, ResourceType type)
-{
-    QList<tuple<QString, QString>> dataAndLabels;
-    QDirIterator assets(path, QStringList() << ext, QDir::Files, QDirIterator::Subdirectories);
-    if (QDir(userData).exists())
-    {
-        QDirIterator user_assets(QString::fromStdString(userData.string()), QStringList() << ext, QDir::Files, QDirIterator::Subdirectories);
-        while (user_assets.hasNext())
-        {
-            user_assets.next();
-
-            auto label = resourceNameCap(user_assets.filePath());
-
-            if (type == ResourceType::Font)
-            {
-                dataAndLabels << tuple<QString, QString>(QFontDatabase::applicationFontFamilies(QFontDatabase::addApplicationFont(user_assets.filePath())).at(0), label);
-            }
-            else
-            {
-                dataAndLabels << tuple<QString, QString>(user_assets.filePath(), label);
-            }
-        }
-    }
-    while (assets.hasNext())
-    {
-        assets.next();
-
-        auto label = resourceNameCap(assets.filePath());
-
-        if (type == ResourceType::Font)
-        {
-            dataAndLabels << tuple<QString, QString>(QFontDatabase::applicationFontFamilies(QFontDatabase::addApplicationFont(assets.filePath())).at(0), label);
-        }
-        else
-        {
-            dataAndLabels << tuple<QString, QString>(assets.filePath(), label);
-        }
-    }
-    sort(dataAndLabels.begin(), dataAndLabels.end());
-    return dataAndLabels;
-}
-
-const QString Fernanda::resourceNameCap(QString path)
-{
-    fs::path file_path = path.toStdString();
-    auto stem = file_path.stem();
-    auto name = QString::fromStdString(stem.string());
-    auto name_capped = name.left(1).toUpper() + name.mid(1);
-    return name_capped;
-}
-
 QActionGroup* Fernanda::createMenuToggles(QList<tuple<QString, QString>>& itemAndLabel, void (Fernanda::* slot)())
 {
     auto* group = new QActionGroup(this);
@@ -511,46 +495,27 @@ QActionGroup* Fernanda::createMenuToggles(QList<tuple<QString, QString>>& itemAn
 
 void Fernanda::createUserData(QString dataFolderName)
 {
-    userData = fs::path(QDir::homePath().toStdString()) / dataFolderName.toStdString();
+    userData = filesystem::path(QDir::homePath().toStdString()) / dataFolderName.toStdString();
     auto config_path = userData / configName.toStdString();
     config = QString::fromStdString(config_path.string());
     activeTemp = userData / string(".active_temp");
     backup = userData / string("backup");
     rollback = backup / string(".rollback");
-    QList<fs::path> data_folders = { userData, activeTemp, backup, rollback };
+    QList<filesystem::path> data_folders = { userData, activeTemp, backup, rollback };
     for (auto& folder : data_folders)
-    {
         if (!QDir(folder).exists())
-        {
-            fs::create_directory(folder);
-        }
-    }
+            filesystem::create_directory(folder);
 }
 
 void Fernanda::clearTempFiles()
 {
-    for (auto& item : fs::directory_iterator(activeTemp))
-    {
-        fs::remove_all(item);
-    }
-}
-
-const QString Fernanda::readFile(QString path)
-{
-    QString text;
-    QFile file(path);
-    if (file.open(QFile::ReadOnly | QIODevice::Text))
-    {
-        QTextStream in(&file);
-        text = in.readAll();
-        file.close();
-    }
-    return text;
+    for (auto& item : filesystem::directory_iterator(activeTemp))
+        filesystem::remove_all(item);
 }
 
 const QString Fernanda::pathMaker(QString path, PathType type)
 {
-    fs::path data_folder;
+    filesystem::path data_folder;
     QString prefix;
     QString ext;
 
@@ -559,9 +524,7 @@ const QString Fernanda::pathMaker(QString path, PathType type)
         //
     }
     else if (type == PathType::Original)
-    {
         return path;
-    }
     else if (type == PathType::Rollback)
     {
         data_folder = rollback;
@@ -575,93 +538,32 @@ const QString Fernanda::pathMaker(QString path, PathType type)
         ext = ".fernanda_temp";
     }
 
-    auto proj_relative = fs::relative(path.toStdString(), defaultProjectsFolder.toStdString());
-    fs::path proj_relative_parent = prefix.toStdString() + proj_relative.parent_path().string();
-    fs::path file_name = prefix.toStdString() + proj_relative.filename().replace_extension(ext.toStdString()).string();
+    auto proj_relative = filesystem::relative(path.toStdString(), defaultProjectsFolder.toStdString());
+    filesystem::path proj_relative_parent = prefix.toStdString() + proj_relative.parent_path().string();
+    filesystem::path file_name = prefix.toStdString() + proj_relative.filename().replace_extension(ext.toStdString()).string();
     auto derived_path = data_folder / proj_relative_parent / file_name;
     derived_path.make_preferred();
 
     return QString::fromStdString(derived_path.string());
 }
 
-void Fernanda::writeFile(QString text, QString path)
-{
-    QFile file(path);
-    if (file.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-        QTextStream out(&file);
-        out << text;
-        file.close();
-    }
-}
-
-void Fernanda::readWriteSampleFiles(QString path, fs::path subfolder)
-{
-    auto text = readFile(path);
-    fs::path file_name = path.toStdString();
-    auto new_path = subfolder / file_name.filename();
-    auto new_path_q = QString::fromStdString(new_path.string());
-    writeFile(text, new_path_q);
-}
-
-bool Fernanda::createUdThemesAndFonts()
-{
-    auto font_fs = userData / "Merriweather.ttf";
-    auto editor_theme_fs = userData / "sample.fernanda_theme";
-    auto win_theme_fs = userData / "sample.fernanda_wintheme";
-    auto font = QString::fromStdString(font_fs.string());
-    auto editor_theme = QString::fromStdString(editor_theme_fs.string());
-    auto win_theme = QString::fromStdString(win_theme_fs.string());
-    if (QFile(font).exists() || QFile(editor_theme).exists() || QFile(win_theme).exists())
-    {
-        return false;
-    }
-    QFile::copy(":/sample/Merriweather.ttf", font);
-    QFile::copy(":/sample/sample.fernanda_theme", editor_theme);
-    QFile::copy(":/sample/sample.fernanda_wintheme", win_theme);
-    QFile(font).setPermissions(QFile::WriteUser);
-    QFile(editor_theme).setPermissions(QFile::WriteUser);
-    QFile(win_theme).setPermissions(QFile::WriteUser);
-    return true;
-}
-
-void Fernanda::tempSave(QString text, QString path)
-{
-    fs::path temp_path = path.toStdString();
-    fs::create_directories(temp_path.parent_path());
-    writeFile(text, path);
-}
-
-const QString Fernanda::tempOpen(QString path, QString tempPath)
-{
-    QFileInfo temp_info(tempPath);
-    if (temp_info.exists())
-    {
-        return readFile(tempPath);
-    }
-    else
-    {
-        return readFile(path);
-    }
-}
-
 void Fernanda::swap(QString path)
 {
-    fs::path rollback_path = pathMaker(path, PathType::Rollback).toStdString();
-    fs::path temp_path = pathMaker(path, PathType::Temp).toStdString();
+    filesystem::path rollback_path = pathMaker(path, PathType::Rollback).toStdString();
+    filesystem::path temp_path = pathMaker(path, PathType::Temp).toStdString();
     if (QFileInfo(rollback_path).exists())
     {
-        fs::remove(rollback_path);
+        filesystem::remove(rollback_path);
     }
     else
     {
-        fs::create_directories(rollback_path.parent_path());
+        filesystem::create_directories(rollback_path.parent_path());
     }
-    fs::rename(path.toStdString(), rollback_path);
-    fs::rename(temp_path, path.toStdString());
+    filesystem::rename(path.toStdString(), rollback_path);
+    filesystem::rename(temp_path, path.toStdString());
 }
 
-const QString Fernanda::createStyleSheetFromTheme(QString styleSheet, QString themeSheet)
+const QString Fernanda::createStyleSheetFromTheme(QString styleSheet, QString themeSheet) // move to rc.cpp?
 {
     auto style_sheet = readFile(styleSheet);
     auto theme_sheet = readFile(themeSheet);
@@ -689,26 +591,15 @@ template<typename T> void Fernanda::saveConfig(QString group, QString valueName,
 
 const QVariant Fernanda::loadConfig(QString group, QString valueName, bool preventRandomStrAsTrue)
 {
-    if (QFile(config).exists())
-    {
-        QSettings ini(config, QSettings::IniFormat);
-        ini.beginGroup(group);
-        if (ini.childKeys().contains(valueName))
-        {
-            auto val = ini.value(valueName);
-            if (val.isNull())
-            {
-                return -1;
-            }
-            if (preventRandomStrAsTrue == true && val != "true" && val != "false")
-            {
-                return -1;
-            }
-            return val;
-        }
-        return -1;
-    }
-    return -1;
+    if (!QFile(config).exists()) return -1;
+    QSettings ini(config, QSettings::IniFormat);
+    ini.beginGroup(group);
+    if (!ini.childKeys().contains(valueName)) return -1;
+    auto val = ini.value(valueName);
+    if (val.isNull()) return -1;
+    if (preventRandomStrAsTrue == true && val != "true" && val != "false") return -1;
+
+    return val;
 }
 
 void Fernanda::loadResourceConfig(QList<QAction*> actions, QString group, QString valueName, QString fallback)
@@ -747,12 +638,8 @@ void Fernanda::loadMiscConfigsOnOpen()
 
     auto window_max = loadConfig("window", "max", true);
     if (window_max != -1)
-    {
         if (window_max.toBool() == true)
-        {
             setWindowState(Qt::WindowState::WindowMaximized);
-        }
-    }
 
     // I do not understand what is happening with testing QByteArray entry in .ini file with empty string or garbage string. It seems to somehow still remember the needed splitter position even when the ini value is blank or random characters...
     auto splitter_position = loadConfig("window", "splitter");
@@ -859,10 +746,7 @@ void Fernanda::togglePosAndCounts(bool& globalBool, QString group, QString value
 
 void Fernanda::startColorBar(ColorScheme scheme)
 {
-    if (scheme == ColorScheme::None)
-    {
-        return;
-    }
+    if (scheme == ColorScheme::None) return;
     setColorBarStyle(scheme);
     auto* bar_fill = new QTimeLine(125, this);
     connect(bar_fill, &QTimeLine::frameChanged, colorBar, &QProgressBar::setValue);
@@ -876,17 +760,11 @@ void Fernanda::setColorBarStyle(ColorScheme scheme)
 {
     QString style_sheet;
     if (scheme == ColorScheme::Red)
-    {
         style_sheet = readFile(":/themes/bar/red.qss");
-    }
     else if (scheme == ColorScheme::Green)
-    {
         style_sheet = readFile(":/themes/bar/green.qss");
-    }
     else if (scheme == ColorScheme::StartUp)
-    {
         style_sheet = readFile(":/themes/bar/start_up.qss");
-    }
     colorBar->setStyleSheet(style_sheet);
 }
 
@@ -905,39 +783,19 @@ void Fernanda::clearAll(ClearType type)
     textEditorTextChanged();
 }
 
-bool Fernanda::checkChildStatus(QString possibleParent, QString possibleChild)
-{
-    fs::path parent = possibleParent.toStdString();
-    fs::path child = possibleChild.toStdString();
-    fs::path child_parent = child.parent_path();
-    if (child_parent.make_preferred() == parent.make_preferred())
-    {
-        return true;
-    }
-    return false;
-}
-
 bool Fernanda::alert(ColorScheme scheme, QString message, QString optButton, void (Fernanda::* optButtonAction)(), QString optReplaceMainButton, QString optReplaceTitle)
 {
     QMessageBox alert;
+    auto title = tr("Hey!");
     if (!optReplaceTitle.isEmpty())
-    {
-        alert.setWindowTitle(optReplaceTitle);
-    }
-    else
-    {
-        alert.setWindowTitle("Hey!");
-    }
+        title = tr(optReplaceTitle.toUtf8());
+    alert.setWindowTitle(title);
     alert.setText(message);
     QAbstractButton* ok = nullptr;
+    auto ok_text = tr("Okay");
     if (!optReplaceMainButton.isEmpty())
-    {
-        ok = alert.addButton(tr(optReplaceMainButton.toUtf8()), QMessageBox::AcceptRole);
-    }
-    else
-    {
-        ok = alert.addButton(tr("Okay"), QMessageBox::AcceptRole);
-    }
+        ok_text = tr(optReplaceMainButton.toUtf8());
+    ok = alert.addButton(ok_text, QMessageBox::AcceptRole);
     if (!optButton.isEmpty())
     {
         QAbstractButton* option = alert.addButton(tr(optButton.toUtf8()), QMessageBox::AcceptRole);
@@ -960,21 +818,14 @@ void Fernanda::chooseProjectDataOnOpen()
 {
     if (!defaultProjectsFolder.isEmpty())
     {
-        auto option_taken = alert(ColorScheme::Green, "Open an existing project, or create a new one", "Create a new project (WIP)", &Fernanda::fileMenuNewProject, "Open an existing project");
-        if (option_taken == false)
-        {
+        auto alert_option_taken = alert(ColorScheme::Green, "Open an existing project, or create a new one", "Create a new project (WIP)", &Fernanda::fileMenuNewProject, "Open an existing project");
+        if (alert_option_taken == false)
             fileMenuOpenProject();
-        }
     }
     else
     {
         helpMenuSetProjectsDir();
     }
-}
-
-void Fernanda::startUpColorBar()
-{
-    startColorBar(ColorScheme::StartUp);
 }
 
 void Fernanda::textEditorTextChanged() // Move to TextEditor?
@@ -1120,9 +971,7 @@ void Fernanda::fileMenuSaveAll()
     {
         fileMenuSave();
         for (auto& item : dirtyFiles)
-        {
             swap(item);
-        }
         clearAll(ClearType::Partial);
         startColorBar(ColorScheme::Green);
     }
@@ -1133,9 +982,9 @@ void Fernanda::helpMenuSetProjectsDir()
     alert(ColorScheme::None, "In order to use Fernanda, you need to set a default directory for your projects.");
 
     auto documents = QStandardPaths::locate(QStandardPaths::DocumentsLocation, "", QStandardPaths::LocateDirectory);
-    fs::path tmp_docs = documents.toStdString();
+    filesystem::path tmp_docs = documents.toStdString();
     auto fernanda_docs = tmp_docs / "Fernanda";
-    fs::create_directories(fernanda_docs);
+    filesystem::create_directories(fernanda_docs);
     auto path = QString::fromStdString(fernanda_docs.string());
     auto default_projects = QFileDialog::getExistingDirectory(this, "Set a Default Projects directory", path);
 
@@ -1164,83 +1013,13 @@ void Fernanda::helpMenuSetProjectsDir()
 
 void Fernanda::helpMenuMakeSample()
 {
-    fs::path candide;
-    fs::path projects_folder = defaultProjectsFolder.toStdString();
-    candide = projects_folder / "Candide";
-    auto candide_subfolder_1 = candide / string("Chapters 1-10");
-    auto candide_subfolder_2 = candide / string("Chapters 11-20");
-    auto candide_subfolder_3 = candide / string("Chapters 21-30");
-    auto candide_subfolder_4 = candide / string("Misc");
-    QList<fs::path> sample_folders = { candide, candide_subfolder_1, candide_subfolder_2, candide_subfolder_3, candide_subfolder_4 };
-    for (auto& folder : sample_folders)
-    {
-        fs::create_directory(folder);
-    }
-    // I tried doing the following programmatically, and it was noticably slower than just doing it line-by-line.
-    QString sample_parent_path = ":/sample/Candide/";
-    QStringList candide_files_1 = {
-        sample_parent_path + "Chapter 1.txt",
-        sample_parent_path + "Chapter 2.txt",
-        sample_parent_path + "Chapter 3.txt",
-        sample_parent_path + "Chapter 4.txt",
-        sample_parent_path + "Chapter 5.txt",
-        sample_parent_path + "Chapter 6.txt",
-        sample_parent_path + "Chapter 7.txt",
-        sample_parent_path + "Chapter 8.txt",
-        sample_parent_path + "Chapter 9.txt",
-        sample_parent_path + "Chapter 10.txt"
-    };
-    QStringList candide_files_2 = {
-        sample_parent_path + "Chapter 11.txt",
-        sample_parent_path + "Chapter 12.txt",
-        sample_parent_path + "Chapter 13.txt",
-        sample_parent_path + "Chapter 14.txt",
-        sample_parent_path + "Chapter 15.txt",
-        sample_parent_path + "Chapter 16.txt",
-        sample_parent_path + "Chapter 17.txt",
-        sample_parent_path + "Chapter 18.txt",
-        sample_parent_path + "Chapter 19.txt",
-        sample_parent_path + "Chapter 20.txt"
-    };
-    QStringList candide_files_3 = {
-        sample_parent_path + "Chapter 21.txt",
-        sample_parent_path + "Chapter 22.txt",
-        sample_parent_path + "Chapter 23.txt",
-        sample_parent_path + "Chapter 24.txt",
-        sample_parent_path + "Chapter 25.txt",
-        sample_parent_path + "Chapter 26.txt",
-        sample_parent_path + "Chapter 27.txt",
-        sample_parent_path + "Chapter 28.txt",
-        sample_parent_path + "Chapter 29.txt",
-        sample_parent_path + "Chapter 30.txt"
-    };
-    QStringList candide_files_4 = {
-        sample_parent_path + "Footnotes.txt",
-        sample_parent_path + "Project Gutenberg License.txt",
-        sample_parent_path + "Title Page and Introduction.txt"
-    };
-    for (auto& sample_path : candide_files_1)
-    {
-        readWriteSampleFiles(sample_path, candide_subfolder_1);
-    }
-    for (auto& sample_path : candide_files_2)
-    {
-        readWriteSampleFiles(sample_path, candide_subfolder_2);
-    }
-    for (auto& sample_path : candide_files_3)
-    {
-        readWriteSampleFiles(sample_path, candide_subfolder_3);
-    }
-    for (auto& sample_path : candide_files_4)
-    {
-        readWriteSampleFiles(sample_path, candide_subfolder_4);
-    }
+    makeSample(defaultProjectsFolder);
 }
 
 void Fernanda::helpMenuMakeSampleUdRc()
 {
-    auto existed = createUdThemesAndFonts();
-    if (existed == false)
+    auto could_create = createSampleThemesAndFonts(userData);
+    if (could_create == false)
     {
         alert(ColorScheme::Red, "One or more sample custom themes and/or fonts still exist in your data folder.");
         return;
@@ -1275,9 +1054,7 @@ void Fernanda::ifPathDoesNotEqualPrevPath(QString path)
     textEditor->setPlainText(text);
     textEditor->setFocus();
     if (QFileInfo(temp_path).exists())
-    {
         textEditor->restoreCursorPositions(temp_path);
-    }
 }
 
 void Fernanda::setWindowStyle()
@@ -1326,17 +1103,6 @@ void Fernanda::setEditorFont()
     }
 }
 
-void Fernanda::setEditorFontSize(int value)
-{
-    setEditorFont();
-    saveConfig<int>("editor", "font_size", value);
-}
-
-void Fernanda::splitterResize()
-{
-    saveConfig<QByteArray>("window", "splitter", splitter->saveState());
-}
-
 void Fernanda::aotToggled(bool checked)
 {
     if (checked)
@@ -1353,54 +1119,10 @@ void Fernanda::aotToggled(bool checked)
     saveConfig("window", "aot", checked);
 }
 
-void Fernanda::startAutoSaveTimer()
-{
-    autoSaveTimer->start(30000);
-}
-
 void Fernanda::autoSave()
 {
     auto& path = get<0>(pane->currentFile);
     ifPreviousFileIsFile(path);
-}
-
-void Fernanda::toggleAOT(bool checked)
-{
-    menuToggles(aot, "window", "aot_button_visible", checked);
-}
-
-void Fernanda::togglePane(bool checked)
-{
-    menuToggles(pane, "window", "pane_visible", checked);
-}
-
-void Fernanda::toggleScrollPrevAndNext(bool checked)
-{
-    menuToggles(textEditor->scrollPrevious, "editor", "scroll_previous_visible", checked);
-    menuToggles(textEditor->scrollNext, "editor", "scroll_next_visible", checked);
-}
-
-void Fernanda::toggleStatusbar(bool checked)
-{
-    menuToggles(statusBar(), "window", "statusbar_visible", checked);
-}
-
-void Fernanda::toggleLineHighlight(bool checked)
-{
-    sendLineHighlightToggle(checked);
-    saveConfig<bool>("editor", "line_highlight", checked);
-}
-
-void Fernanda::toggleKeyFilters(bool checked)
-{
-    textEditor->hasKeyFilters = checked;
-    saveConfig<bool>("editor", "key_filters", checked);
-}
-
-void Fernanda::toggleLineNumberArea(bool checked)
-{
-    sendLineNumberAreaToggle(checked);
-    saveConfig<bool>("editor", "line_number_area", checked);
 }
 
 void Fernanda::updatePositions()
@@ -1409,13 +1131,9 @@ void Fernanda::updatePositions()
     const auto col_pos = textEditor->textCursor().positionInBlock();
     QStringList elements;
     if (linePos == true)
-    {
         elements << "ln " + QString::number(line_pos + 1);
-    }
     if (colPos == true)
-    {
         elements << "col " + QString::number(col_pos + 1);
-    }
     auto pos_display = elements.join(", ");
     positions->setText(pos_display);
 }
@@ -1428,45 +1146,14 @@ void Fernanda::updateCounters()
     const auto char_count = text.count();
     QStringList elements;
     if (lineCount == true)
-    {
         elements << QString::number(line_count) + " lines";
-    }
     if (wordCount == true)
-    {
         elements << QString::number(word_count - 1) + " words"; // - 1, whyyyyy
-        // The above always displays at least 1, even when editor is blank?
-    }
+    // The above always displays at least 1, even when editor is blank?
     if (charCount == true)
-    {
         elements << QString::number(char_count) + " chars";
-    }
     auto counter_display = elements.join(", ");
     counters->setText(counter_display);
-}
-
-void Fernanda::toggleLinePos(bool checked)
-{
-    togglePosAndCounts(linePos, "window", "show_line_position", checked);
-}
-
-void Fernanda::toggleColPos(bool checked)
-{
-    togglePosAndCounts(colPos, "window", "show_column_position", checked);
-}
-
-void Fernanda::toggleLineCount(bool checked)
-{
-    togglePosAndCounts(lineCount, "window", "show_line_count", checked);
-}
-
-void Fernanda::toggleWordCount(bool checked)
-{
-    togglePosAndCounts(wordCount, "window", "show_word_count", checked);
-}
-
-void Fernanda::toggleCharCount(bool checked)
-{
-    togglePosAndCounts(charCount, "window", "show_character_count", checked);
 }
 
 void Fernanda::setTabStop()
@@ -1485,29 +1172,15 @@ void Fernanda::setWrapMode()
     {
         auto mode = selection->data().toString();
         if (mode == "NoWrap")
-        {
             sendWrapMode(QTextOption::NoWrap);
-        }
         else if (mode == "WordWrap")
-        {
             sendWrapMode(QTextOption::WordWrap);
-        }
         else if (mode == "WrapAnywhere")
-        {
             sendWrapMode(QTextOption::WrapAnywhere);
-        }
         else if (mode == "WrapAt")
-        {
             sendWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
-        }
         saveConfig<QVariant>("editor", "wrap", mode);
     }
-}
-
-void Fernanda::colorBarTimerOver()
-{
-    colorBar->hide();
-    colorBar->reset();
 }
 
 void Fernanda::zoomFontSlider(bool zoomDirection)

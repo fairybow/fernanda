@@ -1,7 +1,7 @@
 #pragma once
 
-#include "tuple"
-#include "unordered_set"
+#include <tuple>
+#include <unordered_set>
 
 #include <QColor>
 #include <QFileInfo>
@@ -84,8 +84,6 @@ private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightCurrentLine();
     void updateLineNumberArea(const QRect& rect, int dy);
-    void scrollUpClicked();
-    void scrollDownClicked();
     void scrollPreviousClicked();
     void scrollNextClicked();
 

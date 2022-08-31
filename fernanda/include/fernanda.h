@@ -1,13 +1,12 @@
 #pragma once
 
+#include "io.h"
 #include "pane.h"
+#include "rc.h"
 #include "texteditor.h"
-#include "version.h"
+//#include "version.h"
 
-#include "algorithm"
-#include "filesystem"
-#include "functional"
-#include "string"
+#include <functional>
 
 #include <QtWidgets/QMainWindow>
 #include "ui_fernanda.h"
@@ -15,15 +14,9 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QCloseEvent>
-#include <QDir>
-#include <QFile>
 #include <QFileDialog>
-#include <QFontDatabase>
-#include <QIODevice>
 #include <QLabel>
-#include <QList>
 #include <QMenu>
-#include <QModelIndex>
 #include <QObject>
 #include <QProgressBar>
 #include <QMessageBox>
@@ -39,15 +32,10 @@
 #include <QSplitter>
 #include <QStackedLayout>
 #include <QStandardPaths>
-#include <QString>
-#include <QStringList>
 #include <QTextCursor>
-#include <QTextStream>
 #include <QTimeLine>
 #include <QTimer>
 #include <QWidgetAction>
-
-namespace fs = filesystem;
 
 class Fernanda : public QMainWindow
 {
@@ -69,11 +57,11 @@ private:
     
     QString defaultProjectsFolder;
     QString currentProject;
-    fs::path userData;
+    filesystem::path userData;
     QString config;
-    fs::path activeTemp;
-    fs::path rollback;
-    fs::path backup;
+    filesystem::path activeTemp;
+    filesystem::path rollback;
+    filesystem::path backup;
 
     bool wasInitialized = false;
     bool linePos = true;
@@ -87,11 +75,6 @@ private:
         Original,
         Rollback,
         Temp
-    };
-    enum class ResourceType {
-        EditorTheme,
-        Font,
-        WindowTheme
     };
     enum class ColorScheme {
         None,
@@ -134,18 +117,10 @@ private:
     void makeFileMenu();
     void makeViewMenu();
     void makeHelpMenu();
-    const QList<tuple<QString, QString>> resourceIterator(QString path, QString ext, ResourceType type);
-    const QString resourceNameCap(QString path);
     QActionGroup* createMenuToggles(QList<tuple<QString, QString>>& itemAndLabel, void (Fernanda::* slot)());
     void createUserData(QString dataFolderName);
     void clearTempFiles();
-    const QString readFile(QString path);
     const QString pathMaker(QString path, PathType type);
-    void writeFile(QString text, QString path);
-    void readWriteSampleFiles(QString path, fs::path subfolder);
-    bool createUdThemesAndFonts();
-    void tempSave(QString text, QString path);
-    const QString tempOpen(QString path, QString tempPath);
     void swap(QString path);
     const QString createStyleSheetFromTheme(QString styleSheet, QString themeSheet);
     template<typename T> void saveConfig(QString group, QString valueName, T value);
@@ -161,13 +136,11 @@ private:
     void startColorBar(ColorScheme scheme);
     void setColorBarStyle(ColorScheme scheme);
     void clearAll(ClearType type);
-    bool checkChildStatus(QString possibleParent, QString possibleChild);
     bool alert(ColorScheme scheme, QString message, QString optButton = "", void (Fernanda::* optButtonAction)() = nullptr, QString optReplaceMainButton = "", QString optReplaceTitle = "");
 
 private slots:
     
     void chooseProjectDataOnOpen();
-    void startUpColorBar();
     void textEditorTextChanged(); // Move to TextEditor?
     void fileMenuOpenProject();
     void fileMenuNewProject();
@@ -184,28 +157,12 @@ private slots:
     void setWindowStyle();
     void setEditorStyle();
     void setEditorFont();
-    void setEditorFontSize(int value);
-    void splitterResize();
     void aotToggled(bool checked);
-    void startAutoSaveTimer();
     void autoSave();
-    void toggleAOT(bool checked);
-    void togglePane(bool checked);
-    void toggleScrollPrevAndNext(bool checked);
-    void toggleStatusbar(bool checked);
-    void toggleLineHighlight(bool checked);
-    void toggleKeyFilters(bool checked);
-    void toggleLineNumberArea(bool checked);
     void updatePositions();
-    void updateCounters();
-    void toggleLinePos(bool checked);
-    void toggleColPos(bool checked);
-    void toggleLineCount(bool checked);
-    void toggleWordCount(bool checked);
-    void toggleCharCount(bool checked);
+    void updateCounters(); 
     void setTabStop();
     void setWrapMode();
-    void colorBarTimerOver();
     void zoomFontSlider(bool zoomDirection);
 
 signals:

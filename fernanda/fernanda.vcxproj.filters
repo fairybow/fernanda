@@ -61,6 +61,12 @@
     <ClCompile Include="pane_delegate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="rc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="io.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
@@ -124,6 +130,12 @@
     <ClInclude Include="include\version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\rc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\io.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="rc\fernanda.rc">
@@ -145,6 +157,6 @@
     <Text Include="rc\themes\palette.txt">
       <Filter>Resource Files\themes</Filter>
     </Text>
-    <Text Include="CMakeLists.txt" />
+    <Text Include="..\CMakeLists.txt" />
   </ItemGroup>
 </Project>

@@ -13,9 +13,11 @@ qt_standard_project_setup()
 add_executable(fernanda
     fernanda.cpp
     fernanda.ui
+    io.cpp
     main.cpp
     pane.cpp
     pane_delegate.cpp
+    rc.cpp
     texteditor.cpp
     fernanda.rc
     fonts.qrc

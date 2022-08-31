@@ -4,7 +4,6 @@ TextEditor::TextEditor(QWidget* parent)
     : QPlainTextEdit(parent)
 {
     lineNumberArea = new LineNumberArea(this);
-
     nameObjects();
     layoutObjects();
     makeConnections();
@@ -56,12 +55,8 @@ int TextEditor::lineNumberAreaWidth()
 void TextEditor::rememberCursorPositions(QString path)
 {
     for (auto& entry : cursorPositions)
-    {
         if (path == get<0>(entry))
-        {
             cursorPositions.removeAll(entry);
-        }
-    }
     auto cursor_position = QTextCursor(textCursor()).position();
     auto anchor_position = QTextCursor(textCursor()).anchor();
     cursorPositions << tuple<QString, int, int>(path, cursor_position, anchor_position);
@@ -73,14 +68,12 @@ void TextEditor::restoreCursorPositions(QString path)
     auto cursor_position = 0;
     auto anchor_position = 0;
     for (auto& entry : cursorPositions)
-    {
         if (get<0>(entry) == path)
         {
             cursor_position = get<1>(entry);
             anchor_position = get<2>(entry);
             cursorPositions.removeAll(entry);
         }
-    }
     if (cursor_position == anchor_position)
     {
         cursor.setPosition(cursor_position);
@@ -176,24 +169,28 @@ void TextEditor::layoutObjects()
 
 void TextEditor::makeConnections()
 {
+    connect(scrollUp, &QPushButton::clicked, this, [&]()
+        {
+            verticalScrollBar()->triggerAction(QAbstractSlider::SliderSingleStepSub);
+        });
+    connect(scrollDown, &QPushButton::clicked, this, [&]()
+        {
+            verticalScrollBar()->triggerAction(QAbstractSlider::SliderSingleStepAdd);
+        });
     connect(this, &TextEditor::blockCountChanged, this, &TextEditor::updateLineNumberAreaWidth);
     connect(this, &TextEditor::updateRequest, this, &TextEditor::updateLineNumberArea);
     connect(this, &TextEditor::cursorPositionChanged, this, &TextEditor::highlightCurrentLine);
     connect(scrollPrevious, &QPushButton::clicked, this, &TextEditor::scrollPreviousClicked);
-    connect(scrollUp, &QPushButton::clicked, this, &TextEditor::scrollUpClicked);
-    connect(scrollDown, &QPushButton::clicked, this, &TextEditor::scrollDownClicked);
     connect(scrollNext, &QPushButton::clicked, this, &TextEditor::scrollNextClicked);
 }
 
 void TextEditor::paintEvent(QPaintEvent* event)
 {
     QPlainTextEdit::paintEvent(event);
-    if (hasFocus())
-    {
-        const QRect rect = cursorRect(textCursor());
-        QPainter painter(viewport());
-        painter.fillRect(rect, cursorColor());
-    }
+    if (!hasFocus()) return;
+    const QRect rect = cursorRect(textCursor());
+    QPainter painter(viewport());
+    painter.fillRect(rect, cursorColor());
 }
 
 const QColor TextEditor::cursorColor()
@@ -221,9 +218,7 @@ void TextEditor::keyPressEvent(QKeyEvent* event) // lord jesus how do i make thi
                 auto current_text = QPlainTextEdit::toPlainText();
                 QChar previous_char;
                 if (cursor_position_end <= current_text.size() && cursor_position_end != 0)
-                {
                     previous_char = current_text.at(static_cast<qsizetype>(cursor_position_end) - 1);
-                }
                 if (previous_char == ' ')
                 {
                     QPlainTextEdit::keyPressEvent(&backspace);
@@ -251,17 +246,11 @@ void TextEditor::keyPressEvent(QKeyEvent* event) // lord jesus how do i make thi
             auto current_text = QPlainTextEdit::toPlainText();
             QChar current_char;
             if (cursor_position < current_text.size())
-            {
                 current_char = current_text.at(cursor_position);
-            }
             if (current_char == '}')
-            {
                 QPlainTextEdit::keyPressEvent(&right);
-            }
             else
-            {
                 QPlainTextEdit::keyPressEvent(event);
-            }
         }
         else if (event->key() == Qt::Key_BracketLeft)
         {
@@ -275,17 +264,11 @@ void TextEditor::keyPressEvent(QKeyEvent* event) // lord jesus how do i make thi
             auto current_text = QPlainTextEdit::toPlainText();
             QChar current_char;
             if (cursor_position < current_text.size())
-            {
                 current_char = current_text.at(cursor_position);
-            }
             if (current_char == ']')
-            {
                 QPlainTextEdit::keyPressEvent(&right);
-            }
             else
-            {
                 QPlainTextEdit::keyPressEvent(event);
-            }
         }
         else if (event->key() == Qt::Key_Comma || event->key() == Qt::Key_Exclam || event->key() == Qt::Key_Question)
         {
@@ -293,15 +276,11 @@ void TextEditor::keyPressEvent(QKeyEvent* event) // lord jesus how do i make thi
             auto current_text = QPlainTextEdit::toPlainText();
             QChar previous_char;
             QChar char_before_last;
-            std::unordered_set<QChar> chars_close_space_after{ '}', ']', ')', '"' };
+            unordered_set<QChar> chars_close_space_after{ '}', ']', ')', '"' };
             if (cursor_position <= current_text.size() && cursor_position != 0)
-            {
                 previous_char = current_text.at(static_cast<qsizetype>(cursor_position) - 1);
-            }
             if (cursor_position <= current_text.size() && cursor_position != 0 && cursor_position != 1)
-            {
                 char_before_last = current_text.at(static_cast<qsizetype>(cursor_position) - 2);
-            }
             if (chars_close_space_after.count(char_before_last) > 0 && previous_char == ' ')
             {
                 QPlainTextEdit::keyPressEvent(&space);
@@ -321,9 +300,7 @@ void TextEditor::keyPressEvent(QKeyEvent* event) // lord jesus how do i make thi
             auto current_text = QPlainTextEdit::toPlainText();
             QChar previous_char;
             if (cursor_position <= current_text.size() && cursor_position != 0)
-            {
                 previous_char = current_text.at(static_cast<qsizetype>(cursor_position) - 1);
-            }
             if (previous_char == '-')
             {
                 QPlainTextEdit::keyPressEvent(&backspace);
@@ -346,17 +323,11 @@ void TextEditor::keyPressEvent(QKeyEvent* event) // lord jesus how do i make thi
             auto current_text = QPlainTextEdit::toPlainText();
             QChar current_char;
             if (cursor_position < current_text.size())
-            {
                 current_char = current_text.at(cursor_position);
-            }
             if (current_char == ')')
-            {
                 QPlainTextEdit::keyPressEvent(&right);
-            }
             else
-            {
                 QPlainTextEdit::keyPressEvent(event);
-            }
         }
         else if (event->key() == Qt::Key_Period)
         {
@@ -365,19 +336,13 @@ void TextEditor::keyPressEvent(QKeyEvent* event) // lord jesus how do i make thi
             QChar previous_char;
             QChar char_before_last;
             QChar char_before_before_last;
-            std::unordered_set<QChar> chars_close_space_after{ '}', ']', ')', '"' };
+            unordered_set<QChar> chars_close_space_after{ '}', ']', ')', '"' };
             if (cursor_position <= current_text.size() && cursor_position != 0)
-            {
                 previous_char = current_text.at(static_cast<qsizetype>(cursor_position) - 1);
-            }
             if (cursor_position <= current_text.size() && cursor_position != 0 && cursor_position != 1)
-            {
                 char_before_last = current_text.at(static_cast<qsizetype>(cursor_position) - 2);
-            }
             if (cursor_position <= current_text.size() && cursor_position != 0 && cursor_position != 1 && cursor_position != 2)
-            {
                 char_before_before_last = current_text.at(static_cast<qsizetype>(cursor_position) - 3);
-            }
             if (chars_close_space_after.count(char_before_last) > 0 && previous_char == ' ')
             {
                 QPlainTextEdit::keyPressEvent(&space);
@@ -420,9 +385,7 @@ void TextEditor::keyPressEvent(QKeyEvent* event) // lord jesus how do i make thi
             auto current_text = QPlainTextEdit::toPlainText();
             QChar current_char;
             if (cursor_position < current_text.size())
-            {
                 current_char = current_text.at(cursor_position);
-            }
             if (current_char == '"')
             {
                 QPlainTextEdit::keyPressEvent(&right);
@@ -441,16 +404,14 @@ void TextEditor::keyPressEvent(QKeyEvent* event) // lord jesus how do i make thi
             QChar current_char;
             QChar previous_char;
             QChar char_before_last;
-            std::unordered_set<QChar> chars_space_skip{ '}', ']', ',', '!', ')', '.', '?', '"' };
+            unordered_set<QChar> chars_space_skip{ '}', ']', ',', '!', ')', '.', '?', '"' };
             if (cursor_position < current_text.size() && cursor_position != 0)
             {
                 current_char = current_text.at(cursor_position);
                 previous_char = current_text.at(static_cast<qsizetype>(cursor_position) - 1);
             }
             if (cursor_position <= current_text.size() && cursor_position != 0 && cursor_position != 1)
-            {
                 char_before_last = current_text.at(static_cast<qsizetype>(cursor_position) - 2);
-            }
             if (chars_space_skip.count(current_char) > 0 && previous_char == ' ')
             {
                 QPlainTextEdit::keyPressEvent(&backspace);
@@ -486,13 +447,9 @@ void TextEditor::wheelEvent(QWheelEvent* event)
     if (event->modifiers() == Qt::ControlModifier)
     {
         if (event->angleDelta().y() > 0)
-        {
             askFontSliderZoom(true);
-        }
         else
-        {
             askFontSliderZoom(false);
-        }
     }
     else
     {
@@ -501,7 +458,7 @@ void TextEditor::wheelEvent(QWheelEvent* event)
     event->accept();
 }
 
-void TextEditor::updateLineNumberAreaWidth(int /* newBlockCount */)
+void TextEditor::updateLineNumberAreaWidth(int newBlockCount)
 {
     setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
 }
@@ -512,17 +469,9 @@ void TextEditor::highlightCurrentLine()
     if (!isReadOnly())
     {
         QTextEdit::ExtraSelection selection;
-
-        QColor lineColor;
+        QColor lineColor = QColor(0, 0, 0, 0);
         if (hasLineHighlight == true)
-        {
             lineColor = QColor(255, 255, 255, 30);
-        }
-        else
-        {
-            lineColor = QColor(0, 0, 0, 0);
-        }
-
         selection.format.setBackground(lineColor);
         selection.format.setProperty(QTextFormat::FullWidthSelection, true);
         selection.cursor = textCursor();
@@ -535,27 +484,11 @@ void TextEditor::highlightCurrentLine()
 void TextEditor::updateLineNumberArea(const QRect& rect, int dy)
 {
     if (dy)
-    {
         lineNumberArea->scroll(0, dy);
-    }
     else
-    {
         lineNumberArea->update(0, rect.y(), lineNumberArea->width(), rect.height());
-    }
     if (rect.contains(viewport()->rect()))
-    {
         updateLineNumberAreaWidth(0);
-    }
-}
-
-void TextEditor::scrollUpClicked()
-{
-    verticalScrollBar()->triggerAction(QAbstractSlider::SliderSingleStepSub);
-}
-
-void TextEditor::scrollDownClicked()
-{
-    verticalScrollBar()->triggerAction(QAbstractSlider::SliderSingleStepAdd);
 }
 
 void TextEditor::scrollPreviousClicked()

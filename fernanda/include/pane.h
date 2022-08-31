@@ -2,7 +2,7 @@
 
 #include "pane_delegate.h"
 
-#include "tuple"
+#include <tuple>
 
 #include <QFileInfo>
 #include <QShortcut>

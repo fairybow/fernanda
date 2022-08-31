@@ -17,9 +17,7 @@ void Pane::setup(QString path)
     setModel(dirModel);
     setRootIndex(dirModel->setRootPath(path));
     for (auto int_column = 1; int_column < dirModel->columnCount(); ++int_column)
-    {
         hideColumn(int_column);
-    }
     setHeaderHidden(true);
 }
 
@@ -63,9 +61,7 @@ void Pane::onClick(QModelIndex index)
         if (check_next_sel_path.isFile())
         {
             if (check_prev_file_path.isFile())
-            {
                 previousFileIsFile(prev_file_path);
-            }
 
             const auto file_path = dirModel->fileInfo(index).absoluteFilePath();
             const auto file_index = index;
@@ -73,9 +69,7 @@ void Pane::onClick(QModelIndex index)
 
             if (file_path != prev_file_path)
             {
-                // if file path does not equal prev file path
                 currentFile = tuple<QString, QModelIndex>(file_path, file_index);
-
                 pathDoesNotEqualPrevPath(file_path);
             }
             else if (file_path == prev_file_path)
@@ -102,13 +96,9 @@ void Pane::onClick(QModelIndex index)
 void Pane::collapseOrExpand(QModelIndex index)
 {
     if (isExpanded(index))
-    {
         collapse(index);
-    }
     else
-    {
         expand(index);
-    }
 }
 
 void Pane::navPrevious()
@@ -163,13 +153,9 @@ const QModelIndex Pane::navPreviousWrapAround()
     {
         auto index_below = indexBelow(currentIndex());
         if (index_below.isValid())
-        {
             setCurrentIndex(index_below);
-        }
         else
-        {
             valid = false;
-        }
     }
     return currentIndex();
 }
@@ -182,13 +168,9 @@ const QModelIndex Pane::navNextWrapAround()
     {
         auto index_above = indexAbove(currentIndex());
         if (index_above.isValid())
-        {
             setCurrentIndex(index_above);
-        }
         else
-        {
             valid = false;
-        }
     }
     return currentIndex();
 }
@@ -196,9 +178,7 @@ const QModelIndex Pane::navNextWrapAround()
 void Pane::navExpand()
 {
     if (!isExpanded(currentIndex()))
-    {
         expand(currentIndex());
-    }
 }
 
 // pane.cpp, fernanda
