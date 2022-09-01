@@ -8,8 +8,8 @@
 #include <QShortcut>
 #include <QString>
 #include <QTreeView>
-
-using namespace std;
+//
+//#include <QAbstractItemView>
 
 class Pane : public QTreeView
 {
@@ -21,8 +21,8 @@ public:
 
     PaneDelegate* paneDelegate = new PaneDelegate(this);
 
-    tuple<QModelIndex, QString> selectedIndex;
-    tuple<QString, QModelIndex> currentFile;
+    std::tuple<QModelIndex, QString> selectedIndex;
+    std::tuple<QString, QModelIndex> currentFile;
 
     void setup(QString path);
     void refresh();

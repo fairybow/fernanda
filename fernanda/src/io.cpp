@@ -26,8 +26,8 @@ void writeFile(QString text, QString path)
 
 void tempSave(QString text, QString path)
 {
-    filesystem::path temp_path = path.toStdString();
-    filesystem::create_directories(temp_path.parent_path());
+    std::filesystem::path temp_path = path.toStdString();
+    std::filesystem::create_directories(temp_path.parent_path());
     writeFile(text, path);
 }
 
@@ -42,9 +42,9 @@ const QString tempOpen(QString path, QString tempPath)
 
 bool checkChildStatus(QString possibleParent, QString possibleChild)
 {
-    filesystem::path parent = possibleParent.toStdString();
-    filesystem::path child = possibleChild.toStdString();
-    filesystem::path child_parent = child.parent_path();
+    std::filesystem::path parent = possibleParent.toStdString();
+    std::filesystem::path child = possibleChild.toStdString();
+    std::filesystem::path child_parent = child.parent_path();
     if (child_parent.make_preferred() == parent.make_preferred())
         return true;
     return false;

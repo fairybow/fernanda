@@ -8,6 +8,9 @@ Pane::Pane(QWidget* parent)
     dirModel->setReadOnly(true);
     hotKeys();
     connect(this, &Pane::clicked, this, &Pane::onClick);
+    //
+    //setDragEnabled(true);
+    //setDragDropMode(QAbstractItemView::InternalMove);
 }
 
 void Pane::setup(QString path)
@@ -38,16 +41,16 @@ void Pane::refresh()
 
 void Pane::clearTuples()
 {
-    selectedIndex = tuple<QModelIndex, QString>(QModelIndex(), ""); // idk about this one boys
-    currentFile = tuple<QString, QModelIndex>("", QModelIndex());
+    selectedIndex = std::tuple<QModelIndex, QString>(QModelIndex(), ""); // idk about this one boys
+    currentFile = std::tuple<QString, QModelIndex>("", QModelIndex());
 }
 
 void Pane::onClick(QModelIndex index)
 {
-    const auto& prev_selection = get<0>(selectedIndex);
-    const auto& prev_selection_path = get<1>(selectedIndex);
-    const auto& prev_file_path = get<0>(currentFile);
-    const auto& prev_file_index = get<1>(currentFile);
+    const auto& prev_selection = std::get<0>(selectedIndex);
+    const auto& prev_selection_path = std::get<1>(selectedIndex);
+    const auto& prev_file_path = std::get<0>(currentFile);
+    const auto& prev_file_index = std::get<1>(currentFile);
     const QFileInfo check_prev_file_path(prev_file_path);
 
     const auto next_selection = index;
@@ -56,7 +59,7 @@ void Pane::onClick(QModelIndex index)
 
     if (prev_selection != next_selection)
     {
-        selectedIndex = tuple<QModelIndex, QString>(next_selection, next_selection_path);
+        selectedIndex = std::tuple<QModelIndex, QString>(next_selection, next_selection_path);
 
         if (check_next_sel_path.isFile())
         {
@@ -69,7 +72,7 @@ void Pane::onClick(QModelIndex index)
 
             if (file_path != prev_file_path)
             {
-                currentFile = tuple<QString, QModelIndex>(file_path, file_index);
+                currentFile = std::tuple<QString, QModelIndex>(file_path, file_index);
                 pathDoesNotEqualPrevPath(file_path);
             }
             else if (file_path == prev_file_path)
@@ -149,7 +152,7 @@ const QModelIndex Pane::navPreviousWrapAround()
 {
     setCurrentIndex(model()->index(0, 0));
     auto valid = true;
-    while (valid == true)
+    while (valid)
     {
         auto index_below = indexBelow(currentIndex());
         if (index_below.isValid())
@@ -164,7 +167,7 @@ const QModelIndex Pane::navNextWrapAround()
 {
     setCurrentIndex(navPreviousWrapAround());
     auto valid = true;
-    while (valid == true)
+    while (valid)
     {
         auto index_above = indexAbove(currentIndex());
         if (index_above.isValid())

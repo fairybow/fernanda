@@ -20,8 +20,6 @@
 #include <QTextEdit>
 #include <QWheelEvent>
 
-using namespace std;
-
 class TextEditor : public QPlainTextEdit
 {
     Q_OBJECT
@@ -30,7 +28,8 @@ public:
     TextEditor(QWidget* parent = nullptr);
     ~TextEditor() = default;
 
-    QList<tuple<QString, int, int>> cursorPositions;
+    QString cursorColorHex;
+    QList<std::tuple<QString, int, int>> cursorPositions;
     bool hasKeyFilters = true;
 
     QPushButton* scrollPrevious = new QPushButton(this);
@@ -41,20 +40,16 @@ public:
     void rememberCursorPositions(QString path);
     void restoreCursorPositions(QString path);
     void lineNumberAreaFont(int size, QString fontName);
-    void setCursorColor(QString hex);
 
 public slots:
-    void toggleLineHight(bool checked);
+    void toggleLineHighlight(bool checked);
     void toggleLineNumberArea(bool checked);
-    void setTabStop(int pixels);
-    void setWrapMode(QTextOption::WrapMode mode);
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
 
 private:
     QWidget* lineNumberArea;
-    QString cursorColorHex;
     bool hasLineHighlight = true;
 
     QPushButton* scrollUp = new QPushButton(this);

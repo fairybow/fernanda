@@ -11,7 +11,7 @@ Fernanda::Fernanda(QWidget* parent)
     loadMiscConfigsOnOpen();
     makeMenuBar();
     auto has_full_projects_data = loadProjectDataOnOpen();
-    if (has_full_projects_data == false)
+    if (!has_full_projects_data)
         QTimer::singleShot(1250, this, &Fernanda::chooseProjectDataOnOpen);
     
     // Bug: After start-up, the first folder clicked in Pane is slow to load. After that, it's fine?
@@ -20,8 +20,7 @@ Fernanda::Fernanda(QWidget* parent)
 void Fernanda::showEvent(QShowEvent* event)
 {
     QMainWindow::showEvent(event);
-    if (wasInitialized == true || event->spontaneous())
-        return;
+    if (wasInitialized || event->spontaneous()) return;
     textEditorTextChanged();
     QTimer::singleShot(1000, this, [&](){ startColorBar(ColorScheme::StartUp); });
     wasInitialized = true;
@@ -91,6 +90,11 @@ void Fernanda::layoutObjects()
 void Fernanda::makeConnections()
 {
     connect(pane, &Pane::pathDoesNotEqualPrevPath, this, [&]() { autoSaveTimer->start(30000); });
+    connect(autoSaveTimer, &QTimer::timeout, this, [&]()
+        {
+            auto& path = std::get<0>(pane->currentFile);
+            ifPreviousFileIsFile(path);
+        });
     connect(splitter, &QSplitter::splitterMoved, this, [&]()
         {
             saveConfig<QByteArray>("window", "splitter", splitter->saveState());
@@ -101,16 +105,19 @@ void Fernanda::makeConnections()
             colorBar->hide();
             colorBar->reset();
         });
+    connect(textEditor, &TextEditor::askFontSliderZoom, this, [&](bool zoomDirection)
+        {
+            if (zoomDirection)
+                fontSlider->setValue(fontSlider->value() + 2);
+            else
+                fontSlider->setValue(fontSlider->value() - 2);
+        });
     connect(pane, &Pane::previousFileIsFile, this, &Fernanda::ifPreviousFileIsFile);
     connect(pane, &Pane::pathDoesNotEqualPrevPath, this, &Fernanda::ifPathDoesNotEqualPrevPath);
     connect(textEditor, &TextEditor::askNavPrevious, pane, &Pane::navPrevious);
     connect(textEditor, &TextEditor::askNavNext, pane, &Pane::navNext);
-    connect(textEditor, &TextEditor::askFontSliderZoom, this, &Fernanda::zoomFontSlider);
-    connect(this, &Fernanda::sendLineHighlightToggle, textEditor, &TextEditor::toggleLineHight);
+    connect(this, &Fernanda::sendLineHighlightToggle, textEditor, &TextEditor::toggleLineHighlight);
     connect(this, &Fernanda::sendLineNumberAreaToggle, textEditor, &TextEditor::toggleLineNumberArea);
-    connect(this, &Fernanda::sendTabStop, textEditor, &TextEditor::setTabStop);
-    connect(this, &Fernanda::sendWrapMode, textEditor, &TextEditor::setWrapMode);
-    connect(autoSaveTimer, &QTimer::timeout, this, &Fernanda::autoSave);
     connect(pane, &Pane::changePathDisplay, this, &Fernanda::displayPath);
     connect(textEditor, &TextEditor::textChanged, this, &Fernanda::textEditorTextChanged);
     connect(textEditor, &TextEditor::cursorPositionChanged, this, &Fernanda::updatePositions);
@@ -153,15 +160,15 @@ void Fernanda::closeEvent(QCloseEvent* event)
 
 void Fernanda::displayPath()
 {
-    auto& full_index_path = get<1>(pane->selectedIndex);
-    filesystem::path index_path = full_index_path.toStdString();
+    auto& full_index_path = std::get<1>(pane->selectedIndex);
+    std::filesystem::path index_path = full_index_path.toStdString();
     auto index_root = index_path.root_name();
     auto index_drive_letter = QString::fromStdString(index_root.string()) + "\\>";
     auto index_name = index_path.filename();
     auto _index_name = QString::fromStdString(index_name.string());
 
-    auto& full_file_path = get<0>(pane->currentFile);
-    filesystem::path file_path = full_file_path.toStdString();
+    auto& full_file_path = std::get<0>(pane->currentFile);
+    std::filesystem::path file_path = full_file_path.toStdString();
     auto file_root = file_path.root_name();
     auto file_drive_letter = QString::fromStdString(file_root.string()) + "\\>";
     auto file_name = file_path.filename();
@@ -183,13 +190,9 @@ void Fernanda::displayPath()
     }
 
     if (index_path == file_path)
-    {
         pathDisplay->setText(file_drive_letter + italics_1 + _file_name + italics_2);
-    }
     else
-    {
         pathDisplay->setText(index_drive_letter + _index_name + par_1 + italics_1 + _file_name + italics_2 + par_2);
-    }
 }
 
 void Fernanda::makeMenuBar()
@@ -249,13 +252,13 @@ void Fernanda::makeFileMenu()
 
 void Fernanda::makeViewMenu()
 {
-    QList<tuple<QString, QString>> win_theme_list = iterateResources(":/themes/window/", "*.fernanda_wintheme", userData, ResourceType::WindowTheme);
+    QList<std::tuple<QString, QString>> win_theme_list = iterateResources(":/themes/window/", "*.fernanda_wintheme", userData, ResourceType::WindowTheme);
     windowThemes = createMenuToggles(win_theme_list, &Fernanda::setWindowStyle);
 
-    QList<tuple<QString, QString>> editor_theme_list = iterateResources(":/themes/editor/", "*.fernanda_theme", userData, ResourceType::EditorTheme);
+    QList<std::tuple<QString, QString>> editor_theme_list = iterateResources(":/themes/editor/", "*.fernanda_theme", userData, ResourceType::EditorTheme);
     editorThemes = createMenuToggles(editor_theme_list, &Fernanda::setEditorStyle);
 
-    QList<tuple<QString, QString>> font_list = iterateResources(":/fonts/", "*.ttf", userData, ResourceType::Font);
+    QList<std::tuple<QString, QString>> font_list = iterateResources(":/fonts/", "*.ttf", userData, ResourceType::Font);
     editorFonts = createMenuToggles(font_list, &Fernanda::setEditorFont);
 
     auto* font_size_label = new QAction(tr("&Set editor font size:"), this);
@@ -267,19 +270,19 @@ void Fernanda::makeViewMenu()
     fontSlider->setMinimum(8);
     fontSlider->setMaximum(64);
 
-    QList<tuple<QString, QString>> tab_list = {
-        tuple<QString, QString>("20", "20 px"),
-        tuple<QString, QString>("40", "40 px"),
-        tuple<QString, QString>("60", "60 px"),
-        tuple<QString, QString>("80", "80 px"),
+    QList<std::tuple<QString, QString>> tab_list = {
+        std::tuple<QString, QString>("20", "20 px"),
+        std::tuple<QString, QString>("40", "40 px"),
+        std::tuple<QString, QString>("60", "60 px"),
+        std::tuple<QString, QString>("80", "80 px"),
     };
     tabStops = createMenuToggles(tab_list, &Fernanda::setTabStop);
 
-    QList<tuple<QString, QString>> wrap_list = {
-        tuple<QString, QString>("NoWrap", "No wrap"),
-        tuple<QString, QString>("WordWrap", "Wrap at word boundaries"),
-        tuple<QString, QString>("WrapAnywhere", "Wrap anywhere"),
-        tuple<QString, QString>("WrapAt", "Wrap at word boundaries or anywhere")
+    QList<std::tuple<QString, QString>> wrap_list = {
+        std::tuple<QString, QString>("NoWrap", "No wrap"),
+        std::tuple<QString, QString>("WordWrap", "Wrap at word boundaries"),
+        std::tuple<QString, QString>("WrapAnywhere", "Wrap anywhere"),
+        std::tuple<QString, QString>("WrapAt", "Wrap at word boundaries or anywhere")
     };
     wrapModes = createMenuToggles(wrap_list, &Fernanda::setWrapMode);
 
@@ -475,13 +478,13 @@ void Fernanda::makeHelpMenu()
     help->addAction(about);
 }
 
-QActionGroup* Fernanda::createMenuToggles(QList<tuple<QString, QString>>& itemAndLabel, void (Fernanda::* slot)())
+QActionGroup* Fernanda::createMenuToggles(QList<std::tuple<QString, QString>>& itemAndLabel, void (Fernanda::* slot)())
 {
     auto* group = new QActionGroup(this);
     for (auto& item : itemAndLabel)
     {
-        auto& data = get<0>(item);
-        auto label = get<1>(item).toUtf8();
+        auto& data = std::get<0>(item);
+        auto label = std::get<1>(item).toUtf8();
         auto* action = new QAction(tr(label), this);
         action->setStatusTip(tr(label));
         action->setData(data);
@@ -495,27 +498,27 @@ QActionGroup* Fernanda::createMenuToggles(QList<tuple<QString, QString>>& itemAn
 
 void Fernanda::createUserData(QString dataFolderName)
 {
-    userData = filesystem::path(QDir::homePath().toStdString()) / dataFolderName.toStdString();
+    userData = std::filesystem::path(QDir::homePath().toStdString()) / dataFolderName.toStdString();
     auto config_path = userData / configName.toStdString();
     config = QString::fromStdString(config_path.string());
-    activeTemp = userData / string(".active_temp");
-    backup = userData / string("backup");
-    rollback = backup / string(".rollback");
-    QList<filesystem::path> data_folders = { userData, activeTemp, backup, rollback };
+    activeTemp = userData / std::string(".active_temp");
+    backup = userData / std::string("backup");
+    rollback = backup / std::string(".rollback");
+    QList<std::filesystem::path> data_folders = { userData, activeTemp, backup, rollback };
     for (auto& folder : data_folders)
         if (!QDir(folder).exists())
-            filesystem::create_directory(folder);
+            std::filesystem::create_directory(folder);
 }
 
 void Fernanda::clearTempFiles()
 {
-    for (auto& item : filesystem::directory_iterator(activeTemp))
-        filesystem::remove_all(item);
+    for (auto& item : std::filesystem::directory_iterator(activeTemp))
+        std::filesystem::remove_all(item);
 }
 
 const QString Fernanda::pathMaker(QString path, PathType type)
 {
-    filesystem::path data_folder;
+    std::filesystem::path data_folder;
     QString prefix;
     QString ext;
 
@@ -538,9 +541,9 @@ const QString Fernanda::pathMaker(QString path, PathType type)
         ext = ".fernanda_temp";
     }
 
-    auto proj_relative = filesystem::relative(path.toStdString(), defaultProjectsFolder.toStdString());
-    filesystem::path proj_relative_parent = prefix.toStdString() + proj_relative.parent_path().string();
-    filesystem::path file_name = prefix.toStdString() + proj_relative.filename().replace_extension(ext.toStdString()).string();
+    auto proj_relative = std::filesystem::relative(path.toStdString(), defaultProjectsFolder.toStdString());
+    std::filesystem::path proj_relative_parent = prefix.toStdString() + proj_relative.parent_path().string();
+    std::filesystem::path file_name = prefix.toStdString() + proj_relative.filename().replace_extension(ext.toStdString()).string();
     auto derived_path = data_folder / proj_relative_parent / file_name;
     derived_path.make_preferred();
 
@@ -549,36 +552,14 @@ const QString Fernanda::pathMaker(QString path, PathType type)
 
 void Fernanda::swap(QString path)
 {
-    filesystem::path rollback_path = pathMaker(path, PathType::Rollback).toStdString();
-    filesystem::path temp_path = pathMaker(path, PathType::Temp).toStdString();
+    std::filesystem::path rollback_path = pathMaker(path, PathType::Rollback).toStdString();
+    std::filesystem::path temp_path = pathMaker(path, PathType::Temp).toStdString();
     if (QFileInfo(rollback_path).exists())
-    {
-        filesystem::remove(rollback_path);
-    }
+        std::filesystem::remove(rollback_path);
     else
-    {
-        filesystem::create_directories(rollback_path.parent_path());
-    }
-    filesystem::rename(path.toStdString(), rollback_path);
-    filesystem::rename(temp_path, path.toStdString());
-}
-
-const QString Fernanda::createStyleSheetFromTheme(QString styleSheet, QString themeSheet) // move to rc.cpp?
-{
-    auto style_sheet = readFile(styleSheet);
-    auto theme_sheet = readFile(themeSheet);
-    QRegularExpressionMatchIterator matches = QRegularExpression("(@.*\\n?)").globalMatch(theme_sheet);
-    while (matches.hasNext())
-    {
-        QRegularExpressionMatch match = matches.next();
-        if (match.hasMatch())
-        {
-            QString variable = match.captured(0).replace(QRegularExpression("(\\s=.*;)"), "");
-            QString value = match.captured(0).replace(QRegularExpression("(@.*=\\s)"), "");
-            style_sheet.replace(QRegularExpression(variable), value);
-        }
-    }
-    return style_sheet;
+        std::filesystem::create_directories(rollback_path.parent_path());
+    std::filesystem::rename(path.toStdString(), rollback_path);
+    std::filesystem::rename(temp_path, path.toStdString());
 }
 
 template<typename T> void Fernanda::saveConfig(QString group, QString valueName, T value)
@@ -597,7 +578,7 @@ const QVariant Fernanda::loadConfig(QString group, QString valueName, bool preve
     if (!ini.childKeys().contains(valueName)) return -1;
     auto val = ini.value(valueName);
     if (val.isNull()) return -1;
-    if (preventRandomStrAsTrue == true && val != "true" && val != "false") return -1;
+    if (preventRandomStrAsTrue && val != "true" && val != "false") return -1;
 
     return val;
 }
@@ -628,50 +609,34 @@ void Fernanda::loadMiscConfigsOnOpen()
 {
     auto window_position = loadConfig("window", "position");
     if (window_position == -1 || !window_position.canConvert<QRect>())
-    {
         setGeometry(0, 0, 1000, 666);
-    }
     else
-    {
         setGeometry(window_position.toRect());
-    }
 
     auto window_max = loadConfig("window", "max", true);
     if (window_max != -1)
-        if (window_max.toBool() == true)
+        if (window_max.toBool())
             setWindowState(Qt::WindowState::WindowMaximized);
 
     // I do not understand what is happening with testing QByteArray entry in .ini file with empty string or garbage string. It seems to somehow still remember the needed splitter position even when the ini value is blank or random characters...
     auto splitter_position = loadConfig("window", "splitter");
     if (splitter_position == -1 || !window_position.canConvert<QByteArray>())
-    {
         splitter->setSizes(QList<int>{ 166, 834 });
-    }
     else
-    {
         splitter->restoreState(splitter_position.toByteArray());
-    }
 
     auto font_slider_position = loadConfig("editor", "font_size");
     if (font_slider_position.toInt() < 8 || font_slider_position.toInt() > 64)
-    {
         fontSlider->setValue(14);
-    }
     else
-    {
         fontSlider->setValue(font_slider_position.toInt());
-    }
 
     // AOT status cannot be loaded before or close to MainWindow geometry, otherwise geometry will not load correctly.
     auto aot_check = loadConfig("window", "aot", true);
     if (aot_check == -1)
-    {
         aot->setChecked(false);
-    }
     else
-    {
         aot->setChecked(aot_check.toBool());
-    }
 }
 
 bool Fernanda::loadProjectDataOnOpen()
@@ -686,10 +651,7 @@ bool Fernanda::loadProjectDataOnOpen()
         if (current_project != -1 && QDir(current_project_path).exists())
         {
             auto is_child = checkChildStatus(default_projects_path, current_project_path);
-            if (is_child == false)
-            {
-                return false;
-            }
+            if (!is_child) return false;
             defaultProjectsFolder = default_projects_path;
             currentProject = current_project_path;
             pane->setup(currentProject);
@@ -802,7 +764,7 @@ bool Fernanda::alert(ColorScheme scheme, QString message, QString optButton, voi
         alert.exec();
         if (alert.clickedButton() == option)
         {
-            invoke(optButtonAction, *this);
+            std::invoke(optButtonAction, *this);
             // (this->*optButtonAction)(); // lol
             startColorBar(scheme);
             return true;
@@ -819,7 +781,7 @@ void Fernanda::chooseProjectDataOnOpen()
     if (!defaultProjectsFolder.isEmpty())
     {
         auto alert_option_taken = alert(ColorScheme::Green, "Open an existing project, or create a new one", "Create a new project (WIP)", &Fernanda::fileMenuNewProject, "Open an existing project");
-        if (alert_option_taken == false)
+        if (!alert_option_taken)
             fileMenuOpenProject();
     }
     else
@@ -831,8 +793,8 @@ void Fernanda::chooseProjectDataOnOpen()
 void Fernanda::textEditorTextChanged() // Move to TextEditor?
 {
     // Bug: if you load a blank file first (or startup blank) while lineNumberArea is on, then then initially the editor's viewport will not account for the lineNumberArea width, and they'll overlap, until something else is loaded or lineNumberArea is toggled off/on, in which case the width will be accounted for, even for only one line.
-    auto& current_file_index = get<1>(pane->currentFile);
-    auto& current_file = get<0>(pane->currentFile);
+    auto& current_file_index = std::get<1>(pane->currentFile);
+    auto& current_file = std::get<0>(pane->currentFile);
     if (current_file.isEmpty())
     {
         overlay->show();
@@ -877,13 +839,10 @@ void Fernanda::fileMenuOpenProject()
             return;
         }
         auto is_child = checkChildStatus(defaultProjectsFolder, project);
-        if (is_child == false)
+        if (!is_child)
         {
             auto opt_taken = alert(ColorScheme::Red, "A project must be a subfolder of your Default Projects directory!", "Choose a new Default Projects directory...", &Fernanda::helpMenuSetProjectsDir);
-            if (opt_taken == true)
-            {
-                return;
-            }
+            if (opt_taken) return;
             fileMenuOpenProject();
             return;
         }
@@ -948,7 +907,7 @@ void Fernanda::fileMenuNewSubfolder()
 
 void Fernanda::fileMenuSave()
 {
-    auto& current_file = get<0>(pane->currentFile);
+    auto& current_file = std::get<0>(pane->currentFile);
     if (!current_file.isEmpty())
     {
         auto text = textEditor->toPlainText();
@@ -982,9 +941,9 @@ void Fernanda::helpMenuSetProjectsDir()
     alert(ColorScheme::None, "In order to use Fernanda, you need to set a default directory for your projects.");
 
     auto documents = QStandardPaths::locate(QStandardPaths::DocumentsLocation, "", QStandardPaths::LocateDirectory);
-    filesystem::path tmp_docs = documents.toStdString();
+    std::filesystem::path tmp_docs = documents.toStdString();
     auto fernanda_docs = tmp_docs / "Fernanda";
-    filesystem::create_directories(fernanda_docs);
+    std::filesystem::create_directories(fernanda_docs);
     auto path = QString::fromStdString(fernanda_docs.string());
     auto default_projects = QFileDialog::getExistingDirectory(this, "Set a Default Projects directory", path);
 
@@ -1019,7 +978,7 @@ void Fernanda::helpMenuMakeSample()
 void Fernanda::helpMenuMakeSampleUdRc()
 {
     auto could_create = createSampleThemesAndFonts(userData);
-    if (could_create == false)
+    if (!could_create)
     {
         alert(ColorScheme::Red, "One or more sample custom themes and/or fonts still exist in your data folder.");
         return;
@@ -1062,7 +1021,10 @@ void Fernanda::setWindowStyle()
     if (auto selection = windowThemes->checkedAction(); selection != nullptr)
     {
         auto theme_path = selection->data().toString();
-        auto style_sheet = createStyleSheetFromTheme(":/themes/window.qss", theme_path);
+        auto style_sheet = createStyleSheetFromTheme(
+            readFile(":/themes/window.qss"),
+            readFile(theme_path)
+        );
         setStyleSheet(style_sheet);
         saveConfig<QString>("window", "wintheme", theme_path);
     }
@@ -1073,7 +1035,10 @@ void Fernanda::setEditorStyle()
     if (auto selection = editorThemes->checkedAction(); selection != nullptr)
     {
         auto theme_path = selection->data().toString();
-        auto style_sheet = createStyleSheetFromTheme(":/themes/editor.qss", theme_path);
+        auto style_sheet = createStyleSheetFromTheme(
+            readFile(":/themes/editor.qss"),
+            readFile(theme_path)
+        );
         overlay->setStyleSheet(style_sheet);
         textEditor->setStyleSheet(style_sheet);
         underlay->setStyleSheet(style_sheet);
@@ -1082,7 +1047,7 @@ void Fernanda::setEditorStyle()
         QRegularExpressionMatch match_cursor = QRegularExpression("(@cursorColor; = )(.*)(;$)").match(theme_cursor);
         QString cursor_color = match_cursor.captured(2);
 
-        textEditor->setCursorColor(cursor_color);
+        textEditor->cursorColorHex = cursor_color;
         saveConfig<QString>("editor", "theme", theme_path);
     }
 }
@@ -1119,20 +1084,14 @@ void Fernanda::aotToggled(bool checked)
     saveConfig("window", "aot", checked);
 }
 
-void Fernanda::autoSave()
-{
-    auto& path = get<0>(pane->currentFile);
-    ifPreviousFileIsFile(path);
-}
-
 void Fernanda::updatePositions()
 {
     const auto line_pos = textEditor->textCursor().blockNumber();
     const auto col_pos = textEditor->textCursor().positionInBlock();
     QStringList elements;
-    if (linePos == true)
+    if (linePos)
         elements << "ln " + QString::number(line_pos + 1);
-    if (colPos == true)
+    if (colPos)
         elements << "col " + QString::number(col_pos + 1);
     auto pos_display = elements.join(", ");
     positions->setText(pos_display);
@@ -1145,12 +1104,12 @@ void Fernanda::updateCounters()
     const auto word_count = text.split(QRegularExpression("(\\s|\\n|\\r)+")).count();
     const auto char_count = text.count();
     QStringList elements;
-    if (lineCount == true)
+    if (lineCount)
         elements << QString::number(line_count) + " lines";
-    if (wordCount == true)
+    if (wordCount)
         elements << QString::number(word_count - 1) + " words"; // - 1, whyyyyy
     // The above always displays at least 1, even when editor is blank?
-    if (charCount == true)
+    if (charCount)
         elements << QString::number(char_count) + " chars";
     auto counter_display = elements.join(", ");
     counters->setText(counter_display);
@@ -1161,7 +1120,7 @@ void Fernanda::setTabStop()
     if (auto selection = tabStops->checkedAction(); selection != nullptr)
     {
         auto distance = selection->data().toInt();
-        sendTabStop(distance);
+        textEditor->setTabStopDistance(distance);
         saveConfig<QVariant>("editor", "tab", distance);
     }
 }
@@ -1172,26 +1131,14 @@ void Fernanda::setWrapMode()
     {
         auto mode = selection->data().toString();
         if (mode == "NoWrap")
-            sendWrapMode(QTextOption::NoWrap);
+            textEditor->setWordWrapMode(QTextOption::NoWrap);
         else if (mode == "WordWrap")
-            sendWrapMode(QTextOption::WordWrap);
+            textEditor->setWordWrapMode(QTextOption::WordWrap);
         else if (mode == "WrapAnywhere")
-            sendWrapMode(QTextOption::WrapAnywhere);
+            textEditor->setWordWrapMode(QTextOption::WrapAnywhere);
         else if (mode == "WrapAt")
-            sendWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+            textEditor->setWordWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
         saveConfig<QVariant>("editor", "wrap", mode);
-    }
-}
-
-void Fernanda::zoomFontSlider(bool zoomDirection)
-{
-    if (zoomDirection == true)
-    {
-        fontSlider->setValue(fontSlider->value() + 2);
-    }
-    else
-    {
-        fontSlider->setValue(fontSlider->value() - 2);
     }
 }
 

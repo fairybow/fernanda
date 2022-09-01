@@ -55,11 +55,11 @@ int TextEditor::lineNumberAreaWidth()
 void TextEditor::rememberCursorPositions(QString path)
 {
     for (auto& entry : cursorPositions)
-        if (path == get<0>(entry))
+        if (path == std::get<0>(entry))
             cursorPositions.removeAll(entry);
     auto cursor_position = QTextCursor(textCursor()).position();
     auto anchor_position = QTextCursor(textCursor()).anchor();
-    cursorPositions << tuple<QString, int, int>(path, cursor_position, anchor_position);
+    cursorPositions << std::tuple<QString, int, int>(path, cursor_position, anchor_position);
 }
 
 void TextEditor::restoreCursorPositions(QString path)
@@ -68,10 +68,10 @@ void TextEditor::restoreCursorPositions(QString path)
     auto cursor_position = 0;
     auto anchor_position = 0;
     for (auto& entry : cursorPositions)
-        if (get<0>(entry) == path)
+        if (std::get<0>(entry) == path)
         {
-            cursor_position = get<1>(entry);
-            anchor_position = get<2>(entry);
+            cursor_position = std::get<1>(entry);
+            anchor_position = std::get<2>(entry);
             cursorPositions.removeAll(entry);
         }
     if (cursor_position == anchor_position)
@@ -96,12 +96,7 @@ void TextEditor::lineNumberAreaFont(int size, QString fontName)
     lineNumberArea->setFont(font);
 }
 
-void TextEditor::setCursorColor(QString hex)
-{
-    cursorColorHex = hex;
-}
-
-void TextEditor::toggleLineHight(bool checked)
+void TextEditor::toggleLineHighlight(bool checked)
 {
     hasLineHighlight = checked;
     highlightCurrentLine();
@@ -111,16 +106,6 @@ void TextEditor::toggleLineNumberArea(bool checked)
 {
     lineNumberArea->setVisible(checked);
     updateLineNumberAreaWidth(0);
-}
-
-void TextEditor::setTabStop(int pixels)
-{
-    setTabStopDistance(pixels);
-}
-
-void TextEditor::setWrapMode(QTextOption::WrapMode mode)
-{
-    setWordWrapMode(mode);
 }
 
 void TextEditor::resizeEvent(QResizeEvent* e)
@@ -202,7 +187,7 @@ const QColor TextEditor::cursorColor()
 
 void TextEditor::keyPressEvent(QKeyEvent* event) // lord jesus how do i make this better?
 {
-    if (hasKeyFilters == true)
+    if (hasKeyFilters)
     {
         auto cursor = QPlainTextEdit::textCursor();
         cursor.beginEditBlock();
@@ -276,7 +261,7 @@ void TextEditor::keyPressEvent(QKeyEvent* event) // lord jesus how do i make thi
             auto current_text = QPlainTextEdit::toPlainText();
             QChar previous_char;
             QChar char_before_last;
-            unordered_set<QChar> chars_close_space_after{ '}', ']', ')', '"' };
+            std::unordered_set<QChar> chars_close_space_after{ '}', ']', ')', '"' };
             if (cursor_position <= current_text.size() && cursor_position != 0)
                 previous_char = current_text.at(static_cast<qsizetype>(cursor_position) - 1);
             if (cursor_position <= current_text.size() && cursor_position != 0 && cursor_position != 1)
@@ -336,7 +321,7 @@ void TextEditor::keyPressEvent(QKeyEvent* event) // lord jesus how do i make thi
             QChar previous_char;
             QChar char_before_last;
             QChar char_before_before_last;
-            unordered_set<QChar> chars_close_space_after{ '}', ']', ')', '"' };
+            std::unordered_set<QChar> chars_close_space_after{ '}', ']', ')', '"' };
             if (cursor_position <= current_text.size() && cursor_position != 0)
                 previous_char = current_text.at(static_cast<qsizetype>(cursor_position) - 1);
             if (cursor_position <= current_text.size() && cursor_position != 0 && cursor_position != 1)
@@ -404,7 +389,7 @@ void TextEditor::keyPressEvent(QKeyEvent* event) // lord jesus how do i make thi
             QChar current_char;
             QChar previous_char;
             QChar char_before_last;
-            unordered_set<QChar> chars_space_skip{ '}', ']', ',', '!', ')', '.', '?', '"' };
+            std::unordered_set<QChar> chars_space_skip{ '}', ']', ',', '!', ')', '.', '?', '"' };
             if (cursor_position < current_text.size() && cursor_position != 0)
             {
                 current_char = current_text.at(cursor_position);
@@ -445,16 +430,12 @@ void TextEditor::keyPressEvent(QKeyEvent* event) // lord jesus how do i make thi
 void TextEditor::wheelEvent(QWheelEvent* event)
 {
     if (event->modifiers() == Qt::ControlModifier)
-    {
         if (event->angleDelta().y() > 0)
             askFontSliderZoom(true);
         else
             askFontSliderZoom(false);
-    }
     else
-    {
         QPlainTextEdit::wheelEvent(event);
-    }
     event->accept();
 }
 
@@ -470,7 +451,7 @@ void TextEditor::highlightCurrentLine()
     {
         QTextEdit::ExtraSelection selection;
         QColor lineColor = QColor(0, 0, 0, 0);
-        if (hasLineHighlight == true)
+        if (hasLineHighlight)
             lineColor = QColor(255, 255, 255, 30);
         selection.format.setBackground(lineColor);
         selection.format.setProperty(QTextFormat::FullWidthSelection, true);

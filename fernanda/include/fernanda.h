@@ -20,9 +20,6 @@
 #include <QObject>
 #include <QProgressBar>
 #include <QMessageBox>
-#include <QRegularExpression>
-#include <QRegularExpressionMatch>
-#include <QRegularExpressionMatchIterator>
 #include <QResizeEvent>
 #include <QScrollBar>
 #include <QSettings>
@@ -57,11 +54,11 @@ private:
     
     QString defaultProjectsFolder;
     QString currentProject;
-    filesystem::path userData;
+    std::filesystem::path userData;
     QString config;
-    filesystem::path activeTemp;
-    filesystem::path rollback;
-    filesystem::path backup;
+    std::filesystem::path activeTemp;
+    std::filesystem::path rollback;
+    std::filesystem::path backup;
 
     bool wasInitialized = false;
     bool linePos = true;
@@ -117,12 +114,11 @@ private:
     void makeFileMenu();
     void makeViewMenu();
     void makeHelpMenu();
-    QActionGroup* createMenuToggles(QList<tuple<QString, QString>>& itemAndLabel, void (Fernanda::* slot)());
+    QActionGroup* createMenuToggles(QList<std::tuple<QString, QString>>& itemAndLabel, void (Fernanda::* slot)());
     void createUserData(QString dataFolderName);
     void clearTempFiles();
     const QString pathMaker(QString path, PathType type);
     void swap(QString path);
-    const QString createStyleSheetFromTheme(QString styleSheet, QString themeSheet);
     template<typename T> void saveConfig(QString group, QString valueName, T value);
     const QVariant loadConfig(QString group, QString valueName, bool preventRandomStrAsTrue = false);
     void loadResourceConfig(QList<QAction*> actions, QString group, QString valueName, QString fallback);
@@ -158,18 +154,14 @@ private slots:
     void setEditorStyle();
     void setEditorFont();
     void aotToggled(bool checked);
-    void autoSave();
     void updatePositions();
     void updateCounters(); 
     void setTabStop();
     void setWrapMode();
-    void zoomFontSlider(bool zoomDirection);
 
 signals:
     void sendLineHighlightToggle(bool checked);
     void sendLineNumberAreaToggle(bool checked);
-    void sendTabStop(int pixels);
-    void sendWrapMode(QTextOption::WrapMode mode);
 };
 
 // fernanda.h, fernanda

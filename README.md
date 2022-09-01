@@ -6,7 +6,7 @@ Fernanda is for drafting long-form fiction. (At least, that's the plan.)
 
 <p><kbd><img src="fernanda/docs/screens/gif_1.gif" alt="GIF of Fernanda (window light, editor amber) running on Windows 11. width="360px""/></kbd></p>
 
-**so**
+## **so**
 
 Fernanda is a personal project, a work-in-progress, and I am (clearly) not a programmer.
 

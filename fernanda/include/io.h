@@ -8,8 +8,6 @@
 #include <QString>
 #include <QTextStream>
 
-using namespace std;
-
 const QString readFile(QString path);
 void writeFile(QString text, QString path);
 void tempSave(QString text, QString path);

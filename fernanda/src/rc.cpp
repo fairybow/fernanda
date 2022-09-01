@@ -1,8 +1,8 @@
 #include "rc.h"
 
-const QList<tuple<QString, QString>> iterateResources(QString path, QString ext, filesystem::path dataPath, ResourceType type)
+const QList<std::tuple<QString, QString>> iterateResources(QString path, QString ext, std::filesystem::path dataPath, ResourceType type)
 {
-    QList<tuple<QString, QString>> dataAndLabels;
+    QList<std::tuple<QString, QString>> dataAndLabels;
     QDirIterator assets(path, QStringList() << ext, QDir::Files, QDirIterator::Subdirectories);
     if (QDir(dataPath).exists())
     {
@@ -10,14 +10,14 @@ const QList<tuple<QString, QString>> iterateResources(QString path, QString ext,
         collectResources(user_assets, type, dataAndLabels);
     }
     collectResources(assets, type, dataAndLabels);
-    sort(dataAndLabels.begin(), dataAndLabels.end(), [](auto& lhs, auto& rhs)
+    std::sort(dataAndLabels.begin(), dataAndLabels.end(), [](auto& lhs, auto& rhs)
         {
-            return get<1>(lhs) < get<1>(rhs);
+            return std::get<1>(lhs) < std::get<1>(rhs);
         });
     return dataAndLabels;
 }
 
-void collectResources(QDirIterator& iterator, ResourceType type, QList<tuple<QString, QString>>& listOfPathPairs)
+void collectResources(QDirIterator& iterator, ResourceType type, QList<std::tuple<QString, QString>>& listOfPathPairs)
 {
     while (iterator.hasNext())
     {
@@ -26,22 +26,22 @@ void collectResources(QDirIterator& iterator, ResourceType type, QList<tuple<QSt
         auto label = capitalizeName(iterator.filePath());
 
         if (type == ResourceType::Font)
-            listOfPathPairs << tuple<QString, QString>(QFontDatabase::applicationFontFamilies(QFontDatabase::addApplicationFont(iterator.filePath())).at(0), label);
+            listOfPathPairs << std::tuple<QString, QString>(QFontDatabase::applicationFontFamilies(QFontDatabase::addApplicationFont(iterator.filePath())).at(0), label);
         else
-            listOfPathPairs << tuple<QString, QString>(iterator.filePath(), label);
+            listOfPathPairs << std::tuple<QString, QString>(iterator.filePath(), label);
     }
 }
 
 const QString capitalizeName(QString path)
 {
-    filesystem::path file_path = path.toStdString();
+    std::filesystem::path file_path = path.toStdString();
     auto stem = file_path.stem();
     auto name = QString::fromStdString(stem.string());
     auto name_capped = name.left(1).toUpper() + name.mid(1);
     return name_capped;
 }
 
-bool createSampleThemesAndFonts(filesystem::path dataFolder)
+bool createSampleThemesAndFonts(std::filesystem::path dataFolder)
 {
     auto font_fs = dataFolder / "Merriweather.ttf";
     auto editor_theme_fs = dataFolder / "sample.fernanda_theme";
@@ -66,25 +66,25 @@ void makeSample(QString projectsDir)
     QDirIterator files_2(":/sample/Candide/Chapters 11-20/", QStringList() << "*.txt", QDir::Files);
     QDirIterator files_3(":/sample/Candide/Chapters 21-30/", QStringList() << "*.txt", QDir::Files);
     QDirIterator files_4(":/sample/Candide/Misc/", QStringList() << "*.txt", QDir::Files);
-    filesystem::path projects_folder = projectsDir.toStdString();
-    filesystem::path candide = projects_folder / "Candide";
-    auto subfolder_1 = candide / string("Chapters 1-10");
-    auto subfolder_2 = candide / string("Chapters 11-20");
-    auto subfolder_3 = candide / string("Chapters 21-30");
-    auto subfolder_4 = candide / string("Misc");
-    QList<filesystem::path> sample_folders = { candide, subfolder_1, subfolder_2, subfolder_3, subfolder_4 };
+    std::filesystem::path projects_folder = projectsDir.toStdString();
+    std::filesystem::path candide = projects_folder / "Candide";
+    auto subfolder_1 = candide / std::string("Chapters 1-10");
+    auto subfolder_2 = candide / std::string("Chapters 11-20");
+    auto subfolder_3 = candide / std::string("Chapters 21-30");
+    auto subfolder_4 = candide / std::string("Misc");
+    QList<std::filesystem::path> sample_folders = { candide, subfolder_1, subfolder_2, subfolder_3, subfolder_4 };
     for (auto& folder : sample_folders)
-        filesystem::create_directory(folder);
-    QList<tuple<QDirIterator&, filesystem::path>> iteratorAndPathPairs = {
-        tuple<QDirIterator&, filesystem::path>(files_1, subfolder_1),
-        tuple<QDirIterator&, filesystem::path>(files_2, subfolder_2),
-        tuple<QDirIterator&, filesystem::path>(files_3, subfolder_3),
-        tuple<QDirIterator&, filesystem::path>(files_4, subfolder_4),
+        std::filesystem::create_directory(folder);
+    QList<std::tuple<QDirIterator&, std::filesystem::path>> iteratorAndPathPairs = {
+        std::tuple<QDirIterator&, std::filesystem::path>(files_1, subfolder_1),
+        std::tuple<QDirIterator&, std::filesystem::path>(files_2, subfolder_2),
+        std::tuple<QDirIterator&, std::filesystem::path>(files_3, subfolder_3),
+        std::tuple<QDirIterator&, std::filesystem::path>(files_4, subfolder_4),
     };
     for (auto& pair : iteratorAndPathPairs)
     {
-        auto& iterator = get<0>(pair);
-        auto& folder_path = get<1>(pair);
+        auto& iterator = std::get<0>(pair);
+        auto& folder_path = std::get<1>(pair);
         while (iterator.hasNext())
         {
             iterator.next();
@@ -96,6 +96,22 @@ void makeSample(QString projectsDir)
             QFile(copy_path).setPermissions(QFile::WriteUser);
         }
     }
+}
+
+const QString createStyleSheetFromTheme(QString styleSheet, QString themeSheet)
+{
+    QRegularExpressionMatchIterator matches = QRegularExpression("(@.*\\n?)").globalMatch(themeSheet);
+    while (matches.hasNext())
+    {
+        QRegularExpressionMatch match = matches.next();
+        if (match.hasMatch())
+        {
+            QString variable = match.captured(0).replace(QRegularExpression("(\\s=.*;)"), "");
+            QString value = match.captured(0).replace(QRegularExpression("(@.*=\\s)"), "");
+            styleSheet.replace(QRegularExpression(variable), value);
+        }
+    }
+    return styleSheet;
 }
 
 // rc.cpp, fernanda

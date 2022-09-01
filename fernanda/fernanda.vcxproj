@@ -90,11 +90,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="io.cpp" />
-    <ClCompile Include="pane.cpp" />
-    <ClCompile Include="pane_delegate.cpp" />
-    <ClCompile Include="rc.cpp" />
-    <ClCompile Include="texteditor.cpp" />
     <None Include="rc\test\test.fernanda_theme" />
     <None Include="rc\test\test.fernanda_wintheme" />
     <None Include="rc\themes\bar\red.qss" />
@@ -108,9 +103,6 @@
     <None Include="rc\themes\window.qss" />
     <None Include="rc\themes\window\dark.fernanda_wintheme" />
     <None Include="rc\themes\window\light.fernanda_wintheme" />
-    <QtUic Include="fernanda.ui" />
-    <ClCompile Include="fernanda.cpp" />
-    <ClCompile Include="main.cpp" />
     <None Include="..\.gitignore" />
     <None Include="..\README.md" />
     <None Include="cpp.hint" />
@@ -136,8 +128,20 @@
     <QtRcc Include="rc\themes.qrc" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\CMakeLists.txt" />
+    <Text Include="CMakeLists.txt" />
     <Text Include="rc\themes\palette.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\fernanda.cpp" />
+    <ClCompile Include="src\io.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\pane.cpp" />
+    <ClCompile Include="src\pane_delegate.cpp" />
+    <ClCompile Include="src\rc.cpp" />
+    <ClCompile Include="src\texteditor.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="src\fernanda.ui" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
