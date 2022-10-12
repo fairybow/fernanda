@@ -1,0 +1,58 @@
+Fernanda gradient:
+
+	White
+	rbg(255, 255, 255) / #fff
+
+	Soft cyan
+	rbg(124, 225, 249) / #7ce1f9
+
+	Bright blue
+	rbg(59, 176, 243) / #3bb0f3
+
+	Very soft blue
+	rbg(145, 148, 242) / #9194f2
+
+	Very soft magenta
+	rbg(249, 179, 249) / #f9b3f9
+
+Editor themes:
+
+	Amber:
+
+		"Amber", "Fluorescent orange"
+		Pure (or mostly pure) orange
+		rbg(255, 191, 0) / #ffbf00
+
+		Very dark (mostly black) yellow [Olive tone]
+		rbg(20, 15, 0) / #140f00
+
+	Blue:
+
+		Very light gray
+		rbg(238, 238, 238) / #eeeeee
+
+		Dark blue
+		rbg(0, 5, 164) / #0005a4
+
+	Green:
+
+		"Green", "Electric green"
+		Pure (or mostly pure) lime green
+		rbg(0, 255, 0) / #00ff00
+
+		Very dark (mostly black) lime green
+		rbg(0, 20, 0) / #001400
+
+	Grey:
+
+		Light gray
+		rbg(204, 204, 204) / #cccccc
+
+		Very dark gray (mostly black)
+		rbg(8, 8, 8) / #080808
+
+Window themes:
+
+	Pending, they need a rewrite
+
+// https://www.colorhexa.com/

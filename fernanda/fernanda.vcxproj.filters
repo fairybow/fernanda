@@ -21,123 +21,73 @@
       <UniqueIdentifier>{639EADAA-A684-42e4-A9AD-28FC9BCB8F7C}</UniqueIdentifier>
       <Extensions>ts</Extensions>
     </Filter>
-    <Filter Include="Resource Files\themes">
-      <UniqueIdentifier>{15dcd176-9d25-406d-960f-d9b9195c56d5}</UniqueIdentifier>
+    <Filter Include="Header Files\Includes">
+      <UniqueIdentifier>{d743d864-b650-4c9b-890e-6361ddc9b1f1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files\themes\window">
-      <UniqueIdentifier>{363af4b0-acc2-4ef4-9dca-03db7cabb48f}</UniqueIdentifier>
+    <Filter Include="Source Files\Includes">
+      <UniqueIdentifier>{9b7aa008-9e75-4117-bdd7-fc3b16924d40}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files\themes\editor">
-      <UniqueIdentifier>{77ddcf66-2078-46eb-8886-adf0b42acd93}</UniqueIdentifier>
+    <Filter Include="Resource Files\Stylesheets">
+      <UniqueIdentifier>{23bccbdc-c410-4bba-95b6-044e60d463c3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files\themes\test">
-      <UniqueIdentifier>{4935a16e-9f73-4f91-a090-2c42f8a45e67}</UniqueIdentifier>
+    <Filter Include="Resource Files\Stylesheets\Colorbar Stylesheets">
+      <UniqueIdentifier>{9d191d76-a216-4879-bfdd-a41759fea584}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files\themes\bar">
-      <UniqueIdentifier>{a0fee95e-a2d3-412b-a99d-93dfe7b1c320}</UniqueIdentifier>
+    <Filter Include="Resource Files\Stylesheets\Editor Themes">
+      <UniqueIdentifier>{38029b03-9f1b-42d0-8ad1-33bfce392b5d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Stylesheets\Window Themes">
+      <UniqueIdentifier>{d7a2a167-b848-4309-b714-3f7c75a3da07}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="fernanda.ico">
-      <Filter>Resource Files</Filter>
+    <None Include="..\.gitignore" />
+    <None Include="..\README.md" />
+    <None Include="res\themes\bar\green.qss">
+      <Filter>Resource Files\Stylesheets\Colorbar Stylesheets</Filter>
+    </None>
+    <None Include="res\themes\bar\red.qss">
+      <Filter>Resource Files\Stylesheets\Colorbar Stylesheets</Filter>
+    </None>
+    <None Include="res\themes\bar\start_up.qss">
+      <Filter>Resource Files\Stylesheets\Colorbar Stylesheets</Filter>
+    </None>
+    <None Include="res\themes\editor\amber.fernanda_theme">
+      <Filter>Resource Files\Stylesheets\Editor Themes</Filter>
+    </None>
+    <None Include="res\themes\editor\blue.fernanda_theme">
+      <Filter>Resource Files\Stylesheets\Editor Themes</Filter>
+    </None>
+    <None Include="res\themes\editor\green.fernanda_theme">
+      <Filter>Resource Files\Stylesheets\Editor Themes</Filter>
+    </None>
+    <None Include="res\themes\editor\grey.fernanda_theme">
+      <Filter>Resource Files\Stylesheets\Editor Themes</Filter>
+    </None>
+    <None Include="res\themes\window\dark.fernanda_wintheme">
+      <Filter>Resource Files\Stylesheets\Window Themes</Filter>
+    </None>
+    <None Include="res\themes\window\light.fernanda_wintheme">
+      <Filter>Resource Files\Stylesheets\Window Themes</Filter>
+    </None>
+    <None Include="res\themes\window.qss">
+      <Filter>Resource Files\Stylesheets</Filter>
+    </None>
+    <None Include="res\themes\editor.qss">
+      <Filter>Resource Files\Stylesheets</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
-    <None Include="..\README.md" />
-    <None Include="..\.gitignore" />
-    <None Include="rc\themes\editor.qss">
-      <Filter>Resource Files\themes</Filter>
-    </None>
-    <None Include="rc\themes\window.qss">
-      <Filter>Resource Files\themes</Filter>
-    </None>
-    <None Include="rc\themes\editor\amber.fernanda_theme">
-      <Filter>Resource Files\themes\editor</Filter>
-    </None>
-    <None Include="rc\themes\editor\blue.fernanda_theme">
-      <Filter>Resource Files\themes\editor</Filter>
-    </None>
-    <None Include="rc\themes\editor\green.fernanda_theme">
-      <Filter>Resource Files\themes\editor</Filter>
-    </None>
-    <None Include="rc\themes\editor\grey.fernanda_theme">
-      <Filter>Resource Files\themes\editor</Filter>
-    </None>
-    <None Include="rc\themes\window\dark.fernanda_wintheme">
-      <Filter>Resource Files\themes\window</Filter>
-    </None>
-    <None Include="rc\themes\window\light.fernanda_wintheme">
-      <Filter>Resource Files\themes\window</Filter>
-    </None>
-    <None Include="rc\test\test.fernanda_theme">
-      <Filter>Resource Files\themes\test</Filter>
-    </None>
-    <None Include="rc\test\test.fernanda_wintheme">
-      <Filter>Resource Files\themes\test</Filter>
-    </None>
-    <None Include="rc\themes\bar\green.qss">
-      <Filter>Resource Files\themes\bar</Filter>
-    </None>
-    <None Include="rc\themes\bar\red.qss">
-      <Filter>Resource Files\themes\bar</Filter>
-    </None>
-    <None Include="rc\themes\bar\start_up.qss">
-      <Filter>Resource Files\themes\bar</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="include\fernanda.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="include\pane.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="include\texteditor.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="include\pane_delegate.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="include\version.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\rc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\io.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="rc\fernanda.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <QtRcc Include="rc\fonts.qrc">
-      <Filter>Resource Files</Filter>
-    </QtRcc>
-    <QtRcc Include="rc\sample.qrc">
-      <Filter>Resource Files</Filter>
-    </QtRcc>
-    <QtRcc Include="rc\themes.qrc">
-      <Filter>Resource Files</Filter>
-    </QtRcc>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="rc\themes\palette.txt">
-      <Filter>Resource Files\themes</Filter>
-    </Text>
-    <Text Include="CMakeLists.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src\fernanda.cpp">
+    <ClCompile Include="include\microtar\microtar.c">
+      <Filter>Source Files\Includes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\editor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\io.cpp">
+    <ClCompile Include="src\fernanda.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\main.cpp">
@@ -146,19 +96,78 @@
     <ClCompile Include="src\pane.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\pane_delegate.cpp">
+    <ClCompile Include="src\userdata.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\rc.cpp">
+    <ClCompile Include="src\project.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\texteditor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="res\resource.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="src\fernanda.ui">
       <Filter>Form Files</Filter>
     </QtUic>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\microtar\microtar.h">
+      <Filter>Header Files\Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\res.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\userdata.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\io.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\project.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sample.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="src\fernanda.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="src\pane.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="src\editor.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="src\delegate.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <QtRcc Include="res\fonts.qrc">
+      <Filter>Resource Files</Filter>
+    </QtRcc>
+    <QtRcc Include="res\sample.qrc">
+      <Filter>Resource Files</Filter>
+    </QtRcc>
+    <QtRcc Include="res\themes.qrc">
+      <Filter>Resource Files</Filter>
+    </QtRcc>
+    <QtRcc Include="res\icons.qrc">
+      <Filter>Resource Files</Filter>
+    </QtRcc>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="res\themes\palette.txt">
+      <Filter>Resource Files\Stylesheets</Filter>
+    </Text>
+    <Text Include="docs\dependency tree.txt" />
   </ItemGroup>
 </Project>

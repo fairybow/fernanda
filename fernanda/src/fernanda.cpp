@@ -1,109 +1,156 @@
+// fernanda.cpp, fernanda
+
 #include "fernanda.h"
 
 Fernanda::Fernanda(QWidget* parent)
     : QMainWindow(parent)
 {
-    ui.setupUi(this);
-    nameObjects();
-    layoutObjects();
-    makeConnections();
-    createUserData(userDataName);
-    loadMiscConfigsOnOpen();
+    handleQtUi();
+    addWidgets();
+    connections();
+    UD::userData(UD::Op::Create, ferName);
     makeMenuBar();
-    auto has_full_projects_data = loadProjectDataOnOpen();
-    if (!has_full_projects_data)
-        QTimer::singleShot(1250, this, &Fernanda::chooseProjectDataOnOpen);
-    
-    // Bug: After start-up, the first folder clicked in Pane is slow to load. After that, it's fine?
+    loadOpeningConfigs();
+    //tests();
+}
+
+void Fernanda::tests()
+{
+    statusBar()->addPermanentWidget(test1, 0);
+    test1->setStyleSheet("color:white;");
+    for (auto& tuple : QVector<std::tuple<QPushButton*, QString>>{
+        std::tuple<QPushButton*, QString>(test2, "background:red;color:white;"),
+        std::tuple<QPushButton*, QString>(test3, "background:green;color:white;"),
+        })
+    {
+        auto button = std::get<0>(tuple);
+        auto& style = std::get<1>(tuple);
+        button->setText("test");
+        button->setStyleSheet(style);
+        statusBar()->addPermanentWidget(button, 0);
+    }
+    connect(test2, &QPushButton::clicked, this, [&]() {});
+    connect(test3, &QPushButton::clicked, this, [&]() {});
 }
 
 void Fernanda::showEvent(QShowEvent* event)
 {
     QMainWindow::showEvent(event);
-    if (wasInitialized || event->spontaneous()) return;
-    textEditorTextChanged();
-    QTimer::singleShot(1000, this, [&](){ startColorBar(ColorScheme::StartUp); });
-    wasInitialized = true;
-    // This does not actually halt the colorBar from loading until the window is visible. I think it works when the program starts minimized, but not when window is just obscured by, say, another program. This is probably normal behavior.
+    if (isInitialized || event->spontaneous()) return;
+    // popup if temps exist
+    QTimer::singleShot(1000, this, [&]() { colorBarOn(Color::StartUp); });
+    isInitialized = true;
 }
 
-void Fernanda::nameObjects() 
+void Fernanda::resizeEvent(QResizeEvent* event)
 {
-    setWindowTitle(fernandaName);
+    QMainWindow::resizeEvent(event);
+    UD::saveConfig("window", "position", geometry());
+}
+
+void Fernanda::moveEvent(QMoveEvent* event)
+{
+    QMainWindow::moveEvent(event);
+    UD::saveConfig("window", "position", geometry());
+}
+
+void Fernanda::closeEvent(QCloseEvent* event)
+{
+    auto state = windowState();
+    UD::saveConfig("window", "state", state.toInt());
+    setWindowState(Qt::WindowState::WindowActive);
+    if (currentProject.has_value() && currentProject.value().hasEdits())
+    {
+        QMessageBox alert;
+        alert.setWindowTitle("Hey!");
+        alert.setText("You have unsaved changes. Are you sure you want to quit?");
+        alert.addButton(QMessageBox::Yes);
+        auto no = alert.addButton(QMessageBox::No);
+        alert.setDefaultButton(no);
+        alert.exec();
+        if (alert.clickedButton() == no)
+        {
+            setWindowState(state);
+            event->ignore();
+            colorBarOn(Color::Green);
+            return;
+        }
+    }
+    UD::clearFiles(UD::userData(UD::Op::GetTemp));
+    event->accept();
+}
+
+void Fernanda::handleQtUi()
+{
+    ui.setupUi(this);
+    ui.mainToolBar->deleteLater();
+    statusBar()->setSizeGripEnabled(true);
+    setWindowTitle(ferName);
+}
+
+void Fernanda::addWidgets()
+{
+    // Create layout
+    QWidget* full_layout = new QWidget(this);
+    QStackedLayout* main_stack = new QStackedLayout(full_layout);
+    QWidget* editor_layout = new QWidget(this);
+    QStackedLayout* editor_stack = new QStackedLayout(editor_layout);
+    main_stack->addWidget(colorBar);
+    main_stack->addWidget(splitter);
+    editor_stack->addWidget(overlay);
+    editor_stack->addWidget(textEditor);
+    editor_stack->addWidget(underlay);
+    splitter->addWidget(pane);
+    splitter->addWidget(editor_layout);
+    // Adjust layouts
+    main_stack->setStackingMode(QStackedLayout::StackAll);
+    editor_stack->setStackingMode(QStackedLayout::StackAll);
+    // Adjust widgets
+    overlay->setAttribute(Qt::WA_TransparentForMouseEvents);
+    colorBar->setAttribute(Qt::WA_TransparentForMouseEvents);
+    colorBar->setMaximumHeight(3);
+    colorBar->setTextVisible(false);
+    colorBar->setRange(0, 100);
+    colorBar->hide();
+    for (auto& widget_to_size : QVector<QWidget*>{ pane, overlay, textEditor, underlay })
+        widget_to_size->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    splitter->setCollapsible(0, true);
+    splitter->setCollapsible(1, false);
+    splitter->setStretchFactor(1, 100);
+    textEditor->setReadOnly(true);
+    //overlay->hide();
+    setCentralWidget(full_layout);
+    aot->setCheckable(true);
+    aot->setText("\U0001F4CC");
+    statusBar()->addPermanentWidget(positions, 0);
+    statusBar()->addPermanentWidget(counters, 0);
+    statusBar()->addPermanentWidget(spacer, 1);
+    statusBar()->addPermanentWidget(aot, 0);
+    statusBar()->setMaximumHeight(22);
+    // Name widgets
     splitter->setObjectName("splitter");
     pane->setObjectName("pane");
     overlay->setObjectName("overlay");
     textEditor->setObjectName("textEditor");
     underlay->setObjectName("underlay");
     colorBar->setObjectName("colorBar");
-    pathDisplay->setObjectName("pathDisplay");
+    fontSlider->setObjectName("fontSlider");
     positions->setObjectName("positions");
     counters->setObjectName("counters");
+    spacer->setObjectName("spacer");
     aot->setObjectName("aot");
-    fontSlider->setObjectName("fontSlider");
 }
 
-void Fernanda::layoutObjects()
+void Fernanda::connections()
 {
-    ui.mainToolBar->deleteLater();
-
-    QWidget* full_layout = new QWidget(this);
-    QStackedLayout* main_stack = new QStackedLayout(full_layout);
-    QWidget* editor_layout = new QWidget(this);
-    QStackedLayout* editor_stack = new QStackedLayout(editor_layout);
-    editor_stack->setStackingMode(QStackedLayout::StackAll);
-    editor_stack->addWidget(overlay);
-    editor_stack->addWidget(textEditor);
-    editor_stack->addWidget(underlay);
-    splitter->addWidget(pane);
-    splitter->addWidget(editor_layout);
-    splitter->setCollapsible(0, true);
-    splitter->setCollapsible(1, false);
-    splitter->setStretchFactor(1, 100);
-    main_stack->setStackingMode(QStackedLayout::StackAll);
-    main_stack->addWidget(colorBar);
-    main_stack->addWidget(splitter);
-    setCentralWidget(full_layout);
-
-    colorBar->setMaximumHeight(3);
-    colorBar->setTextVisible(false);
-    colorBar->setRange(0, 100);
-    colorBar->hide();
-
-    colorBar->setAttribute(Qt::WA_TransparentForMouseEvents);
-    overlay->setAttribute(Qt::WA_TransparentForMouseEvents);
-
-    statusBar()->addPermanentWidget(pathDisplay, 1);
-    statusBar()->addPermanentWidget(positions, 0);
-    statusBar()->addPermanentWidget(counters, 0);
-    statusBar()->addPermanentWidget(aot, 0);
-    statusBar()->setMaximumHeight(22);
-
-    aot->setCheckable(true);
-    aot->setText("\U0001F4CC");
-    pane->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    overlay->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    textEditor->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    underlay->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-}
-
-void Fernanda::makeConnections()
-{
-    connect(pane, &Pane::pathDoesNotEqualPrevPath, this, [&]() { autoSaveTimer->start(30000); });
-    connect(autoSaveTimer, &QTimer::timeout, this, [&]()
-        {
-            auto& path = std::get<0>(pane->currentFile);
-            ifPreviousFileIsFile(path);
-        });
-    connect(splitter, &QSplitter::splitterMoved, this, [&]()
-        {
-            saveConfig<QByteArray>("window", "splitter", splitter->saveState());
-            // Splitter size is saving, but not being recalled by loadConfig
-        });
     connect(barTimer, &QTimer::timeout, this, [&]()
         {
             colorBar->hide();
             colorBar->reset();
+        });
+    connect(splitter, &QSplitter::splitterMoved, this, [&]()
+        {
+            UD::saveConfig("window", "splitter", splitter->saveState());
         });
     connect(textEditor, &TextEditor::askFontSliderZoom, this, [&](bool zoomDirection)
         {
@@ -112,87 +159,23 @@ void Fernanda::makeConnections()
             else
                 fontSlider->setValue(fontSlider->value() - 2);
         });
-    connect(pane, &Pane::previousFileIsFile, this, &Fernanda::ifPreviousFileIsFile);
-    connect(pane, &Pane::pathDoesNotEqualPrevPath, this, &Fernanda::ifPathDoesNotEqualPrevPath);
-    connect(textEditor, &TextEditor::askNavPrevious, pane, &Pane::navPrevious);
-    connect(textEditor, &TextEditor::askNavNext, pane, &Pane::navNext);
+    connect(pane, &Pane::askHasProject, this, &Fernanda::replyHasProject);
+    connect(textEditor, &TextEditor::askHasProject, this, &Fernanda::replyHasProject);
     connect(this, &Fernanda::sendLineHighlightToggle, textEditor, &TextEditor::toggleLineHighlight);
     connect(this, &Fernanda::sendLineNumberAreaToggle, textEditor, &TextEditor::toggleLineNumberArea);
-    connect(pane, &Pane::changePathDisplay, this, &Fernanda::displayPath);
-    connect(textEditor, &TextEditor::textChanged, this, &Fernanda::textEditorTextChanged);
+    connect(aot, &QPushButton::toggled, this, &Fernanda::aotToggled);
     connect(textEditor, &TextEditor::cursorPositionChanged, this, &Fernanda::updatePositions);
     connect(textEditor, &TextEditor::textChanged, this, &Fernanda::updateCounters);
-    connect(aot, &QPushButton::toggled, this, &Fernanda::aotToggled);
-}
-
-void Fernanda::checkTempsOnOpen()
-{
-    if (!QDir(activeTemp).isEmpty())
-    {
-        alert(ColorScheme::None, "Fernanda may not have properly quit last time, and unsaved changes are available. Would you like to recover them?", "No", &Fernanda::clearTempFiles, "Yes", "Unsaved changes");
-        /*if (!QDir(activeTemp).isEmpty())
-        {
-            // Any way to mark them dirty on load? Pane delegate does not paint the entries "dirty" until they're clicked on. Since files are marked dirty by comparing to a stored cleanText string, I don't know if it's possible to mark them dirty beforehand in any simple way.
-        }*/
-    }
-}
-
-void Fernanda::closeEvent(QCloseEvent* event)
-{
-    auto state = windowState() & Qt::WindowState::WindowMaximized;
-    saveConfig<bool>("window", "max", state);
-    setWindowState(Qt::WindowState::WindowActive);
-
-    if (!pane->paneDelegate->dirtyIndexes.isEmpty() || !dirtyFiles.isEmpty())
-    {
-        auto close = QMessageBox::question(this, fernandaName, "You may have unsaved changes. Are you sure you want to quit?", QMessageBox::No | QMessageBox::Yes, QMessageBox::No);
-        if (close == QMessageBox::No)
-        {
-            if (state == Qt::WindowState::WindowMaximized)
-                setWindowState(Qt::WindowState::WindowMaximized); // I would actually prefer to save *any* window state when closeEvent is triggered (before moving to active) and save to ini, then return to that state if close is canceled.
-            event->ignore();
-            return;
-        }
-    }
-    clearTempFiles();
-    event->accept();
-}
-
-void Fernanda::displayPath()
-{
-    auto& full_index_path = std::get<1>(pane->selectedIndex);
-    std::filesystem::path index_path = full_index_path.toStdString();
-    auto index_root = index_path.root_name();
-    auto index_drive_letter = QString::fromStdString(index_root.string()) + "\\>";
-    auto index_name = index_path.filename();
-    auto _index_name = QString::fromStdString(index_name.string());
-
-    auto& full_file_path = std::get<0>(pane->currentFile);
-    std::filesystem::path file_path = full_file_path.toStdString();
-    auto file_root = file_path.root_name();
-    auto file_drive_letter = QString::fromStdString(file_root.string()) + "\\>";
-    auto file_name = file_path.filename();
-    auto _file_name = QString::fromStdString(file_name.string());
-    
-    QString italics_1 = "";
-    QString italics_2 = "";
-    if (dirtyFiles.contains(full_file_path))
-    {
-        italics_1 = "<i>";
-        italics_2 = "*</i>";
-    }
-    QString par_1 = "";
-    QString par_2 = "";
-    if (!full_file_path.isEmpty())
-    {
-        par_1 = " (";
-        par_2 = ")";
-    }
-
-    if (index_path == file_path)
-        pathDisplay->setText(file_drive_letter + italics_1 + _file_name + italics_2);
-    else
-        pathDisplay->setText(index_drive_letter + _index_name + par_1 + italics_1 + _file_name + italics_2 + par_2);
+    connect(this, &Fernanda::sendItems, pane, &Pane::receiveItems);
+    connect(pane, &Pane::askSendToEditor, this, &Fernanda::handleEditorText);
+    connect(textEditor, &TextEditor::textChanged, this, &Fernanda::sendEditedText);
+    connect(this, &Fernanda::sendEditsList, pane, &Pane::receiveEditsList);
+    connect(this, &Fernanda::saveCursors, textEditor, &TextEditor::storeCursors);
+    connect(this, &Fernanda::applyCursors, textEditor, &TextEditor::recallCursors);
+    connect(this, &Fernanda::saveUndoStacks, textEditor, &TextEditor::storeUndoStacks);
+    connect(this, &Fernanda::applyUndoStacks, textEditor, &TextEditor::recallUndoStacks);
+    connect(textEditor, &TextEditor::askNavPrevious, pane, &Pane::replyNavPrevious);
+    connect(textEditor, &TextEditor::askNavNext, pane, &Pane::replyNavNext);
 }
 
 void Fernanda::makeMenuBar()
@@ -204,45 +187,32 @@ void Fernanda::makeMenuBar()
 
 void Fernanda::makeFileMenu()
 {
-    auto* open_project = new QAction(tr("&Open a project..."), this);
-    open_project->setStatusTip(tr("Open a project"));
-    connect(open_project, &QAction::triggered, this, &Fernanda::fileMenuOpenProject);
-
-    auto* new_project = new QAction(tr("&Create a new project folder...(WIP)"), this);
-    new_project->setStatusTip(tr("Create a new project folder"));
-    connect(new_project, &QAction::triggered, this, &Fernanda::fileMenuNewProject);
-
-    auto* new_file = new QAction(tr("&Create a new file..."), this);
-    new_file->setShortcut(Qt::CTRL | Qt::Key_N);
-    new_file->setStatusTip(tr("Create a new file"));
-    connect(new_file, &QAction::triggered, this, &Fernanda::fileMenuNew);
-
-    auto* new_subfolder = new QAction(tr("&Create a new subfolder..."), this);
-    new_subfolder->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_N);
-    new_subfolder->setStatusTip(tr("Create a new folder"));
-    connect(new_subfolder, &QAction::triggered, this, &Fernanda::fileMenuNewSubfolder);
-
-    auto* save = new QAction(tr("&Save"), this);
-    save->setShortcut(Qt::CTRL | Qt::Key_S);
-    save->setStatusTip(tr("Save current document"));
-    connect(save, &QAction::triggered, this, &Fernanda::fileMenuSave);
-
-    auto* save_all = new QAction(tr("&Save all"), this);
-    save_all->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_S);
-    save_all->setStatusTip(tr("Save all documents in the current project"));
-    connect(save_all, &QAction::triggered, this, &Fernanda::fileMenuSaveAll);
-
-    auto* quit = new QAction(tr("&Quit"), this);
-    quit->setShortcut(Qt::CTRL | Qt::Key_Q);
-    quit->setStatusTip(tr("Quit"));
-    connect(quit, &QAction::triggered, this, &QCoreApplication::quit, Qt::QueuedConnection);
-
     auto* file = menuBar()->addMenu(tr("&File"));
-    file->addAction(open_project);
+    auto* new_project = new QAction(tr("&New project..."), this);
+    auto* open_project = new QAction(tr("&Open an existing project..."), this);
+    auto* save = new QAction(tr("&Save"), this);
+    auto* save_all = new QAction(tr("&Save all"), this);
+    auto* quit = new QAction(tr("&Quit"), this);
+    save->setShortcut(Qt::CTRL | Qt::Key_S);
+    save_all->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_S);
+    quit->setShortcut(Qt::CTRL | Qt::Key_Q);
+    connect(new_project, &QAction::triggered, this, [&]()
+        {
+            //auto file_name = QFileDialog::getSaveFileName(this, tr("Create a new project"), UD::userData(UD::Op::GetDocs), tr("Fernanda project file (*.story)"));
+            auto file_name = QFileDialog::getSaveFileName(this, tr("Create a new project"), UD::userData(UD::Op::GetDocs), tr("Fernanda project folder (*.story)"));
+            openProject(file_name);
+        });
+    connect(open_project, &QAction::triggered, this, [&]()
+        {
+            //auto file_name = QFileDialog::getOpenFileName(this, tr("Open an existing project"), UD::userData(UD::Op::GetDocs), tr("Fernanda project file (*.story)"));
+            auto file_name = QFileDialog::getExistingDirectory(this, tr("Open an existing project"), UD::userData(UD::Op::GetDocs), QFileDialog::ShowDirsOnly);
+            openProject(file_name);
+        });
+    connect(save, &QAction::triggered, this, &Fernanda::fileSave);
+    connect(save_all, &QAction::triggered, this, &Fernanda::fileSaveAll);
+    connect(quit, &QAction::triggered, this, &QCoreApplication::quit, Qt::QueuedConnection);
     file->addAction(new_project);
-    file->addSeparator();
-    file->addAction(new_file);
-    file->addAction(new_subfolder);
+    file->addAction(open_project);
     file->addSeparator();
     file->addAction(save);
     file->addAction(save_all);
@@ -250,172 +220,170 @@ void Fernanda::makeFileMenu()
     file->addAction(quit);
 }
 
-void Fernanda::makeViewMenu()
+void Fernanda::makeViewMenu() // clean me
 {
-    QList<std::tuple<QString, QString>> win_theme_list = iterateResources(":/themes/window/", "*.fernanda_wintheme", userData, ResourceType::WindowTheme);
-    windowThemes = createMenuToggles(win_theme_list, &Fernanda::setWindowStyle);
+    auto user_data = UD::userData(UD::Op::GetUserData);
+    auto win_theme_list = RC::iterateResources(":/themes/window/", "*.fernanda_wintheme", user_data, RC::ResType::WindowTheme);
+    windowThemes = makeViewToggles(win_theme_list, &Fernanda::setWindowStyle);
+    loadViewConfig(windowThemes->actions(), "window", "wintheme", ":/themes/window/light.fernanda_wintheme");
+    auto editor_theme_list = RC::iterateResources(":/themes/editor/", "*.fernanda_theme", user_data, RC::ResType::EditorTheme);
+    editorThemes = makeViewToggles(editor_theme_list, &Fernanda::setEditorStyle);
+    loadViewConfig(editorThemes->actions(), "editor", "theme", ":/themes/editor/amber.fernanda_theme");
+    auto font_list = RC::iterateResources(":/fonts/", "*.ttf", user_data, RC::ResType::Font);
+    editorFonts = makeViewToggles(font_list, &Fernanda::setEditorFont);
+    loadViewConfig(editorFonts->actions(), "editor", "font", "Cascadia Code");
 
-    QList<std::tuple<QString, QString>> editor_theme_list = iterateResources(":/themes/editor/", "*.fernanda_theme", userData, ResourceType::EditorTheme);
-    editorThemes = createMenuToggles(editor_theme_list, &Fernanda::setEditorStyle);
+    auto* toggle_win_theme = new QAction(tr("&Toggle window theme"), this);
+    connect(toggle_win_theme, &QAction::toggled, this, [&](bool checked)
+        {
+            toggleGlobals(hasWinTheme, "window", "wintheme_on", checked, Toggle::WinTheme);
+        });
+    toggle_win_theme->setCheckable(true);
+    loadViewConfigToggle(toggle_win_theme, "window", "wintheme_on", true);
 
-    QList<std::tuple<QString, QString>> font_list = iterateResources(":/fonts/", "*.ttf", userData, ResourceType::Font);
-    editorFonts = createMenuToggles(font_list, &Fernanda::setEditorFont);
+    auto* toggle_theme = new QAction(tr("&Toggle editor theme"), this);
+    connect(toggle_theme, &QAction::toggled, this, [&](bool checked)
+        {
+            toggleGlobals(hasTheme, "editor", "theme_on", checked, Toggle::Theme);
+        });
+    toggle_theme->setCheckable(true);
+    loadViewConfigToggle(toggle_theme, "editor", "theme_on", true);
 
     auto* font_size_label = new QAction(tr("&Set editor font size:"), this);
-    font_size_label->setStatusTip(tr("Set editor font size"));
     font_size_label->setEnabled(false);
-
     auto* font_size = new QWidgetAction(this);
     font_size->setDefaultWidget(fontSlider);
     fontSlider->setMinimum(8);
     fontSlider->setMaximum(64);
+    connect(fontSlider, &QSlider::valueChanged, this, [&](int value)
+        {
+            setEditorFont();
+            UD::saveConfig("editor", "font_size", value);
+        });
 
-    QList<std::tuple<QString, QString>> tab_list = {
+    QVector<std::tuple<QString, QString>> tab_list = {
         std::tuple<QString, QString>("20", "20 px"),
         std::tuple<QString, QString>("40", "40 px"),
         std::tuple<QString, QString>("60", "60 px"),
         std::tuple<QString, QString>("80", "80 px"),
     };
-    tabStops = createMenuToggles(tab_list, &Fernanda::setTabStop);
-
-    QList<std::tuple<QString, QString>> wrap_list = {
+    tabStops = makeViewToggles(tab_list, &Fernanda::setTabStop);
+    loadViewConfig(tabStops->actions(), "editor", "tab", "40");
+    QVector<std::tuple<QString, QString>> wrap_list = {
         std::tuple<QString, QString>("NoWrap", "No wrap"),
         std::tuple<QString, QString>("WordWrap", "Wrap at word boundaries"),
         std::tuple<QString, QString>("WrapAnywhere", "Wrap anywhere"),
         std::tuple<QString, QString>("WrapAt", "Wrap at word boundaries or anywhere")
     };
-    wrapModes = createMenuToggles(wrap_list, &Fernanda::setWrapMode);
+    wrapModes = makeViewToggles(wrap_list, &Fernanda::setWrapMode);
+    loadViewConfig(wrapModes->actions(), "editor", "wrap", "WrapAt");
 
     auto* toggle_aot = new QAction(tr("&Toggle always-on-top button"), this);
-    toggle_aot->setStatusTip(tr("Toggle always-on-top button"));
     connect(toggle_aot, &QAction::toggled, this, [&](bool checked)
         {
-            menuToggles(aot, "window", "aot_button_visible", checked);
+            toggleWidget(aot, "window", "aot_button", checked);
         });
     toggle_aot->setCheckable(true);
+    loadViewConfigToggle(toggle_aot, "window", "aot_button", false);
 
     auto* toggle_pane = new QAction(tr("&Toggle file pane"), this);
-    toggle_pane->setStatusTip(tr("Toggle file pane"));
     connect(toggle_pane, &QAction::toggled, this, [&](bool checked)
         {
-            menuToggles(pane, "window", "pane_visible", checked);
+            toggleWidget(pane, "window", "pane", checked);
         });
     toggle_pane->setCheckable(true);
-
-    auto* toggle_extra_scrolls = new QAction(tr("&Toggle scroll previous and next buttons"), this);
-    toggle_extra_scrolls->setStatusTip(tr("Toggle scroll previous and next buttons"));
-    connect(toggle_extra_scrolls, &QAction::toggled, this, [&](bool checked)
-        {
-            menuToggles(textEditor->scrollPrevious, "editor", "scroll_previous_visible", checked);
-            menuToggles(textEditor->scrollNext, "editor", "scroll_next_visible", checked);
-        });
-    toggle_extra_scrolls->setCheckable(true);
+    loadViewConfigToggle(toggle_pane, "window", "pane", true);
 
     auto* toggle_statusbar = new QAction(tr("&Toggle statusbar"), this);
-    toggle_statusbar->setStatusTip(tr("Toggle statusbar"));
     connect(toggle_statusbar, &QAction::toggled, this, [&](bool checked)
         {
-            menuToggles(statusBar(), "window", "statusbar_visible", checked);
+            toggleWidget(statusBar(), "window", "statusbar", checked);
         });
     toggle_statusbar->setCheckable(true);
+    loadViewConfigToggle(toggle_statusbar, "window", "statusbar", true);
 
     auto* toggle_line_highlight = new QAction(tr("&Toggle current line highlight"), this);
-    toggle_line_highlight->setStatusTip(tr("Toggle current line highlight"));
     connect(toggle_line_highlight, &QAction::toggled, this, [&](bool checked)
         {
             sendLineHighlightToggle(checked);
-            saveConfig<bool>("editor", "line_highlight", checked);
+            UD::saveConfig("editor", "line_highlight", checked);
         });
     toggle_line_highlight->setCheckable(true);
-
-    auto* toggle_key_filters = new QAction(tr("&Toggle key filters"), this);
-    toggle_key_filters->setStatusTip(tr("Toggle key filters"));
-    connect(toggle_key_filters, &QAction::toggled, this, [&](bool checked)
-        {
-            textEditor->hasKeyFilters = checked;
-            saveConfig<bool>("editor", "key_filters", checked);
-        });
-    toggle_key_filters->setCheckable(true);
+    loadViewConfigToggle(toggle_line_highlight, "editor", "line_highlight", true);
 
     auto* toggle_line_numbers = new QAction(tr("&Toggle line number area"), this);
-    toggle_line_numbers->setStatusTip(tr("Toggle line number area"));
     connect(toggle_line_numbers, &QAction::toggled, this, [&](bool checked)
         {
             sendLineNumberAreaToggle(checked);
-            saveConfig<bool>("editor", "line_number_area", checked);
+            UD::saveConfig("editor", "line_number_area", checked);
         });
     toggle_line_numbers->setCheckable(true);
+    loadViewConfigToggle(toggle_line_numbers, "editor", "line_number_area", false);
 
     auto* toggle_line_pos = new QAction(tr("&Toggle line position"), this);
-    toggle_line_pos->setStatusTip(tr("Toggle line position"));
     connect(toggle_line_pos, &QAction::toggled, this, [&](bool checked)
         {
-            togglePosAndCounts(linePos, "window", "show_line_position", checked);
+            toggleGlobals(linePos, "window", "position_line", checked, Toggle::Pos);
         });
     toggle_line_pos->setCheckable(true);
+    loadViewConfigToggle(toggle_line_pos, "window", "position_line", false);
 
     auto* toggle_col_pos = new QAction(tr("&Toggle column position"), this);
-    toggle_col_pos->setStatusTip(tr("Toggle column position"));
     connect(toggle_col_pos, &QAction::toggled, this, [&](bool checked)
         {
-            togglePosAndCounts(colPos, "window", "show_column_position", checked);
+            toggleGlobals(colPos, "window", "position_column", checked, Toggle::Pos);
         });
     toggle_col_pos->setCheckable(true);
+    loadViewConfigToggle(toggle_col_pos, "window", "position_column", false);
 
     auto* toggle_line_count = new QAction(tr("&Toggle line count"), this);
-    toggle_line_count->setStatusTip(tr("Toggle line count"));
     connect(toggle_line_count, &QAction::toggled, this, [&](bool checked)
         {
-            togglePosAndCounts(lineCount, "window", "show_line_count", checked);
+            toggleGlobals(lineCount, "window", "count_lines", checked, Toggle::Count);
         });
     toggle_line_count->setCheckable(true);
+    loadViewConfigToggle(toggle_line_count, "window", "count_lines", false);
 
     auto* toggle_word_count = new QAction(tr("&Toggle word count"), this);
-    toggle_word_count->setStatusTip(tr("Toggle word count"));
     connect(toggle_word_count, &QAction::toggled, this, [&](bool checked)
         {
-            togglePosAndCounts(wordCount, "window", "show_word_count", checked);
+            toggleGlobals(wordCount, "window", "count_words", checked, Toggle::Count);
         });
     toggle_word_count->setCheckable(true);
+    loadViewConfigToggle(toggle_word_count, "window", "count_words", false);
 
     auto* toggle_char_count = new QAction(tr("&Toggle character count"), this);
-    toggle_char_count->setStatusTip(tr("Toggle character count"));
     connect(toggle_char_count, &QAction::toggled, this, [&](bool checked)
         {
-            togglePosAndCounts(charCount, "window", "show_character_count", checked);
+            toggleGlobals(charCount, "window", "count_characters", checked, Toggle::Count);
         });
     toggle_char_count->setCheckable(true);
+    loadViewConfigToggle(toggle_char_count, "window", "count_characters", false);
 
     auto* view = menuBar()->addMenu(tr("&View"));
     auto* window_themes = view->addMenu(tr("&Set window theme"));
     window_themes->addActions(windowThemes->actions());
     auto* editor_themes = view->addMenu(tr("&Set editor theme"));
     editor_themes->addActions(editorThemes->actions());
+    view->addAction(toggle_win_theme);
+    view->addAction(toggle_theme);
     view->addSeparator();
     auto* fonts = view->addMenu(tr("&Set editor font"));
     fonts->addActions(editorFonts->actions());
-
     view->addAction(font_size_label);
     view->addAction(font_size);
-    connect(fontSlider, &QSlider::valueChanged, this, [&](int value)
-        {
-            setEditorFont();
-            saveConfig<int>("editor", "font_size", value);
-        });
     view->addSeparator();
     auto* tab_stops = view->addMenu(tr("&Set editor tab stop distance"));
     tab_stops->addActions(tabStops->actions());
-
     auto* wrap_modes = view->addMenu(tr("&Set editor wrap mode"));
     wrap_modes->addActions(wrapModes->actions());
     view->addSeparator();
+    view->addSeparator();
     view->addAction(toggle_aot);
     view->addAction(toggle_pane);
-    view->addAction(toggle_extra_scrolls);
     view->addAction(toggle_statusbar);
     view->addSeparator();
     view->addAction(toggle_line_highlight);
-    view->addAction(toggle_key_filters);
     view->addAction(toggle_line_numbers);
     view->addSeparator();
     auto* positions = view->addMenu(tr("&Show line and column positions"));
@@ -425,68 +393,35 @@ void Fernanda::makeViewMenu()
     counters->addAction(toggle_line_count);
     counters->addAction(toggle_word_count);
     counters->addAction(toggle_char_count);
-
-    loadResourceConfig(windowThemes->actions(), "window", "wintheme", ":/themes/window/light.fernanda_wintheme");
-    loadResourceConfig(editorThemes->actions(), "editor", "theme", ":/themes/editor/amber.fernanda_theme");
-    loadResourceConfig(editorFonts->actions(), "editor", "font", "Cascadia Code");
-    loadResourceConfig(tabStops->actions(), "editor", "tab", "40");
-    loadResourceConfig(wrapModes->actions(), "editor", "wrap", "WrapAt");
-    loadMenuToggles(toggle_aot, "window", "aot_button_visible", false);
-    loadMenuToggles(toggle_pane, "window", "pane_visible", true);
-    loadMenuToggles(toggle_extra_scrolls, "editor", "scroll_previous_visible", true);
-    loadMenuToggles(toggle_statusbar, "window", "statusbar_visible", true);
-    loadMenuToggles(toggle_line_highlight, "editor", "line_highlight", true);
-    loadMenuToggles(toggle_key_filters, "editor", "key_filters", true);
-    loadMenuToggles(toggle_line_numbers, "editor", "line_number_area", true);
-
-    loadMenuToggles(toggle_line_pos, "window", "show_line_position", false);
-    loadMenuToggles(toggle_col_pos, "window", "show_column_position", false);
-    loadMenuToggles(toggle_line_count, "window", "show_line_count", false);
-    loadMenuToggles(toggle_word_count, "window", "show_word_count", false);
-    loadMenuToggles(toggle_char_count, "window", "show_character_count", false);
 }
 
 void Fernanda::makeHelpMenu()
 {
-    auto* view_help = new QAction(tr("&View help"), this);
-    view_help->setStatusTip(tr("View help"));
-    //connect(view_help, &QAction::triggered, this, &Fernanda::);
-
-    auto* set_projects_dir = new QAction(tr("&Change the default projects directory..."), this);
-    set_projects_dir->setStatusTip(tr("Change the default projects directory"));
-    connect(set_projects_dir, &QAction::triggered, this, &Fernanda::helpMenuSetProjectsDir);
-
-    auto* sample = new QAction(tr("&Generate sample project"), this);
-    sample->setStatusTip(tr("Generate sample project"));
-    connect(sample, &QAction::triggered, this, &Fernanda::helpMenuMakeSample);
-
-    auto* sample_themes = new QAction(tr("&Generate sample themes"), this);
-    sample_themes->setStatusTip(tr("Generate sample themes"));
-    connect(sample_themes, &QAction::triggered, this, &Fernanda::helpMenuMakeSampleUdRc);
-
-    auto* about = new QAction(tr("&About Fernanda"), this);
-    about->setStatusTip(tr("About Fernanda"));
-    connect(about, &QAction::triggered, this, &Fernanda::helpMenuAbout);
-
     auto* help = menuBar()->addMenu(tr("&Help"));
-    help->addAction(view_help);
-    help->addSeparator();
-    help->addAction(set_projects_dir);
-    help->addAction(sample);
+    //auto* projects_dir = new QAction(tr("&Set default projects directory..."), this);
+    auto* sample_themes = new QAction(tr("&Generate sample themes"), this);
+    auto* sample_project = new QAction(tr("&Generate sample project"), this);
+    auto* about = new QAction(tr("&About Fernanda"), this);
+    //connect(projects_dir, &QAction::triggered, this, &Fernanda::helpProjects);
+    connect(sample_themes, &QAction::triggered, this, &Fernanda::helpMakeSampleRes);
+    connect(sample_project, &QAction::triggered, this, &Fernanda::helpMakeSampleProject);
+    connect(about, &QAction::triggered, this, &Fernanda::helpAbout);
+    //help->addAction(projects_dir);
+    //help->addSeparator();
     help->addAction(sample_themes);
+    help->addAction(sample_project);
     help->addSeparator();
     help->addAction(about);
 }
 
-QActionGroup* Fernanda::createMenuToggles(QList<std::tuple<QString, QString>>& itemAndLabel, void (Fernanda::* slot)())
+QActionGroup* Fernanda::makeViewToggles(QVector<std::tuple<QString, QString>>& itemAndLabelPairs, void (Fernanda::* slot)())
 {
     auto* group = new QActionGroup(this);
-    for (auto& item : itemAndLabel)
+    for (auto& itemAndLabelPair : itemAndLabelPairs)
     {
-        auto& data = std::get<0>(item);
-        auto label = std::get<1>(item).toUtf8();
+        auto& data = std::get<0>(itemAndLabelPair);
+        auto label = std::get<1>(itemAndLabelPair).toUtf8();
         auto* action = new QAction(tr(label), this);
-        action->setStatusTip(tr(label));
         action->setData(data);
         connect(action, &QAction::toggled, this, slot);
         action->setCheckable(true);
@@ -496,220 +431,10 @@ QActionGroup* Fernanda::createMenuToggles(QList<std::tuple<QString, QString>>& i
     return group;
 }
 
-void Fernanda::createUserData(QString dataFolderName)
+void Fernanda::colorBarOn(Color style)
 {
-    userData = std::filesystem::path(QDir::homePath().toStdString()) / dataFolderName.toStdString();
-    auto config_path = userData / configName.toStdString();
-    config = QString::fromStdString(config_path.string());
-    activeTemp = userData / std::string(".active_temp");
-    backup = userData / std::string("backup");
-    rollback = backup / std::string(".rollback");
-    QList<std::filesystem::path> data_folders = { userData, activeTemp, backup, rollback };
-    for (auto& folder : data_folders)
-        if (!QDir(folder).exists())
-            std::filesystem::create_directory(folder);
-}
-
-void Fernanda::clearTempFiles()
-{
-    for (auto& item : std::filesystem::directory_iterator(activeTemp))
-        std::filesystem::remove_all(item);
-}
-
-const QString Fernanda::pathMaker(QString path, PathType type)
-{
-    std::filesystem::path data_folder;
-    QString prefix;
-    QString ext;
-
-    if (type == PathType::Backup)
-    {
-        //
-    }
-    else if (type == PathType::Original)
-        return path;
-    else if (type == PathType::Rollback)
-    {
-        data_folder = rollback;
-        prefix = "";
-        ext = ".fernanda_bak";
-    }
-    else if (type == PathType::Temp)
-    {
-        data_folder = activeTemp;
-        prefix = "~";
-        ext = ".fernanda_temp";
-    }
-
-    auto proj_relative = std::filesystem::relative(path.toStdString(), defaultProjectsFolder.toStdString());
-    std::filesystem::path proj_relative_parent = prefix.toStdString() + proj_relative.parent_path().string();
-    std::filesystem::path file_name = prefix.toStdString() + proj_relative.filename().replace_extension(ext.toStdString()).string();
-    auto derived_path = data_folder / proj_relative_parent / file_name;
-    derived_path.make_preferred();
-
-    return QString::fromStdString(derived_path.string());
-}
-
-void Fernanda::swap(QString path)
-{
-    std::filesystem::path rollback_path = pathMaker(path, PathType::Rollback).toStdString();
-    std::filesystem::path temp_path = pathMaker(path, PathType::Temp).toStdString();
-    if (QFileInfo(rollback_path).exists())
-        std::filesystem::remove(rollback_path);
-    else
-        std::filesystem::create_directories(rollback_path.parent_path());
-    std::filesystem::rename(path.toStdString(), rollback_path);
-    std::filesystem::rename(temp_path, path.toStdString());
-}
-
-template<typename T> void Fernanda::saveConfig(QString group, QString valueName, T value)
-{
-    QSettings ini(config, QSettings::IniFormat);
-    ini.beginGroup(group);
-    ini.setValue(valueName, value);
-    ini.endGroup();
-}
-
-const QVariant Fernanda::loadConfig(QString group, QString valueName, bool preventRandomStrAsTrue)
-{
-    if (!QFile(config).exists()) return -1;
-    QSettings ini(config, QSettings::IniFormat);
-    ini.beginGroup(group);
-    if (!ini.childKeys().contains(valueName)) return -1;
-    auto val = ini.value(valueName);
-    if (val.isNull()) return -1;
-    if (preventRandomStrAsTrue && val != "true" && val != "false") return -1;
-
-    return val;
-}
-
-void Fernanda::loadResourceConfig(QList<QAction*> actions, QString group, QString valueName, QString fallback)
-{
-    for (auto action : actions)
-    {
-        auto resource = loadConfig(group, valueName).toString();
-        if (resource == action->data())
-        {
-            action->setChecked(true);
-            return;
-        }
-    }
-    for (auto action : actions)
-    {
-        if (action->data() == fallback)
-        {
-            action->setChecked(true);
-            return;
-        }
-    }
-    actions.first()->setChecked(true);
-}
-
-void Fernanda::loadMiscConfigsOnOpen()
-{
-    auto window_position = loadConfig("window", "position");
-    if (window_position == -1 || !window_position.canConvert<QRect>())
-        setGeometry(0, 0, 1000, 666);
-    else
-        setGeometry(window_position.toRect());
-
-    auto window_max = loadConfig("window", "max", true);
-    if (window_max != -1)
-        if (window_max.toBool())
-            setWindowState(Qt::WindowState::WindowMaximized);
-
-    // I do not understand what is happening with testing QByteArray entry in .ini file with empty string or garbage string. It seems to somehow still remember the needed splitter position even when the ini value is blank or random characters...
-    auto splitter_position = loadConfig("window", "splitter");
-    if (splitter_position == -1 || !window_position.canConvert<QByteArray>())
-        splitter->setSizes(QList<int>{ 166, 834 });
-    else
-        splitter->restoreState(splitter_position.toByteArray());
-
-    auto font_slider_position = loadConfig("editor", "font_size");
-    if (font_slider_position.toInt() < 8 || font_slider_position.toInt() > 64)
-        fontSlider->setValue(14);
-    else
-        fontSlider->setValue(font_slider_position.toInt());
-
-    // AOT status cannot be loaded before or close to MainWindow geometry, otherwise geometry will not load correctly.
-    auto aot_check = loadConfig("window", "aot", true);
-    if (aot_check == -1)
-        aot->setChecked(false);
-    else
-        aot->setChecked(aot_check.toBool());
-}
-
-bool Fernanda::loadProjectDataOnOpen()
-{
-    auto default_projects = loadConfig("data", "default_projects");
-    auto default_projects_path = default_projects.toString();
-    auto current_project = loadConfig("data", "current_project");
-    auto current_project_path = current_project.toString();
-
-    if (default_projects != -1 && QDir(default_projects_path).exists())
-    {
-        if (current_project != -1 && QDir(current_project_path).exists())
-        {
-            auto is_child = checkChildStatus(default_projects_path, current_project_path);
-            if (!is_child) return false;
-            defaultProjectsFolder = default_projects_path;
-            currentProject = current_project_path;
-            pane->setup(currentProject);
-            checkTempsOnOpen();
-            return true;
-        }
-        defaultProjectsFolder = default_projects_path;
-    }
-    return false;
-}
-
-void Fernanda::resizeEvent(QResizeEvent* event)
-{
-    QMainWindow::resizeEvent(event);
-    saveConfig<QRect>("window", "position", geometry());
-}
-
-void Fernanda::moveEvent(QMoveEvent* event)
-{
-    QMainWindow::moveEvent(event);
-    saveConfig<QRect>("window", "position", geometry());
-}
-
-void Fernanda::menuToggles(QWidget* widget, QString group, QString value, bool checked)
-{
-    widget->setVisible(checked);
-    saveConfig<bool>(group, value, checked);
-}
-
-void Fernanda::loadMenuToggles(QAction* action, QString group, QString value, bool fallback)
-{
-    auto state = loadConfig(group, value, true);
-    if (state == -1)
-    {
-        // For some reason, start-up toggles need to be toggled twice. It seems as though they are not connected when initially toggled
-
-        action->setChecked(!fallback); // whyyyyyyyyy
-        action->setChecked(fallback);
-    }
-    else
-    {
-        action->setChecked(!state.toBool()); // whyyyyyyyyy
-        action->setChecked(state.toBool());
-    }
-}
-
-void Fernanda::togglePosAndCounts(bool& globalBool, QString group, QString value, bool checked)
-{
-    globalBool = checked;
-    saveConfig<bool>(group, value, checked);
-    updatePositions();
-    updateCounters();
-}
-
-void Fernanda::startColorBar(ColorScheme scheme)
-{
-    if (scheme == ColorScheme::None) return;
-    setColorBarStyle(scheme);
+    if (style == Color::None) return;
+    colorBarStyle(style);
     auto* bar_fill = new QTimeLine(125, this);
     connect(bar_fill, &QTimeLine::frameChanged, colorBar, &QProgressBar::setValue);
     bar_fill->setFrameRange(0, 100);
@@ -718,302 +443,74 @@ void Fernanda::startColorBar(ColorScheme scheme)
     bar_fill->start();
 }
 
-void Fernanda::setColorBarStyle(ColorScheme scheme)
+void Fernanda::colorBarStyle(Color style)
 {
     QString style_sheet;
-    if (scheme == ColorScheme::Red)
-        style_sheet = readFile(":/themes/bar/red.qss");
-    else if (scheme == ColorScheme::Green)
-        style_sheet = readFile(":/themes/bar/green.qss");
-    else if (scheme == ColorScheme::StartUp)
-        style_sheet = readFile(":/themes/bar/start_up.qss");
+    switch (style) {
+        case Color::Red: style_sheet = IO::readFile(":/themes/bar/red.qss"); break;
+        case Color::Green: style_sheet = IO::readFile(":/themes/bar/green.qss"); break;
+        case Color::StartUp: style_sheet = IO::readFile(":/themes/bar/start_up.qss"); break;
+    }
     colorBar->setStyleSheet(style_sheet);
 }
 
-void Fernanda::clearAll(ClearType type)
+void Fernanda::loadOpeningConfigs()
 {
-    dirtyFiles.clear();
-    pane->paneDelegate->dirtyIndexes.clear();
-    textEditor->cursorPositions.clear();
-    if (type == ClearType::Full)
-    {
-        cleanText = "";
-        textEditor->clear();
-        pathDisplay->setText("");
-        pane->clearTuples();
-    }
-    textEditorTextChanged();
+    loadWindowConfigs();
+    auto font_slider_position = UD::loadConfig("editor", "font_size", 14, QMetaType::Int);
+    fontSlider->setValue(font_slider_position.toInt());
+    auto splitter_pos = UD::loadConfig("window", "splitter");
+    splitter->restoreState(splitter_pos.toByteArray());
 }
 
-bool Fernanda::alert(ColorScheme scheme, QString message, QString optButton, void (Fernanda::* optButtonAction)(), QString optReplaceMainButton, QString optReplaceTitle)
+void Fernanda::loadWindowConfigs()
 {
-    QMessageBox alert;
-    auto title = tr("Hey!");
-    if (!optReplaceTitle.isEmpty())
-        title = tr(optReplaceTitle.toUtf8());
-    alert.setWindowTitle(title);
-    alert.setText(message);
-    QAbstractButton* ok = nullptr;
-    auto ok_text = tr("Okay");
-    if (!optReplaceMainButton.isEmpty())
-        ok_text = tr(optReplaceMainButton.toUtf8());
-    ok = alert.addButton(ok_text, QMessageBox::AcceptRole);
-    if (!optButton.isEmpty())
-    {
-        QAbstractButton* option = alert.addButton(tr(optButton.toUtf8()), QMessageBox::AcceptRole);
-        alert.exec();
-        if (alert.clickedButton() == option)
-        {
-            std::invoke(optButtonAction, *this);
-            // (this->*optButtonAction)(); // lol
-            startColorBar(scheme);
-            return true;
-        }
-        return false;
-    }
-    alert.exec();
-    startColorBar(scheme);
-    return false;
+    auto win_pos = UD::loadConfig("window", "position", QRect(0, 0, 1000, 666), QMetaType::QRect);
+    setGeometry(win_pos.toRect());
+    auto win_state = UD::loadConfig("window", "state").toInt();
+    if (win_state == 1) setWindowState(Qt::WindowState::WindowMinimized);
+    else if (win_state == 2) setWindowState(Qt::WindowState::WindowMaximized);
+    else if (win_state == 4) setWindowState(Qt::WindowState::WindowFullScreen);
+    auto aot_state = UD::loadConfig("window", "always_on_top", false);
+    aot->setChecked(aot_state.toBool());
 }
 
-void Fernanda::chooseProjectDataOnOpen()
+void Fernanda::loadViewConfig(QVector<QAction*> actions, QString group, QString valueName, QVariant fallback)
 {
-    if (!defaultProjectsFolder.isEmpty())
-    {
-        auto alert_option_taken = alert(ColorScheme::Green, "Open an existing project, or create a new one", "Create a new project (WIP)", &Fernanda::fileMenuNewProject, "Open an existing project");
-        if (!alert_option_taken)
-            fileMenuOpenProject();
-    }
-    else
-    {
-        helpMenuSetProjectsDir();
-    }
-}
-
-void Fernanda::textEditorTextChanged() // Move to TextEditor?
-{
-    // Bug: if you load a blank file first (or startup blank) while lineNumberArea is on, then then initially the editor's viewport will not account for the lineNumberArea width, and they'll overlap, until something else is loaded or lineNumberArea is toggled off/on, in which case the width will be accounted for, even for only one line.
-    auto& current_file_index = std::get<1>(pane->currentFile);
-    auto& current_file = std::get<0>(pane->currentFile);
-    if (current_file.isEmpty())
-    {
-        overlay->show();
-        textEditor->setReadOnly(true);
-    }
-    else
-    {
-        overlay->hide();
-        textEditor->setReadOnly(false);
-        auto current_text = textEditor->toPlainText();
-        if (current_text != cleanText)
+    auto resource = UD::loadConfig(group, valueName, fallback);
+    for (auto action : actions)
+        if (action->data() == resource)
         {
-            if (!pane->paneDelegate->dirtyIndexes.contains(current_file_index))
-            {
-                pane->paneDelegate->dirtyIndexes << current_file_index;
-                pane->refresh();
-            }
-            if (!dirtyFiles.contains(current_file))
-            {
-                dirtyFiles << current_file;
-                displayPath();
-            }
-        }
-        else
-        {
-            pane->paneDelegate->dirtyIndexes.removeAll(current_file_index);
-            dirtyFiles.removeAll(current_file);
-            pane->refresh();
-            displayPath();
-        }
-    }
-}
-
-void Fernanda::fileMenuOpenProject()
-{
-    if (!defaultProjectsFolder.isEmpty())
-    {
-        auto project = QFileDialog::getExistingDirectory(this, "Open a project", defaultProjectsFolder);
-        if (project.isEmpty())
-        {
-            startColorBar(ColorScheme::Red);
+            action->setChecked(true);
             return;
         }
-        auto is_child = checkChildStatus(defaultProjectsFolder, project);
-        if (!is_child)
+    for (auto action : actions)
+        if (action->data() == fallback)
         {
-            auto opt_taken = alert(ColorScheme::Red, "A project must be a subfolder of your Default Projects directory!", "Choose a new Default Projects directory...", &Fernanda::helpMenuSetProjectsDir);
-            if (opt_taken) return;
-            fileMenuOpenProject();
+            action->setChecked(true);
             return;
         }
-        if (currentProject == project)
-        {
-            startColorBar(ColorScheme::Red);
-            return;
-        }
-        fileMenuSaveAll();
-        clearAll(ClearType::Full);
-        currentProject = project;
-        saveConfig<QString>("data", "current_project", currentProject);
-        pane->setup(currentProject);
-        startColorBar(ColorScheme::Green);
-    }
-    else
-    {
-        helpMenuSetProjectsDir();
-    }
+    actions.first()->setChecked(true);
 }
 
-void Fernanda::fileMenuNewProject()
+void Fernanda::loadViewConfigToggle(QAction* action, QString group, QString valueName, QVariant fallback)
 {
-    // WIP
+    auto toggle_state = UD::loadConfig(group, valueName, fallback, QMetaType::Bool).toBool();
+    action->setChecked(!toggle_state); // whyyyyyyyyy
+    action->setChecked(toggle_state);
 }
 
-void Fernanda::fileMenuNew()
+void Fernanda::openProject(QString fileName)
 {
-    if (!currentProject.isEmpty())
+    if (fileName.isEmpty())
     {
-        auto file_name = QFileDialog::getSaveFileName(this, tr("Create a new file"), currentProject, tr("Plain text file (*.txt)"));
-        if (file_name.isEmpty())
-        {
-            startColorBar(ColorScheme::Red);
-            return;
-        }
-        if (!QFile(file_name).exists())
-        {
-            writeFile("", file_name);
-            startColorBar(ColorScheme::Green);
-        }
-    }
-}
-
-void Fernanda::fileMenuNewSubfolder()
-{
-    if (!currentProject.isEmpty())
-    {
-        auto subfolder_name = QFileDialog::getSaveFileName(this, tr("Create a new subfolder"), currentProject, tr("Folder"));
-        if (subfolder_name.isEmpty())
-        {
-            startColorBar(ColorScheme::Red);
-            return;
-        }
-        if (!QDir(subfolder_name).exists())
-        {
-            QDir().mkdir(subfolder_name);
-            startColorBar(ColorScheme::Green);
-        }
-    }
-}
-
-void Fernanda::fileMenuSave()
-{
-    auto& current_file = std::get<0>(pane->currentFile);
-    if (!current_file.isEmpty())
-    {
-        auto text = textEditor->toPlainText();
-        if (cleanText != text)
-        {
-            auto temp_path = pathMaker(current_file, PathType::Temp);
-            tempSave(text, temp_path);
-            textEditor->rememberCursorPositions(temp_path);
-            swap(current_file);
-            cleanText = readFile(current_file);
-            textEditorTextChanged();
-            startColorBar(ColorScheme::Green);
-        }
-    }
-}
-
-void Fernanda::fileMenuSaveAll()
-{
-    if (!pane->paneDelegate->dirtyIndexes.isEmpty() || !dirtyFiles.isEmpty())
-    {
-        fileMenuSave();
-        for (auto& item : dirtyFiles)
-            swap(item);
-        clearAll(ClearType::Partial);
-        startColorBar(ColorScheme::Green);
-    }
-}
-
-void Fernanda::helpMenuSetProjectsDir()
-{
-    alert(ColorScheme::None, "In order to use Fernanda, you need to set a default directory for your projects.");
-
-    auto documents = QStandardPaths::locate(QStandardPaths::DocumentsLocation, "", QStandardPaths::LocateDirectory);
-    std::filesystem::path tmp_docs = documents.toStdString();
-    auto fernanda_docs = tmp_docs / "Fernanda";
-    std::filesystem::create_directories(fernanda_docs);
-    auto path = QString::fromStdString(fernanda_docs.string());
-    auto default_projects = QFileDialog::getExistingDirectory(this, "Set a Default Projects directory", path);
-
-    if (defaultProjectsFolder.isEmpty() && default_projects.isEmpty())
-    {
-        startColorBar(ColorScheme::Red);
-        helpMenuSetProjectsDir();
+        colorBarOn(Color::Red);
         return;
     }
-    if (default_projects.isEmpty())
-    {
-        startColorBar(ColorScheme::Red);
-        return;
-    }
-    if (defaultProjectsFolder == default_projects)
-    {
-        startColorBar(ColorScheme::Red);
-        return;
-    }
-    defaultProjectsFolder = default_projects;
-    saveConfig<QString>("data", "default_projects", defaultProjectsFolder);
-
-    alert(ColorScheme::None, "Now select a project folder.", "Generate a sample project", &Fernanda::helpMenuMakeSample);
-    fileMenuOpenProject();
-}
-
-void Fernanda::helpMenuMakeSample()
-{
-    makeSample(defaultProjectsFolder);
-}
-
-void Fernanda::helpMenuMakeSampleUdRc()
-{
-    auto could_create = createSampleThemesAndFonts(userData);
-    if (!could_create)
-    {
-        alert(ColorScheme::Red, "One or more sample custom themes and/or fonts still exist in your data folder.");
-        return;
-    }
-    alert(ColorScheme::Green, "You'll need to restart in order to see the sample custom themes and fonts added to the View submenus.");
-}
-
-void Fernanda::helpMenuAbout()
-{
-    QMessageBox about;
-    about.setWindowTitle("About");
-    //QPixmap icon(":/icons/fernanda.png");
-    //about.setIconPixmap(icon.scaledToHeight(64, Qt::FastTransformation));
-    about.setText("Fernanda is a personal project and a work-in-progress.");
-    QAbstractButton* ok = about.addButton(tr("Okay"), QMessageBox::AcceptRole);
-    about.exec();
-}
-
-void Fernanda::ifPreviousFileIsFile(QString path)
-{
-    auto prev_text = textEditor->toPlainText();
-    auto prev_file_temp_path = pathMaker(path, PathType::Temp);
-    tempSave(prev_text, prev_file_temp_path);
-    textEditor->rememberCursorPositions(prev_file_temp_path);
-}
-
-void Fernanda::ifPathDoesNotEqualPrevPath(QString path)
-{
-    auto temp_path = pathMaker(path, PathType::Temp);
-    auto text = tempOpen(path, temp_path);
-    cleanText = readFile(path);
-    textEditor->setPlainText(text);
-    textEditor->setFocus();
-    if (QFileInfo(temp_path).exists())
-        textEditor->restoreCursorPositions(temp_path);
+    currentProject = Project(fileName);
+    sendItems(currentProject.value().items());
+    UD::saveConfig("data", "project", fileName);
+    colorBarOn(Color::Green);
 }
 
 void Fernanda::setWindowStyle()
@@ -1021,12 +518,12 @@ void Fernanda::setWindowStyle()
     if (auto selection = windowThemes->checkedAction(); selection != nullptr)
     {
         auto theme_path = selection->data().toString();
-        auto style_sheet = createStyleSheetFromTheme(
-            readFile(":/themes/window.qss"),
-            readFile(theme_path)
-        );
-        setStyleSheet(style_sheet);
-        saveConfig<QString>("window", "wintheme", theme_path);
+        auto style_sheet = RC::createStyleSheetFromTheme(IO::readFile(":/themes/window.qss"), IO::readFile(theme_path));
+        if (!hasWinTheme)
+            setStyleSheet("");
+        else
+            setStyleSheet(style_sheet);
+        UD::saveConfig("window", "wintheme", theme_path);
     }
 }
 
@@ -1035,20 +532,25 @@ void Fernanda::setEditorStyle()
     if (auto selection = editorThemes->checkedAction(); selection != nullptr)
     {
         auto theme_path = selection->data().toString();
-        auto style_sheet = createStyleSheetFromTheme(
-            readFile(":/themes/editor.qss"),
-            readFile(theme_path)
-        );
-        overlay->setStyleSheet(style_sheet);
-        textEditor->setStyleSheet(style_sheet);
-        underlay->setStyleSheet(style_sheet);
-
-        auto theme_cursor = readFile(theme_path);
+        auto style_sheet = RC::createStyleSheetFromTheme(IO::readFile(":/themes/editor.qss"), IO::readFile(theme_path));
+        auto theme_cursor = IO::readFile(theme_path);
         QRegularExpressionMatch match_cursor = QRegularExpression("(@cursorColor; = )(.*)(;$)").match(theme_cursor);
         QString cursor_color = match_cursor.captured(2);
-
-        textEditor->cursorColorHex = cursor_color;
-        saveConfig<QString>("editor", "theme", theme_path);
+        if (!hasTheme)
+        {
+            overlay->setStyleSheet("");
+            textEditor->setStyleSheet("");
+            underlay->setStyleSheet("");
+            textEditor->cursorColorHex = "";
+        }
+        else
+        {
+            overlay->setStyleSheet(style_sheet);
+            textEditor->setStyleSheet(style_sheet);
+            underlay->setStyleSheet(style_sheet);
+            textEditor->cursorColorHex = cursor_color;
+        }
+        UD::saveConfig("editor", "theme", theme_path);
     }
 }
 
@@ -1064,8 +566,14 @@ void Fernanda::setEditorFont()
         textEditor->setFont(font);
         textEditor->setCursorWidth(size * 0.8);
         textEditor->lineNumberAreaFont(size, selection->data().toString());
-        saveConfig<QString>("editor", "font", selection->data().toString());
+        UD::saveConfig("editor", "font", selection->data().toString());
     }
+}
+
+void Fernanda::toggleWidget(QWidget* widget, QString group, QString valueName, bool value)
+{
+    widget->setVisible(value);
+    UD::saveConfig(group, valueName, value);
 }
 
 void Fernanda::aotToggled(bool checked)
@@ -1081,7 +589,46 @@ void Fernanda::aotToggled(bool checked)
         aot->setText("\U0001F4CC");
     }
     show();
-    saveConfig("window", "aot", checked);
+    UD::saveConfig("window", "always_on_top", checked);
+}
+
+void Fernanda::setTabStop()
+{
+    if (auto selection = tabStops->checkedAction(); selection != nullptr)
+    {
+        auto distance = selection->data().toInt();
+        textEditor->setTabStopDistance(distance);
+        UD::saveConfig("editor", "tab", distance);
+    }
+}
+
+void Fernanda::setWrapMode()
+{
+    if (auto selection = wrapModes->checkedAction(); selection != nullptr)
+    {
+        auto mode = selection->data().toString();
+        if (mode == "NoWrap")
+            textEditor->setWordWrapMode(QTextOption::NoWrap);
+        else if (mode == "WordWrap")
+            textEditor->setWordWrapMode(QTextOption::WordWrap);
+        else if (mode == "WrapAnywhere")
+            textEditor->setWordWrapMode(QTextOption::WrapAnywhere);
+        else if (mode == "WrapAt")
+            textEditor->setWordWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+        UD::saveConfig("editor", "wrap", mode);
+    }
+}
+
+void Fernanda::toggleGlobals(bool& globalBool, QString group, QString valueName, bool value, Toggle type)
+{
+    globalBool = value;
+    UD::saveConfig(group, valueName, value);
+    switch (type) {
+        case Toggle::Count: updateCounters(); break;
+        case Toggle::Pos: updatePositions(); break;
+        case Toggle::WinTheme: setWindowStyle(); break;
+        case Toggle::Theme: setEditorStyle(); break;
+    }
 }
 
 void Fernanda::updatePositions()
@@ -1115,31 +662,108 @@ void Fernanda::updateCounters()
     counters->setText(counter_display);
 }
 
-void Fernanda::setTabStop()
+void Fernanda::fileSave()
 {
-    if (auto selection = tabStops->checkedAction(); selection != nullptr)
-    {
-        auto distance = selection->data().toInt();
-        textEditor->setTabStopDistance(distance);
-        saveConfig<QVariant>("editor", "tab", distance);
-    }
+    if (!currentProject.has_value()) return;
+    auto& project = currentProject.value();
+    project.saveCurrent(textEditor->toPlainText());
+    textEditor->textChanged();
+    colorBarOn(Color::Green);
 }
 
-void Fernanda::setWrapMode()
+void Fernanda::fileSaveAll()
 {
-    if (auto selection = wrapModes->checkedAction(); selection != nullptr)
-    {
-        auto mode = selection->data().toString();
-        if (mode == "NoWrap")
-            textEditor->setWordWrapMode(QTextOption::NoWrap);
-        else if (mode == "WordWrap")
-            textEditor->setWordWrapMode(QTextOption::WordWrap);
-        else if (mode == "WrapAnywhere")
-            textEditor->setWordWrapMode(QTextOption::WrapAnywhere);
-        else if (mode == "WrapAt")
-            textEditor->setWordWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
-        saveConfig<QVariant>("editor", "wrap", mode);
-    }
+    fileSave();
+    currentProject.value().saveNonActiveFiles();
+    textEditor->textChanged();
+    colorBarOn(Color::StartUp);
 }
+
+/*void Fernanda::helpProjects()
+{
+    //
+}*/
+
+void Fernanda::helpMakeSampleRes()
+{
+    auto path = UD::userData(UD::Op::GetUserData);
+    Sample::makeRc(path.toStdString());
+    // popup to tell user to restart to see changes
+}
+
+void Fernanda::helpMakeSampleProject()
+{
+    // ask to save if another project is open
+    auto path = UD::userData(UD::Op::GetDocs) + "/Candide.story";
+    currentProject = Project(path, Project::SP::MakeSample);
+    sendItems(currentProject.value().items());
+    UD::saveConfig("data", "project", path);
+    colorBarOn(Color::Green);
+}
+
+void Fernanda::helpAbout()
+{
+    QMessageBox about;
+    about.setWindowTitle("About");
+    about.setText("Fernanda is a personal project and a work-in-progress.");
+    QAbstractButton* ok = about.addButton(tr("Okay"), QMessageBox::AcceptRole);
+    about.exec();
+}
+
+void Fernanda::handleEditorText(QString relFilePath)
+{
+    if (!currentProject.has_value()) return;
+    if (overlay->isVisible())
+        overlay->hide();
+    if (textEditor->isReadOnly())
+        textEditor->setReadOnly(false);
+    auto& project = currentProject.value();
+    auto old_file = project.getCurrentRelPath();
+    if (old_file == relFilePath) // can we do this in project?
+    {
+        textEditor->setFocus();
+        return;
+    }
+    if (old_file != nullptr) // can we do this in project?
+    {
+        saveCursors(old_file);
+        saveUndoStacks(old_file);
+    }
+    auto text = project.handleIO(relFilePath, textEditor->toPlainText());
+    textEditor->clear();
+    textEditor->setPlainText(text);
+    applyCursors(relFilePath);
+    applyUndoStacks(relFilePath);
+    textEditor->setFocus();
+}
+
+void Fernanda::sendEditedText()
+{
+    if (!currentProject.has_value()) return;
+    auto list = currentProject.value().handleEditedList(textEditor->toPlainText());
+    sendEditsList(list);
+}
+
+bool Fernanda::replyHasProject()
+{
+    if (currentProject.has_value()) return true;
+    else return false;
+}
+
+// TODO:
+// auto save
+// save redo stack
+// method to swap rel paths for these lists to persist across file moves
+// highlighted words count
+// add QValidator in pane rename to prevent "/"
+// version.h
+// moveable docs folder
+// move some of the widget-specific things in layout objects above, into their constructors?
+// stick with "ask" / "reply" terminology for those types of signal/slot combos. Go back and change outliers.
+// redo include check (from bottom to top, double-checking includes)
+// check what overloaded/re-implemented functions are protected (and should be listed as protected in header)
+// double check handleEditorText and see what is moveable to individual classes
+// in delegate, add isDir and isFile functions that take the index as argument and read the UserRole data for "dir" or "file"
+// then, in nav pane, check isDir or isFile, and if isDir && state.open/closed expand or not based on that (and implement in delegate also)
 
 // fernanda.cpp, fernanda

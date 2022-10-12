@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{E71FE603-1161-4AF0-AE4E-22C2FC22D4FB}</ProjectGuid>
+    <ProjectGuid>{7373CD16-2203-4B72-B5ED-4F8F7304803B}</ProjectGuid>
     <Keyword>QtVS_v304</Keyword>
-    <WindowsTargetPlatformVersion Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">10.0.22621.0</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformVersion Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">10.0.22621.0</WindowsTargetPlatformVersion>
     <QtMsBuild Condition="'$(QtMsBuild)'=='' OR !Exists('$(QtMsBuild)\qt.targets')">$(MSBuildProjectDirectory)\QtMsBuild</QtMsBuild>
   </PropertyGroup>
@@ -31,7 +31,7 @@
     <Import Project="$(QtMsBuild)\qt_defaults.props" />
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
-    <QtInstall>6.3.1_msvc2019_64</QtInstall>
+    <QtInstall>6.4.0_msvc2019_64</QtInstall>
     <QtModules>core;gui;widgets</QtModules>
     <QtBuildConfig>debug</QtBuildConfig>
   </PropertyGroup>
@@ -60,7 +60,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>include;%(AdditionalIncludeDirectories);$(Qt_INCLUDEPATH_)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
@@ -90,58 +90,58 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="rc\test\test.fernanda_theme" />
-    <None Include="rc\test\test.fernanda_wintheme" />
-    <None Include="rc\themes\bar\red.qss" />
-    <None Include="rc\themes\bar\green.qss" />
-    <None Include="rc\themes\bar\start_up.qss" />
-    <None Include="rc\themes\editor.qss" />
-    <None Include="rc\themes\editor\amber.fernanda_theme" />
-    <None Include="rc\themes\editor\blue.fernanda_theme" />
-    <None Include="rc\themes\editor\green.fernanda_theme" />
-    <None Include="rc\themes\editor\grey.fernanda_theme" />
-    <None Include="rc\themes\window.qss" />
-    <None Include="rc\themes\window\dark.fernanda_wintheme" />
-    <None Include="rc\themes\window\light.fernanda_wintheme" />
     <None Include="..\.gitignore" />
     <None Include="..\README.md" />
     <None Include="cpp.hint" />
-    <None Include="fernanda.ico" />
+    <None Include="res\themes\bar\green.qss" />
+    <None Include="res\themes\bar\red.qss" />
+    <None Include="res\themes\bar\start_up.qss" />
+    <None Include="res\themes\editor.qss" />
+    <None Include="res\themes\editor\amber.fernanda_theme" />
+    <None Include="res\themes\editor\blue.fernanda_theme" />
+    <None Include="res\themes\editor\green.fernanda_theme" />
+    <None Include="res\themes\editor\grey.fernanda_theme" />
+    <None Include="res\themes\window.qss" />
+    <None Include="res\themes\window\dark.fernanda_wintheme" />
+    <None Include="res\themes\window\light.fernanda_wintheme" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="include\fernanda.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <QtMoc Include="include\pane_delegate.h" />
-    <ClInclude Include="include\io.h" />
-    <ClInclude Include="include\rc.h" />
-    <ClInclude Include="include\version.h" />
-    <QtMoc Include="include\texteditor.h" />
-    <QtMoc Include="include\pane.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="rc\fernanda.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <QtRcc Include="rc\fonts.qrc" />
-    <QtRcc Include="rc\sample.qrc" />
-    <QtRcc Include="rc\themes.qrc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="CMakeLists.txt" />
-    <Text Include="rc\themes\palette.txt" />
-  </ItemGroup>
-  <ItemGroup>
+    <ClCompile Include="include\microtar\microtar.c" />
+    <ClCompile Include="src\project.cpp" />
+    <ClCompile Include="src\userdata.cpp" />
     <ClCompile Include="src\fernanda.cpp" />
-    <ClCompile Include="src\io.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\pane.cpp" />
-    <ClCompile Include="src\pane_delegate.cpp" />
-    <ClCompile Include="src\rc.cpp" />
-    <ClCompile Include="src\texteditor.cpp" />
+    <ClCompile Include="src\editor.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="res\resource.rc" />
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="src\fernanda.ui" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\microtar\microtar.h" />
+    <ClInclude Include="src\version.h" />
+    <QtMoc Include="src\fernanda.h" />
+    <ClInclude Include="src\io.h" />
+    <ClInclude Include="src\project.h" />
+    <ClInclude Include="src\sample.h" />
+    <ClInclude Include="src\userdata.h" />
+    <QtMoc Include="src\pane.h" />
+    <QtMoc Include="src\delegate.h" />
+    <ClInclude Include="src\res.h" />
+    <QtMoc Include="src\editor.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtRcc Include="res\fonts.qrc" />
+    <QtRcc Include="res\icons.qrc" />
+    <QtRcc Include="res\sample.qrc" />
+    <QtRcc Include="res\themes.qrc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="docs\dependency tree.txt" />
+    <Text Include="res\themes\palette.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

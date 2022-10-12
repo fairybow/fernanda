@@ -1,4 +1,4 @@
-# <img src="fernanda/fernanda.ico" alt="Colorful conch shell icon." width="26px"/> fernanda
+# <img src="fernanda/res/icons/fernanda.ico" alt="Colorful conch shell icon." width="26px"/> fernanda
 
 ## :wave: **hi**
 
@@ -25,8 +25,14 @@ Here's what's happening ATM:
 
 ## :honeybee:
 
-Fernanda is built with C++ and Qt 6.3.2.
+Fernanda is built with C++ and Qt 6.4.0.
 
 ## :seedling:
 
 More to come.
+
+<p><kbd><img src="fernanda/docs/screens/gif_2.gif" alt="GIF of 'Slightly less early Fernanda running on Windows 11.'" width="360px"/><br>Slightly less early Fernanda running on Windows 11.</kbd></p>
+
+<p><kbd><img src="fernanda/docs/screens/screen_1.png" alt="Picture of 'Dark window & blue editor / light window & amber editor.'" width="360px"/><br>Dark window & blue editor / light window & amber editor.</kbd></p>
+
+<p><kbd><img src="fernanda/docs/screens/screen_2.png" alt="Picture of 'Dark window & green editor / light window & grey editor.'" width="360px"/><br>Dark window & green editor / light window & grey editor.</kbd></p>

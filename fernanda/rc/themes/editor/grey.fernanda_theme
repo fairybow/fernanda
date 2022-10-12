@@ -1,5 +1,0 @@
-@bgColor; = #080808;
-@fontColor; = #cccccc;
-@selectionBgColor; = #cccccc;
-@selectionColor; = #080808;
-@cursorColor; = #cccccc;

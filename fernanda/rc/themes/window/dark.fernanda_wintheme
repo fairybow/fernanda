@@ -1,7 +1,0 @@
-@bgColor; = #232323;
-@bgColorHover; = #171717;
-@bgColor2; = #303030;
-@borderColor; = #171717;
-@fontColor; = #767676;
-@fontColor2; = #aaa;
-@fontColor2Hover; = #eee;

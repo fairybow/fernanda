@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/fernanda.ico</file>
+        <file>icons/Qt.ico</file>
+    </qresource>
+</RCC>
