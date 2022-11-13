@@ -1,45 +1,53 @@
+REDO!
+
 fernanda.h
+	bar.h
+		io.h
+			path.h
 	editor.h
+		uni.h
 	pane.h
 		delegate.h
-	res.h
-	project.h
+			index.h
+			uni.h
 		io.h
+			path.h
+	project.h
 		sample.h
+			io.h
+				path.h
 		userdata.h
+	res.h
 
 /* ==================== */
 
-// fernanda.h
-/*#include "editor.h"
-#include "pane.h"
-#include "project.h"
-#include "res.h"
-#include "ui_fernanda.h"
+// bar.h
+/*#include "io.h"
 
-#include <QAbstractButton>
-#include <QActionGroup>
-#include <QCloseEvent>
-#include <QCoreApplication>
-#include <QFileDialog>
-#include <QLabel>
-#include <QMainWindow>
-#include <QMessageBox>
-#include <QMetaObject>
-#include <QMoveEvent>
 #include <QProgressBar>
-#include <QShowEvent>
-#include <QSizePolicy>
-#include <QSlider>
-#include <QSplitter>
-#include <QStackedLayout>
-#include <QTextOption>
+#include <QString>
 #include <QTimeLine>
 #include <QTimer>
-#include <QWidgetAction>*/
+#include <QWidget>*/
+
+// delegate.h
+/*#include "index.h"
+#include "uni.h"
+
+#include <QColor>
+#include <QFont>
+#include <QObject>
+#include <QPainter>
+#include <QRect>
+#include <QSize>
+#include <QStyle>
+#include <QStyledItemDelegate>
+#include <QStyleOptionViewItem>
+#include <QVector>
+#include <QWidget>*/
 
 // editor.h
-/*#include <tuple>
+/*#include "uni.h"
 
 #include <QAbstractSlider>
 #include <QColor>
@@ -54,7 +62,6 @@ fernanda.h
 #include <QResizeEvent>
 #include <QScrollBar>
 #include <QSize>
-#include <QString>
 #include <QTextBlock>
 #include <QTextCursor>
 #include <QTextFormat>
@@ -63,23 +70,93 @@ fernanda.h
 #include <QWheelEvent>
 #include <QWidget>*/
 
+// fernanda.h
+/*#include "bar.h"
+#include "editor.h"
+#include "pane.h"
+#include "project.h"
+#include "res.h"
+
+#include <tuple>
+
+#include <QAbstractButton>
+#include <QActionGroup>
+#include <QCloseEvent>
+#include <QCoreApplication>
+#include <QFileDialog>
+#include <QLabel>
+#include <QMainWindow>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QMetaObject>
+#include <QMoveEvent>
+#include <QShowEvent>
+#include <QSizePolicy>
+#include <QSlider>
+#include <QSplitter>
+#include <QStatusBar>
+#include <QStackedLayout>
+#include <QTextOption>
+#include <QVBoxLayout>
+#include <QWidgetAction>*/
+
+// index.h
+/*#include <QModelIndex>
+#include <QString>
+#include <Qt>
+#include <QVariant>*/
+
+// io.h
+/*#include "path.h"
+
+#include <optional>
+
+#include <QFile>
+#include <QIODevice>
+#include <QTextStream>*/
+
 // pane.h
 /*#include "delegate.h"
+#include "io.h"
 
 #include <QAbstractItemView>
 #include <QAction>
 #include <QContextMenuEvent>
+#include <QDragMoveEvent>
+#include <QDropEvent>
+#include <QInputDialog>
 #include <QMenu>
 #include <QMouseEvent>
+#include <QPoint>
+#include <QRegularExpression>
 #include <QStandardItem>
 #include <QStandardItemModel>
 #include <QTreeView>*/
+
+// project.h
+/*#include "microtar/microtar.h"
+
+#include "sample.h"
+#include "userdata.h"
+
+#include <algorithm>
+#include <cstring>
+#include <fstream>
+#include <vector>
+
+#include <QByteArray>
+#include <QDomDocument>
+#include <QDomElement>
+#include <QStandardItem>
+#include <QTemporaryDir>
+#include <QXmlStreamReader>
+#include <QXmlStreamWriter>
+#include <QUuid>*/
 
 // res.h
 /*#include <algorithm>
 #include <filesystem>
 #include <string>
-#include <tuple>
 
 #include <QDir>
 #include <QDirIterator>
@@ -91,49 +168,11 @@ fernanda.h
 #include <QStringList>
 #include <QVector>*/
 
-// project.h
-/*//#include "microtar/microtar.h"
-
-#include "io.h"
-#include "sample.h"
-#include "userdata.h"
-
-#include <optional>
-//#include <unordered_map>
-
-#include <QStandardItem>
-#include <QXmlStreamReader>
-#include <QXmlStreamWriter>*/
-
-// delegate.h
-/*#include <QColor>
-#include <QFont>
-#include <QModelIndex>
-#include <QObject>
-#include <QPainter>
-#include <QRect>
-#include <QSize>
-#include <QString>
-#include <QStyle>
-#include <QStyledItemDelegate>
-#include <QStyleOptionViewItem>
-#include <QVector>
-#include <QWidget>*/
-
-// io.h
-/*#include <filesystem>
-
-#include <QDir>
-#include <QFile>
-#include <QFileInfo>
-#include <QIODevice>
-#include <QString>
-#include <QTextStream>*/
-
 // sample.h
-/*#include <filesystem>
+/*#include "io.h"
+
+#include <filesystem>
 #include <string>
-#include <tuple>
 
 #include <QDir>
 #include <QDirIterator>
@@ -142,14 +181,19 @@ fernanda.h
 #include <QStringList>
 #include <QVector>*/
 
+// uni.h
+/*#include <QString>*/
+
 // userdata.h
-/*#include <filesystem>
+/*#include <shlobj_core.h>
+
+#include <filesystem>
 #include <string>
 #include <time.h>
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QFile>
-#include <QMetaType>
 #include <QRect>
 #include <QSettings>
 #include <QStandardPaths>

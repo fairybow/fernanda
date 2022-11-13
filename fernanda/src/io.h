@@ -2,17 +2,35 @@
 
 #pragma once
 
-#include <filesystem>
+#include "path.h"
 
-#include <QDir>
+#include <optional>
+
 #include <QFile>
-#include <QFileInfo>
 #include <QIODevice>
-#include <QString>
 #include <QTextStream>
 
-namespace IO
+namespace Io
 {
+	enum class Move {
+		Above,
+		Below,
+		On,
+		Viewport
+	};
+
+	enum class AmendVector {
+		Add,
+		Remove
+	};
+
+	struct ArchivePaths {
+		QString archivePath;
+		std::optional<QString> readPath;
+		//bool operator==(const ArchivePaths&) const = default;
+		//bool operator!=(const ArchivePaths&) const = default;
+	};
+
 	inline const QString readFile(QString filePath)
 	{
 		QString text;
@@ -28,6 +46,7 @@ namespace IO
 
 	inline void writeFile(QString filePath, QString text)
 	{
+		Path::makeParent(filePath);
 		QFile file(filePath);
 		if (file.open(QIODevice::WriteOnly | QIODevice::Text))
 		{
@@ -37,38 +56,19 @@ namespace IO
 		}
 	}
 
-	inline bool checkExists(QString path)
+	template<typename T>
+	inline void amendVector(QVector<T>& vector, T item, AmendVector op)
 	{
-		if (QFileInfo(path).isFile())
-		{
-			if (QFile(path).exists()) return true;
+		switch (op) {
+		case AmendVector::Add:
+			if (!vector.contains(item))
+				vector << item;
+			break;
+		case AmendVector::Remove:
+			if (vector.contains(item))
+				vector.removeAll(item);
+			break;
 		}
-		else
-			if (QDir(path).exists()) return true;
-		return false;
-	}
-
-	inline QString getName(QString path)
-	{
-		std::filesystem::path name;
-		std::filesystem::path tmp;
-		if (QFileInfo(path).isFile())
-		{
-			tmp = path.toStdString();
-			name = tmp.stem();
-		}
-		else
-		{
-			tmp = QString(path + "//").toStdString();
-			name = tmp.parent_path().stem();
-		}
-		return QString::fromStdString(name.string());
-	}
-
-	inline QString relPath(std::filesystem::path rootPath, std::filesystem::path currentPath)
-	{
-		auto rel = relative(currentPath, rootPath);
-		return QString::fromStdString(rel.make_preferred().string());
 	}
 }
 

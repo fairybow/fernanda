@@ -1,11 +1,11 @@
-QMenuBar, QMenu
+#menuBar, QMenu
 {
 	background: @bgColor;
 	color: @fontColor;
 	font-weight: 600;
 }
 
-QMenuBar::item:selected, QMenu::item:selected, #fontSlider:hover
+#menuBar::item:selected, QMenu::item:selected, #fontSlider:hover
 {
 	background: @bgColorHover;
 	color: @fontColor2Hover;
@@ -100,13 +100,13 @@ QMenuBar::item:selected, QMenu::item:selected, #fontSlider:hover
 	border: none;
 }
 
-QStatusBar
+#statusBar
 {
 	background-color: @bgColor;
 	border: none;
 }
 
-QStatusBar::item
+#statusBar::item
 {
 	border: none;
 }
@@ -217,5 +217,5 @@ QStatusBar::item
 
 QSizeGrip
 {
-	image: url(:/img/blank.png);
+	image: none;
 }

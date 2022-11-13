@@ -5,7 +5,8 @@
 #include <algorithm>
 #include <filesystem>
 #include <string>
-#include <tuple>
+
+#include "uni.h"
 
 #include <QDir>
 #include <QDirIterator>
@@ -17,12 +18,17 @@
 #include <QStringList>
 #include <QVector>
 
-namespace RC
+namespace Res
 {
-    enum class ResType {
+    enum class Type {
         EditorTheme,
         Font,
         WindowTheme
+    };
+
+    struct DataPair {
+        QString path;
+        QString label;
     };
 
     inline const QString capitalizeName(QString path)
@@ -34,46 +40,49 @@ namespace RC
         return name_capped;
     }
 
-    inline void collectResources(QDirIterator& iterator, ResType resourceType, QVector<std::tuple<QString, QString>>& listOfPathPairs)
+    inline void collectResources(QDirIterator& iterator, Type resourceType, QVector<DataPair>& listOfPathPairs)
     {
         while (iterator.hasNext())
         {
             iterator.next();
-            auto label = RC::capitalizeName(iterator.filePath());
-            if (resourceType == ResType::Font)
-                listOfPathPairs << std::tuple<QString, QString>(QFontDatabase::applicationFontFamilies(QFontDatabase::addApplicationFont(iterator.filePath())).at(0), label);
+            auto label = capitalizeName(iterator.filePath());
+            if (resourceType == Type::Font)
+                listOfPathPairs << DataPair{
+                QFontDatabase::applicationFontFamilies(QFontDatabase::addApplicationFont(iterator.filePath())).at(0),
+                label
+            };
             else
-                listOfPathPairs << std::tuple<QString, QString>(iterator.filePath(), label);
+                listOfPathPairs << DataPair{ iterator.filePath(), label };
         }
     }
 
-    inline const QVector<std::tuple<QString, QString>> iterateResources(QString path, QString ext, QString dataPath, ResType resourceType)
+    inline const QVector<DataPair> iterateResources(QString path, QString ext, QString dataPath, Type resourceType)
     {
-        QVector<std::tuple<QString, QString>> dataAndLabels;
+        QVector<DataPair> dataAndLabels;
         QDirIterator assets(path, QStringList() << ext, QDir::Files, QDirIterator::Subdirectories);
         if (QDir(dataPath).exists())
         {
             QDirIterator user_assets(dataPath, QStringList() << ext, QDir::Files, QDirIterator::Subdirectories);
-            RC::collectResources(user_assets, resourceType, dataAndLabels);
+            collectResources(user_assets, resourceType, dataAndLabels);
         }
-        RC::collectResources(assets, resourceType, dataAndLabels);
+        collectResources(assets, resourceType, dataAndLabels);
         std::sort(dataAndLabels.begin(), dataAndLabels.end(), [](auto& lhs, auto& rhs)
             {
-                return std::get<1>(lhs) < std::get<1>(rhs);
+                return lhs.label < rhs.label;
             });
         return dataAndLabels;
     }
 
     inline const QString createStyleSheetFromTheme(QString styleSheet, QString themeSheet)
     {
-        QRegularExpressionMatchIterator matches = QRegularExpression("(@.*\\n?)").globalMatch(themeSheet);
+        QRegularExpressionMatchIterator matches = QRegularExpression(Uni::regex.themeSheetLine).globalMatch(themeSheet);
         while (matches.hasNext())
         {
             QRegularExpressionMatch match = matches.next();
             if (match.hasMatch())
             {
-                QString variable = match.captured(0).replace(QRegularExpression("(\\s=.*;)"), "");
-                QString value = match.captured(0).replace(QRegularExpression("(@.*=\\s)"), "");
+                QString variable = match.captured(0).replace(QRegularExpression(Uni::regex.themeSheetValue), nullptr);
+                QString value = match.captured(0).replace(QRegularExpression(Uni::regex.themeSheetVariable), nullptr);
                 styleSheet.replace(QRegularExpression(variable), value);
             }
         }

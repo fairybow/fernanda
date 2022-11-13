@@ -13,10 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>qrc;rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Form Files">
-      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
-      <Extensions>ui</Extensions>
-    </Filter>
     <Filter Include="Translation Files">
       <UniqueIdentifier>{639EADAA-A684-42e4-A9AD-28FC9BCB8F7C}</UniqueIdentifier>
       <Extensions>ts</Extensions>
@@ -30,27 +26,30 @@
     <Filter Include="Resource Files\Stylesheets">
       <UniqueIdentifier>{23bccbdc-c410-4bba-95b6-044e60d463c3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files\Stylesheets\Colorbar Stylesheets">
-      <UniqueIdentifier>{9d191d76-a216-4879-bfdd-a41759fea584}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resource Files\Stylesheets\Editor Themes">
       <UniqueIdentifier>{38029b03-9f1b-42d0-8ad1-33bfce392b5d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resource Files\Stylesheets\Window Themes">
       <UniqueIdentifier>{d7a2a167-b848-4309-b714-3f7c75a3da07}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Stylesheets\Bar Stylesheets">
+      <UniqueIdentifier>{9d191d76-a216-4879-bfdd-a41759fea584}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Includes\bit7z">
+      <UniqueIdentifier>{494aa906-9c37-4693-9cae-92d695af3152}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore" />
     <None Include="..\README.md" />
     <None Include="res\themes\bar\green.qss">
-      <Filter>Resource Files\Stylesheets\Colorbar Stylesheets</Filter>
+      <Filter>Resource Files\Stylesheets\Bar Stylesheets</Filter>
     </None>
     <None Include="res\themes\bar\red.qss">
-      <Filter>Resource Files\Stylesheets\Colorbar Stylesheets</Filter>
+      <Filter>Resource Files\Stylesheets\Bar Stylesheets</Filter>
     </None>
-    <None Include="res\themes\bar\start_up.qss">
-      <Filter>Resource Files\Stylesheets\Colorbar Stylesheets</Filter>
+    <None Include="res\themes\bar\pastels.qss">
+      <Filter>Resource Files\Stylesheets\Bar Stylesheets</Filter>
     </None>
     <None Include="res\themes\editor\amber.fernanda_theme">
       <Filter>Resource Files\Stylesheets\Editor Themes</Filter>
@@ -81,9 +80,6 @@
     <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="include\microtar\microtar.c">
-      <Filter>Source Files\Includes</Filter>
-    </ClCompile>
     <ClCompile Include="src\editor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -99,7 +95,16 @@
     <ClCompile Include="src\userdata.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\bar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\project.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\archiver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dom.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -109,14 +114,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <QtUic Include="src\fernanda.ui">
-      <Filter>Form Files</Filter>
-    </QtUic>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="include\microtar\microtar.h">
-      <Filter>Header Files\Includes</Filter>
-    </ClInclude>
     <ClInclude Include="src\res.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -126,13 +123,91 @@
     <ClInclude Include="src\io.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\project.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\sample.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\index.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\project.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\uni.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\path.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\bit7z\include\bit7z.hpp">
+      <Filter>Header Files\Includes\bit7z</Filter>
+    </ClInclude>
+    <ClInclude Include="include\bit7z\include\bit7zlibrary.hpp">
+      <Filter>Header Files\Includes\bit7z</Filter>
+    </ClInclude>
+    <ClInclude Include="include\bit7z\include\bitarchivecreator.hpp">
+      <Filter>Header Files\Includes\bit7z</Filter>
+    </ClInclude>
+    <ClInclude Include="include\bit7z\include\bitarchivehandler.hpp">
+      <Filter>Header Files\Includes\bit7z</Filter>
+    </ClInclude>
+    <ClInclude Include="include\bit7z\include\bitarchiveinfo.hpp">
+      <Filter>Header Files\Includes\bit7z</Filter>
+    </ClInclude>
+    <ClInclude Include="include\bit7z\include\bitarchiveitem.hpp">
+      <Filter>Header Files\Includes\bit7z</Filter>
+    </ClInclude>
+    <ClInclude Include="include\bit7z\include\bitarchiveopener.hpp">
+      <Filter>Header Files\Includes\bit7z</Filter>
+    </ClInclude>
+    <ClInclude Include="include\bit7z\include\bitcompressionlevel.hpp">
+      <Filter>Header Files\Includes\bit7z</Filter>
+    </ClInclude>
+    <ClInclude Include="include\bit7z\include\bitcompressionmethod.hpp">
+      <Filter>Header Files\Includes\bit7z</Filter>
+    </ClInclude>
+    <ClInclude Include="include\bit7z\include\bitcompressor.hpp">
+      <Filter>Header Files\Includes\bit7z</Filter>
+    </ClInclude>
+    <ClInclude Include="include\bit7z\include\bitexception.hpp">
+      <Filter>Header Files\Includes\bit7z</Filter>
+    </ClInclude>
+    <ClInclude Include="include\bit7z\include\bitextractor.hpp">
+      <Filter>Header Files\Includes\bit7z</Filter>
+    </ClInclude>
+    <ClInclude Include="include\bit7z\include\bitformat.hpp">
+      <Filter>Header Files\Includes\bit7z</Filter>
+    </ClInclude>
+    <ClInclude Include="include\bit7z\include\bitguids.hpp">
+      <Filter>Header Files\Includes\bit7z</Filter>
+    </ClInclude>
+    <ClInclude Include="include\bit7z\include\bitinputarchive.hpp">
+      <Filter>Header Files\Includes\bit7z</Filter>
+    </ClInclude>
+    <ClInclude Include="include\bit7z\include\bitmemcompressor.hpp">
+      <Filter>Header Files\Includes\bit7z</Filter>
+    </ClInclude>
+    <ClInclude Include="include\bit7z\include\bitmemextractor.hpp">
+      <Filter>Header Files\Includes\bit7z</Filter>
+    </ClInclude>
+    <ClInclude Include="include\bit7z\include\bitpropvariant.hpp">
+      <Filter>Header Files\Includes\bit7z</Filter>
+    </ClInclude>
+    <ClInclude Include="include\bit7z\include\bitstreamcompressor.hpp">
+      <Filter>Header Files\Includes\bit7z</Filter>
+    </ClInclude>
+    <ClInclude Include="include\bit7z\include\bitstreamextractor.hpp">
+      <Filter>Header Files\Includes\bit7z</Filter>
+    </ClInclude>
+    <ClInclude Include="include\bit7z\include\bittypes.hpp">
+      <Filter>Header Files\Includes\bit7z</Filter>
+    </ClInclude>
+    <ClInclude Include="src\archiver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\dom.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -149,6 +224,9 @@
     <QtMoc Include="src\delegate.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="src\bar.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="res\fonts.qrc">
@@ -161,6 +239,9 @@
       <Filter>Resource Files</Filter>
     </QtRcc>
     <QtRcc Include="res\icons.qrc">
+      <Filter>Resource Files</Filter>
+    </QtRcc>
+    <QtRcc Include="res\lib.qrc">
       <Filter>Resource Files</Filter>
     </QtRcc>
   </ItemGroup>

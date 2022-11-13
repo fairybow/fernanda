@@ -2,49 +2,63 @@
 
 #include "userdata.h"
 
-const QString UD::userData(Op operation, QString name)
+void Ud::windowsReg()
 {
-    if (!name.isEmpty())
+    //
+}
+
+void Ud::linuxReg()
+{
+    //
+}
+
+const QString Ud::userData(Op operation, QString name)
+{
+    if (name != nullptr)
         dataVars.appName = name;
     else
         name = dataVars.appName;
-    auto user_data = std::filesystem::path(QDir::homePath().toStdString()) / std::string("." + name.toStdString());
+    auto user_data = std::filesystem::path((QDir::homePath() / QString("." + name)).toStdString());
     auto active_temp = user_data / std::string(".active_temp");
     auto backup = user_data / std::string("backup");
+    auto dll = user_data / std::string("dll");
     auto rollback = backup / std::string(".rollback");
     auto config = user_data / std::string(name.toStdString() + ".ini");
-    std::filesystem::path docs = QStandardPaths::locate(QStandardPaths::DocumentsLocation, "", QStandardPaths::LocateDirectory).toStdString();
+    std::filesystem::path docs = QStandardPaths::locate(QStandardPaths::DocumentsLocation, nullptr, QStandardPaths::LocateDirectory).toStdString();
     auto user_docs = docs / std::string("Fernanda");
     QString result;
     switch (operation) {
-        case Op::Config:
-            result = QString::fromStdString(config.string());
-            break;
-        case Op::Create:
-            for (auto& data_folder : { user_data, active_temp, backup, rollback, user_docs })
-                UD::makeDirs(QString::fromStdString(data_folder.string()));
-            result = nullptr;
-            break;
-        case Op::GetBackup:
-            result = QString::fromStdString(backup.string());
-            break;
-        case Op::GetDocs:
-            result = QString::fromStdString(user_docs.string());
-            break;
-        case Op::GetRollback:
-            result = QString::fromStdString(rollback.string());
-            break;
-        case Op::GetTemp:
-            result = QString::fromStdString(active_temp.string());
-            break;
-        case Op::GetUserData:
-            result = QString::fromStdString(user_data.string());
-            break;
+    case Op::Config:
+        result = QString::fromStdString(config.string());
+        break;
+    case Op::Create:
+        for (auto& data_folder : { user_data, active_temp, backup, dll, rollback, user_docs})
+            Path::makeDirs(QString::fromStdString(data_folder.string()));
+        result = nullptr;
+        break;
+    case Op::GetBackup:
+        result = QString::fromStdString(backup.string());
+        break;
+    case Op::GetDLL:
+        result = QString::fromStdString(dll.string());
+        break;
+    case Op::GetDocs:
+        result = QString::fromStdString(user_docs.string());
+        break;
+    case Op::GetRollback:
+        result = QString::fromStdString(rollback.string());
+        break;
+    case Op::GetTemp:
+        result = QString::fromStdString(active_temp.string());
+        break;
+    case Op::GetUserData:
+        result = QString::fromStdString(user_data.string());
+        break;
     }
     return result;
 }
 
-void UD::saveConfig(QString group, QString valueName, QVariant value)
+void Ud::saveConfig(QString group, QString valueName, QVariant value)
 {
     auto config = userData(Op::Config);
     QSettings ini(config, QSettings::IniFormat);
@@ -53,7 +67,7 @@ void UD::saveConfig(QString group, QString valueName, QVariant value)
     ini.endGroup();
 }
 
-QVariant UD::loadConfig(QString group, QString valueName, QVariant fallback, QMetaType::Type type)
+QVariant Ud::loadConfig(QString group, QString valueName, QVariant fallback, Ud::Type type)
 {
     auto config = userData(Op::Config);
     if (!QFile(config).exists()) return fallback;
@@ -62,17 +76,17 @@ QVariant UD::loadConfig(QString group, QString valueName, QVariant fallback, QMe
     ini.beginGroup(group);
     if (!ini.childKeys().contains(valueName)) return fallback;
     auto result = ini.value(valueName);
-    if (type == QMetaType::Bool)
+    if (type == Ud::Type::Bool) // no idea why, but switch is not working out here
         if (result != "true" && result != "false") return fallback;
-    if (type == QMetaType::Int)
+    if (type == Ud::Type::Int)
         if (result.toInt() < 1) return fallback;
-    if (type == QMetaType::QRect)
+    if (type == Ud::Type::QRect)
         if (!result.canConvert<QRect>()) return fallback;
     ini.endGroup();
     return result;
 }
 
-void UD::clearFiles(QString dirPath, bool clearSelf)
+void Ud::clear(QString dirPath, bool clearSelf)
 {
     std::filesystem::path dir = dirPath.toStdString();
     for (auto& item : std::filesystem::directory_iterator(dir))
@@ -81,17 +95,18 @@ void UD::clearFiles(QString dirPath, bool clearSelf)
         std::filesystem::remove(dir);
 }
 
-int UD::getTime()
+int Ud::getTime()
 {
     time_t now = time(0);
     return now;
 }
 
-void UD::makeDirs(QString dirPath)
+std::wstring Ud::dll()
 {
-    if (QDir(dirPath).exists()) return;
-    std::filesystem::path new_path = dirPath.toStdString();
-    std::filesystem::create_directories(new_path);
+    auto dll_path = userData(Op::GetDLL) / "7z.dll";
+    if (!Path::exists(dll_path))
+        QFile::copy(":\\lib\\7zip\\64\\7z.dll", dll_path);
+    return dll_path.toStdWString();
 }
 
 // userdata.cpp, fernanda

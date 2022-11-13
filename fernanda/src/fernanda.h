@@ -2,11 +2,11 @@
 
 #pragma once
 
+#include "bar.h"
 #include "editor.h"
 #include "pane.h"
 #include "project.h"
 #include "res.h"
-#include "ui_fernanda.h"
 
 #include <QAbstractButton>
 #include <QActionGroup>
@@ -15,18 +15,18 @@
 #include <QFileDialog>
 #include <QLabel>
 #include <QMainWindow>
+#include <QMenuBar>
 #include <QMessageBox>
 #include <QMetaObject>
 #include <QMoveEvent>
-#include <QProgressBar>
 #include <QShowEvent>
 #include <QSizePolicy>
 #include <QSlider>
 #include <QSplitter>
+#include <QStatusBar>
 #include <QStackedLayout>
 #include <QTextOption>
-#include <QTimeLine>
-#include <QTimer>
+#include <QVBoxLayout>
 #include <QWidgetAction>
 
 class Fernanda : public QMainWindow
@@ -37,105 +37,111 @@ public:
     Fernanda(QWidget* parent = nullptr);
     ~Fernanda() = default;
 
+protected:
+    void showEvent(QShowEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
+    void moveEvent(QMoveEvent* event) override;
+    void closeEvent(QCloseEvent* event) override;
+
 private:
-    Ui::fernandaClass ui;
-    const QString ferName = "fernanda";
-    //const QString ferName = "fernanda-dev";
-    std::optional<Project> currentProject;
+    QMenuBar* menuBar = new QMenuBar(this);
+    QStatusBar* statusBar = new QStatusBar(this);
     QSplitter* splitter = new QSplitter(this);
     Pane* pane = new Pane(this);
     QLabel* overlay = new QLabel(this);
     TextEditor* textEditor = new TextEditor(this);
     QLabel* underlay = new QLabel(this);
-    QProgressBar* colorBar = new QProgressBar(this);
-    QTimer* barTimer = new QTimer(this);
+    ColorBar* colorBar = new ColorBar(this);
     QActionGroup* windowThemes = new QActionGroup(this);
     QActionGroup* editorThemes = new QActionGroup(this);
     QActionGroup* editorFonts = new QActionGroup(this);
     QActionGroup* tabStops = new QActionGroup(this);
     QActionGroup* wrapModes = new QActionGroup(this);
+    QActionGroup* barAlignments = new QActionGroup(this);
+    QVBoxLayout* barLayout;
     QSlider* fontSlider = new QSlider(Qt::Horizontal);
     QLabel* positions = new QLabel(this);
     QLabel* counters = new QLabel(this);
     QLabel* spacer = new QLabel(this);
     QPushButton* aot = new QPushButton(this);
-    QLabel* test1 = new QLabel(this);
-    QPushButton* test2 = new QPushButton(this);
-    QPushButton* test3 = new QPushButton(this);
+    QTimer* autoTempSave = new QTimer(this);
+    QLabel* test1 = new QLabel();
+    QPushButton* test2 = new QPushButton();
+    QPushButton* test3 = new QPushButton();
 
+    const QString ferName = "fernanda";
+    //const QString ferName = "fernanda-dev";
+    std::optional<Project> activeProject;
     bool isInitialized = false;
+    bool hasStartUpBar = true;
     bool hasWinTheme = true;
     bool hasTheme = true;
-    bool linePos = true;
-    bool colPos = true;
-    bool lineCount = true;
-    bool wordCount = true;
-    bool charCount = true;
+    bool hasLinePos = true;
+    bool hasColPos = true;
+    bool hasLineCount = true;
+    bool hasWordCount = true;
+    bool hasCharCount = true;
 
-    enum class Color {
-        None = 0,
-        Green,
-        Red,
-        StartUp
-    };
     enum class Toggle {
+        None = 0,
         Count,
         Pos,
         WinTheme,
         Theme
     };
     
-    void tests();
-    void showEvent(QShowEvent* event);
-    void resizeEvent(QResizeEvent* event);
-    void moveEvent(QMoveEvent* event);
-    void closeEvent(QCloseEvent* event);
-    void handleQtUi();
     void addWidgets();
     void connections();
     void makeMenuBar();
     void makeFileMenu();
     void makeViewMenu(); // clean me
     void makeHelpMenu();
-    QActionGroup* makeViewToggles(QVector<std::tuple<QString, QString>>& itemAndLabelPairs, void (Fernanda::* slot)());
-    void colorBarOn(Color style = Color::None);
-    void colorBarStyle(Color style);
-    void loadOpeningConfigs();
-    void loadWindowConfigs();
+    QActionGroup* makeViewToggles(QVector<Res::DataPair>& dataLabelPairs, void (Fernanda::* slot)());
+    void loadConfigs();
+    void loadWinConfigs();
     void loadViewConfig(QVector<QAction*> actions, QString group, QString valueName, QVariant fallback);
-    void loadViewConfigToggle(QAction* action, QString group, QString valueName, QVariant fallback);
-    void openProject(QString fileName);
+    void loadMenuToggle(QAction* action, QString group, QString valueName, QVariant fallback);
+    void openProject(QString fileName, Project::SP opt = Project::SP::None);
 
 private slots:
     void setWindowStyle();
     void setEditorStyle();
     void setEditorFont();
+    void handleEditorZoom(TextEditor::Zoom direction);
     void toggleWidget(QWidget* widget, QString group, QString valueName, bool value);
     void aotToggled(bool checked);
     void setTabStop();
     void setWrapMode();
-    void toggleGlobals(bool& globalBool, QString group, QString valueName, bool value, Toggle type);
+    void setBarAlignment();
+    void toggleGlobals(bool& globalBool, QString group, QString valueName, bool value, Toggle type = Toggle::None);
     void updatePositions();
     void updateCounters();
     void fileSave();
-    void fileSaveAll();
     //void helpProjects();
-    void helpMakeSampleRes();
     void helpMakeSampleProject();
+    void helpMakeSampleRes();
     void helpAbout();
-    void handleEditorText(QString relFilePath);
+    void handleEditorText(QString key);
     void sendEditedText();
     bool replyHasProject();
+    void domMove(QString pivotKey, QString fulcrumKey, Io::Move pos);
+    void addElement(QString newName, Path::Type type, QString parentKey);
+    void renameElement(QString newName, QString key);
 
 signals:
+    void sendColorBarToggle(bool checked);
     void sendLineHighlightToggle(bool checked);
     void sendLineNumberAreaToggle(bool checked);
-    void sendItems(QVector<QStandardItem*> itemsVector);
+    void sendScrollsToggle(bool checked);
+    void sendExtraScrollsToggle(bool checked);
+    void sendInitExpansions(QVector<QString> initExpansions);
+    void sendItems(QVector<QStandardItem*> items);
     void sendEditsList(QVector<QString> editedFiles);
-    void saveCursors(QString relFilePath);
-    void applyCursors(QString relFilePath);
-    void saveUndoStacks(QString relFilePath);
-    void applyUndoStacks(QString relFilePath);
+    void saveCursors(QString key);
+    void applyCursors(QString key);
+    void saveUndoStacks(QString key);
+    void applyUndoStacks(QString key);
+    void startAutoTempSave();
 };
 
 // fernanda.h, fernanda

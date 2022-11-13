@@ -2,33 +2,38 @@
 
 #include "project.h"
 
-Project::Project(QString filePath, SP opt) // temporarily receives a dir name
+Project::Project(QString filePath, SP opt)
 {
-	auto file_path = filePath.toStdString();
-	auto exists = IO::checkExists(filePath);
-	if (!exists)
-		makeProject(file_path, opt);
-	auto xml = loadXml(file_path);
-	setProjectMap(xml);
+	activeArchive = filePath;
+	if (!Path::exists(filePath))
+		makeProject(filePath, opt);
+	auto xml = loadXml(filePath);
+	dom->set(xml);
 }
 
-QVector<QStandardItem*> Project::items()
+QVector<QString> Project::makeInitExpansions()
+{
+	QVector<QString> result;
+	if (!dom->hasValue()) return result;
+	auto expansions = dom->getElements("expanded", "true");
+	for (auto& element : expansions)
+		result << element.attribute("key");
+	return result;
+}
+
+QVector<QStandardItem*> Project::makeItems()
 {
 	QVector<QStandardItem*> result;
-	if (!map.has_value()) return result;
-	QXmlStreamReader reader(map.value());
+	if (!dom->hasValue()) return result;
+	QXmlStreamReader reader(dom->string());
 	while (!reader.atEnd())
 	{
 		auto name = reader.name().toString();
 		if (reader.isStartElement() && name == "root")
-		{
-			currentProjectName = reader.attributes().value("project").toString();
-			currentRoot = reader.attributes().value("path").toString();
 			reader.readNext();
-		}
 		else if (reader.isStartElement() && name != "root")
 		{
-			auto item = items_recursor(reader);
+			auto item = makeItems_recursor(reader);
 			result << item;
 		}
 		else
@@ -37,207 +42,185 @@ QVector<QStandardItem*> Project::items()
 	return result;
 }
 
-const QString Project::handleIO(QString newFileRelPath, QString oldText)
+const QString Project::getActiveKey()
 {
-	if (!map.has_value()) return nullptr;
-	if (!currentProjectName.has_value() || !currentRoot.has_value()) return nullptr;
-	if (currentRelFilePath.has_value())
-		tempSave(currentRelFilePath.value(), oldText);
-	return handleNewFile(newFileRelPath);
+	return activeKey;
 }
 
-QVector<QString> Project::handleEditedList(QString currentText)
+void Project::autoTempSave(QString oldText)
+{
+	if (activeKey == nullptr) return;
+	tempSave(activeKey, oldText);
+}
+
+const QString Project::saveOld_openNew(QString newKey, QString oldText)
+{
+	if (activeKey != nullptr && oldText != nullptr)
+		tempSave(activeKey, oldText);
+	return tempOpen(newKey);
+}
+
+QVector<QString> Project::handleEditsList(QString currentText)
 {
 	QVector<QString> result;
-	auto& path = currentRelFilePath.value();
-	if (!cleanText.has_value()) return result;
-	if (cleanText.value() != currentText)
-	{
-		if (!editedFiles.contains(path))
-			editedFiles << path;
-	}
+	if (activeKey == nullptr || cleanText == nullptr) return result;
+	if (cleanText != currentText)
+		Io::amendVector(edits_metaDoc, activeKey, Io::AmendVector::Add);
 	else
-	{
-		if (editedFiles.contains(path))
-			editedFiles.removeAll(path);
-	}
-	result = editedFiles;
+		Io::amendVector(edits_metaDoc, activeKey, Io::AmendVector::Remove);
+	result = edits_metaDoc;
 	return result;
 }
 
-QString Project::getCurrentRelPath()
+bool Project::hasAnyChanges()
 {
-	if (!currentRelFilePath.has_value()) return nullptr;
-	return currentRelFilePath.value();
-}
-
-void Project::saveCurrent(QString text)
-{
-	if (!currentRelFilePath.has_value()) return;
-	auto& current_path = currentRelFilePath.value();
-	std::filesystem::path main = derivePath(current_path, PT::Main).toStdString();
-	std::filesystem::path temp = derivePath(current_path, PT::Temp).toStdString();
-	std::filesystem::path rollback = derivePath(current_path, PT::Rollback).toStdString();
-	tempSave(current_path, text);
-	if (QFileInfo(rollback).exists())
-        std::filesystem::remove(rollback);
-    else
-        std::filesystem::create_directories(rollback.parent_path());
-    std::filesystem::rename(main, rollback);
-    std::filesystem::rename(temp, main);
-	cleanText = IO::readFile(QString::fromStdString(main.string()));
-}
-
-void Project::saveNonActiveFiles()
-{
-	if (editedFiles.isEmpty()) return;
-	for (auto& rel_path : editedFiles)
-	{
-		std::filesystem::path main = derivePath(rel_path, PT::Main).toStdString();
-		std::filesystem::path temp = derivePath(rel_path, PT::Temp).toStdString();
-		std::filesystem::path rollback = derivePath(rel_path, PT::Rollback).toStdString();
-		if (QFileInfo(rollback).exists())
-			std::filesystem::remove(rollback);
-		else
-			std::filesystem::create_directories(rollback.parent_path());
-		std::filesystem::rename(main, rollback);
-		std::filesystem::rename(temp, main);
-	}
-	editedFiles.clear();
-}
-
-bool Project::hasEdits()
-{
-	if (!editedFiles.isEmpty()) return true;
+	if (!edits_metaDoc.isEmpty() || dom->hasChanges()) return true;
 	else return false;
 }
 
-void Project::createFile(std::filesystem::path relPath)
+void Project::saveProject(QString currentText)
 {
 	//
 }
 
-void Project::editFile(std::filesystem::path relPath, QString content)
+void Project::domMove(QString pivotKey, QString fulcrumKey, Io::Move pos)
 {
-	//
+	dom->moveElement(pivotKey, fulcrumKey, pos);
 }
 
-void Project::deleteFile(std::filesystem::path relPath)
+void Project::newDomElement(QString newName, Path::Type type, QString parentKey)
 {
-	//
+	dom->newElement(newName, type, parentKey);
 }
 
-void Project::createFolder(std::filesystem::path relPath)
+void Project::renameDomElement(QString newName, QString key)
 {
-	//
+	dom->renameElement(newName, key);
 }
 
-void Project::deleteFolder(std::filesystem::path relPath)
+void Project::makeProject(QString filePath, SP opt)
 {
-	//
-}
-
-void Project::rename(std::filesystem::path relPath, std::string newName)
-{
-	//
-}
-
-void Project::reparent(std::filesystem::path relPath, std::filesystem::path newPath)
-{
-	//
-}
-
-void Project::reorder(std::filesystem::path relPath, int nthChild)
-{
-	//
-}
-
-void Project::tests(QString str)
-{
-	//
-}
-
-void Project::makeProject(std::filesystem::path path, SP opt)
-{
-	std::filesystem::create_directories(path / "story");
+	QVector<Io::ArchivePaths> data_list;
+	data_list << Io::ArchivePaths{ "story" };
 	if (opt == SP::MakeSample)
-		Sample::make(path / "story");
-	makeXml(path);
+		data_list << Sample::make();
+	createArc(data_list, filePath);
 }
 
-void Project::makeXml(std::filesystem::path writePath, std::filesystem::path targetPath)
+void Project::createArc(QVector<Io::ArchivePaths> dataList, QString writePath)
 {
-	auto xml_path = writePath / "story.xml";
-	auto q_xml_path = QString::fromStdString(xml_path.string());
-	if (targetPath.empty())
-		targetPath = writePath / "story";
+	QTemporaryDir temp_dir;
+	auto temp_path = temp_dir.path();
+	for (auto& entry : dataList)
+	{
+		auto archive_path = entry.archivePath.toStdWString();
+		auto temp_sub_path = (temp_path / entry.archivePath).toStdWString();
+		if (!entry.readPath.has_value())
+			Path::makeDirs(temp_sub_path);
+		else
+		{
+			Path::makeDirs(std::filesystem::path(temp_sub_path).parent_path());
+			auto q_temp_sub_path = QString::fromStdWString(temp_sub_path);
+			QFile::copy(entry.readPath.value(), q_temp_sub_path);
+			QFile(q_temp_sub_path).setPermissions(QFile::WriteUser);
+		}
+	}
+	archiver->arc(Archiver::Op::Create, (temp_path / "story"), writePath);
+}
+
+void Project::addToArc(QVector<Io::ArchivePaths> dataList, QString filePath)
+{
+	std::map<std::wstring, std::wstring> files_map;
+	for (auto& entry : dataList)
+	{
+		if (entry.readPath.has_value())
+			files_map[entry.readPath.value().toStdWString()] = entry.archivePath.toStdWString();
+	}
+	archiver->arc(Archiver::Op::Add, files_map, filePath);
+}
+
+const QString Project::loadXml(QString filePath)
+{
+	QString result;
+	result = readInArchive(filePath, "story.xml");
+	if (result == nullptr)
+	{
+		newXml(filePath);
+		result = readInArchive(filePath, "story.xml");
+	}
+	return result;
+}
+
+void Project::newXml(QString filePath)
+{	
+	QTemporaryDir dir;
+	extractArc(filePath, dir.path());
 	QString xml;
 	QXmlStreamWriter writer(&xml);
 	writer.setAutoFormatting(true);
 	writer.writeStartDocument();
 	writer.writeStartElement("root");
-	writer.writeAttribute("project", IO::getName(QString::fromStdString(writePath.string())));
-	writer.writeAttribute("path", QString::fromStdString(targetPath.make_preferred().string()));
-	makeXml_recursor(writer, targetPath);
+	writer.writeAttribute("rel_path", "story");
+	writer.writeAttribute("project", Path::getName(filePath));
+	writer.writeAttribute("file_path", Path::makePreferred(filePath));
+	newXml_recursor(writer, dir.path() / "story");
 	writer.writeEndDocument();
-	IO::writeFile(q_xml_path, xml);
+	QTemporaryDir dir2;
+	Io::writeFile(dir2.path() / "story.xml", xml);
+	QVector<Io::ArchivePaths> data_list;
+	data_list << Io::ArchivePaths{ "story.xml", dir2.path() / "story.xml" };
+	addToArc(data_list, filePath);
 }
 
-void Project::makeXml_recursor(QXmlStreamWriter& writer, std::filesystem::path readPath, std::filesystem::path rootPath)
+void Project::newXml_recursor(QXmlStreamWriter& writer, QString readPath, QString rootPath)
 {
-	if (rootPath.empty())
+	if (rootPath == nullptr)
 		rootPath = readPath;
-	QDirIterator it(QString::fromStdString(readPath.string()), QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files);
+	QDirIterator it(readPath, QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files);
 	while (it.hasNext())
 	{
 		it.next();
-		auto rel_path = IO::relPath(rootPath, it.filePath().toStdString());
+		auto rel_path = "story" / Path::relPath(rootPath, it.filePath());
 		if (it.fileInfo().isDir())
 		{
 			writer.writeStartElement("dir");
-			writer.writeAttribute("path", rel_path); //writer.writeAttribute("path", it.filePath());
-			makeXml_recursor(writer, readPath / it.fileName().toStdString(), rootPath);
+			writer.writeAttribute("rel_path", rel_path);
+			writer.writeAttribute("key", QUuid::createUuid().toString(QUuid::WithoutBraces));
+			writer.writeAttribute("expanded", "false");
+			newXml_recursor(writer, readPath / it.fileName(), rootPath);
 			writer.writeEndElement();
 		}
 		else
 		{
 			writer.writeStartElement("file");
-			writer.writeAttribute("path", rel_path); //writer.writeAttribute("path", it.filePath());
+			writer.writeAttribute("rel_path", rel_path);
+			writer.writeAttribute("key", QUuid::createUuid().toString(QUuid::WithoutBraces));
+			writer.writeAttribute("expanded", "false");
 			writer.writeEndElement();
 		}
 	}
 }
 
-QString Project::loadXml(std::filesystem::path path)
+void Project::extractArc(QString filePath, QString extractPath)
 {
-	auto xml_path = QString::fromStdString((path / "story.xml").string());
-	auto exists = IO::checkExists(xml_path);
-	if (!exists)
-		makeXml(path);
-	auto result = IO::readFile(xml_path);
-	return result;
+	archiver->arc(Archiver::Op::Extract, filePath, extractPath);
 }
 
-void Project::setProjectMap(QString xml) // handle the intermediate stage here, in future
-{
-	map = xml;
-}
-
-QStandardItem* Project::items_recursor(QXmlStreamReader& reader)
+QStandardItem* Project::makeItems_recursor(QXmlStreamReader& reader)
 {
 	auto type = reader.name().toString();
-	auto path = reader.attributes().value("path").toString();
-	auto name = IO::getName(path);
+	auto key = reader.attributes().value("key").toString();
+	auto name = dom->elementName(key);
 	auto result = new QStandardItem;
 	result->setData(type, Qt::UserRole);
-	result->setData(path, Qt::UserRole + 1);
-	result->setData(name, Qt::UserRole + 2);
+	result->setData(name, Qt::UserRole + 1);
+	result->setData(key, Qt::UserRole + 2);
 	reader.readNext();
 	while (!reader.isEndElement())
 	{
 		if (reader.isStartElement())
 		{
-			auto child_item = items_recursor(reader);
+			auto child_item = makeItems_recursor(reader);
 			result->appendRow(child_item);
 		}
 		else
@@ -247,51 +230,53 @@ QStandardItem* Project::items_recursor(QXmlStreamReader& reader)
 	return result;
 }
 
-void Project::tempSave(QString relFilePath, QString text)
+void Project::tempSave(QString key, QString text)
 {
-	auto temp_file = derivePath(relFilePath, PT::Temp);
-	std::filesystem::path tmp = temp_file.toStdString();
-	auto parent = tmp.parent_path();
-	UD::makeDirs(QString::fromStdString(parent.string()));
-	IO::writeFile(temp_file, text);
+	auto temp_file = tempPath(key);
+	Io::writeFile(temp_file, text);
 }
 
-const QString Project::handleNewFile(QString relFilePath)
+const QString Project::tempOpen(QString newKey)
 {
-	currentRelFilePath = relFilePath;
-	QString result;
-	cleanText = IO::readFile(derivePath(relFilePath, PT::Main));
-	auto temp_file = derivePath(relFilePath, PT::Temp);
-	if (QFile(temp_file).exists())
-		result = IO::readFile(temp_file);
+	activeKey = newKey;
+	auto tar_rel_path = dom->relPath(newKey);
+	if (tar_rel_path != nullptr)
+		cleanText = readInArchive(activeArchive, tar_rel_path);
 	else
-		result = cleanText.value();
+		cleanText = nullptr;
+	auto temp_path = tempPath(newKey);
+	QString result;
+	if (QFile(temp_path).exists())
+		result = Io::readFile(temp_path);
+	else
+		result = cleanText;
 	return result;
 }
 
-const QString Project::derivePath(QString relFilePath, PT type)
+const QString Project::readInArchive(QString filePath, QString relPath)
 {
-	QString result;
-	switch (type) {
-		case PT::Main:
-			result = currentRoot.value() + "/" + relFilePath;
-			break;
-		case PT::Temp:
-		{
-			auto temps_dir = UD::userData(UD::Op::GetTemp);
-			auto proj_temp = temps_dir + "/" + currentProjectName.value() + "/story";
-			result = proj_temp + "/" + relFilePath + "~";
-			break;
-		}
-		case PT::Rollback:
-		{
-			auto rb_dir = UD::userData(UD::Op::GetRollback);
-			auto proj_rb = rb_dir + "/" + currentProjectName.value() + "/story";
-			result = proj_rb + "/" + relFilePath + "~";
-			break;
-		}
-	}
+	QString result = nullptr;
+	QTemporaryDir temp_dir;
+	auto temp_dir_path = temp_dir.path();
+	auto was_found = archiver->arc(Archiver::Op::Extract, filePath, relPath, temp_dir_path);
+	if (was_found)
+		result = Io::readFile(temp_dir_path / relPath);
 	return result;
+}
+
+const QString Project::tempPath(QString key)
+{
+	auto rel_path = key + ".txt~";
+	auto temps_dir = Ud::userData(Ud::Op::GetTemp);
+	auto proj_temp = temps_dir / Path::getName(activeArchive);
+	return proj_temp / rel_path;
+}
+
+bool Project::isEdited(QString key)
+{
+	if (edits_metaDoc.contains(key))
+		return true;
+	return false;
 }
 
 // project.cpp, fernanda

@@ -2,14 +2,15 @@
 
 #pragma once
 
+#include "index.h"
+#include "uni.h"
+
 #include <QColor>
 #include <QFont>
-#include <QModelIndex>
 #include <QObject>
 #include <QPainter>
 #include <QRect>
 #include <QSize>
-#include <QString>
 #include <QStyle>
 #include <QStyledItemDelegate>
 #include <QStyleOptionViewItem>
@@ -22,18 +23,18 @@ class PaneDelegate : public QStyledItemDelegate
 
 public:
     using QStyledItemDelegate::QStyledItemDelegate;
+
     QVector<QString> paintAsEdited;
 
 private:
-    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+    struct Geometry {
+        QRect icon;
+        QRect text;
+        QRect highlight;
+    };
+
+    Geometry getRectSizes(const QStyleOptionViewItem& option) const
     {
-        auto type = index.data(Qt::UserRole).toString();
-        auto path = index.data(Qt::UserRole + 1).toString();
-        auto name = index.data(Qt::UserRole + 2).toString();
-        QFont font;
-        QFont italics;
-        italics.setItalic(true);
-        painter->setFont(font);
         auto opt_r = option.rect;
         auto r_h = opt_r.height();
         auto r_w = opt_r.width();
@@ -45,33 +46,47 @@ private:
         auto icon_r = QRect((r_l - s_w + 15), r_t, s_w, s_h);
         auto text_r = QRect((r_l + 16), (r_t + 2), r_w, r_h);
         auto highlight_r = QRect(5, r_t, (r_w + 50), r_h);
-        if (type == "dir")
-        {
-            if (option.state & QStyle::State_Open)
-                painter->drawText(icon_r, "\U0001F4C2");
-            else
-                painter->drawText(icon_r, "\U0001F4C1");
-        }
-        else if (type == "file")
-            painter->drawText(icon_r, "\U0001F4C4");
-        else
-            painter->drawText(icon_r, "\U00002754");
-        painter->drawText(text_r, name);
-        for (auto& entry : paintAsEdited)
-            if (path == entry)
-            {
-                painter->eraseRect(text_r);
-                painter->setFont(italics);
-                painter->drawText(text_r, "*" + name);
-            }
-        if (option.state & QStyle::State_MouseOver || option.state & QStyle::State_Selected)
-            painter->fillRect(highlight_r, QColor(0, 0, 0, 33));
+        return Geometry{ icon_r, text_r, highlight_r };
     }
 
-    QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+    void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override
     {
-        return QStyledItemDelegate::createEditor(parent, option, index);
-    }
+        //QStyledItemDelegate::updateEditorGeometry(editor, option, index);
+        auto geo = getRectSizes(option);
+        editor->setGeometry(geo.text);
+    } // note: this overrides a public function, and idk if that matters
+
+    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+    {
+        auto item_key = Index::key(index);
+        auto name = Index::name(index);
+        auto geo = getRectSizes(option);
+        QFont font;
+        QFont italics;
+        italics.setItalic(true);
+        painter->setFont(font);
+        if (Index::isDir(index))
+        {
+            if (option.state & QStyle::State_Open)
+                painter->drawText(geo.icon, Uni::ico.folderOpen);
+            else
+                painter->drawText(geo.icon, Uni::ico.folderClosed);
+        }
+        else if (Index::isFile(index))
+            painter->drawText(geo.icon, Uni::ico.file);
+        else
+            painter->drawText(geo.icon, Uni::ico.unknown);
+        painter->drawText(geo.text, name);
+        for (auto& entry : paintAsEdited)
+            if (item_key == entry)
+            {
+                painter->eraseRect(geo.text);
+                painter->setFont(italics);
+                painter->drawText(geo.text, name + "*");
+            }
+        if (option.state & QStyle::State_MouseOver || option.state & QStyle::State_Selected)
+            painter->fillRect(geo.highlight, QColor(0, 0, 0, 33));
+    } // note: this overrides a public function, and idk if that matters
 };
 
 // delegate.h, fernanda

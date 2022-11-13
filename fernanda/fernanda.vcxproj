@@ -32,7 +32,7 @@
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
     <QtInstall>6.4.0_msvc2019_64</QtInstall>
-    <QtModules>core;gui;widgets</QtModules>
+    <QtModules>core;gui;widgets;xml</QtModules>
     <QtBuildConfig>debug</QtBuildConfig>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
@@ -61,7 +61,20 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard_C>Default</LanguageStandard_C>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>include/bit7z/lib/bit7z64_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/NODEFAULTLIB:MSVCRT.lib %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Link>
+      <AdditionalDependencies>include/bit7z/lib/bit7z64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
     <ClCompile>
@@ -95,7 +108,7 @@
     <None Include="cpp.hint" />
     <None Include="res\themes\bar\green.qss" />
     <None Include="res\themes\bar\red.qss" />
-    <None Include="res\themes\bar\start_up.qss" />
+    <None Include="res\themes\bar\pastels.qss" />
     <None Include="res\themes\editor.qss" />
     <None Include="res\themes\editor\amber.fernanda_theme" />
     <None Include="res\themes\editor\blue.fernanda_theme" />
@@ -106,7 +119,9 @@
     <None Include="res\themes\window\light.fernanda_wintheme" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="include\microtar\microtar.c" />
+    <ClCompile Include="src\archiver.cpp" />
+    <ClCompile Include="src\bar.cpp" />
+    <ClCompile Include="src\dom.cpp" />
     <ClCompile Include="src\project.cpp" />
     <ClCompile Include="src\userdata.cpp" />
     <ClCompile Include="src\fernanda.cpp" />
@@ -118,14 +133,37 @@
     <ResourceCompile Include="res\resource.rc" />
   </ItemGroup>
   <ItemGroup>
-    <QtUic Include="src\fernanda.ui" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="include\microtar\microtar.h" />
+    <ClInclude Include="include\bit7z\include\bit7z.hpp" />
+    <ClInclude Include="include\bit7z\include\bit7zlibrary.hpp" />
+    <ClInclude Include="include\bit7z\include\bitarchivecreator.hpp" />
+    <ClInclude Include="include\bit7z\include\bitarchivehandler.hpp" />
+    <ClInclude Include="include\bit7z\include\bitarchiveinfo.hpp" />
+    <ClInclude Include="include\bit7z\include\bitarchiveitem.hpp" />
+    <ClInclude Include="include\bit7z\include\bitarchiveopener.hpp" />
+    <ClInclude Include="include\bit7z\include\bitcompressionlevel.hpp" />
+    <ClInclude Include="include\bit7z\include\bitcompressionmethod.hpp" />
+    <ClInclude Include="include\bit7z\include\bitcompressor.hpp" />
+    <ClInclude Include="include\bit7z\include\bitexception.hpp" />
+    <ClInclude Include="include\bit7z\include\bitextractor.hpp" />
+    <ClInclude Include="include\bit7z\include\bitformat.hpp" />
+    <ClInclude Include="include\bit7z\include\bitguids.hpp" />
+    <ClInclude Include="include\bit7z\include\bitinputarchive.hpp" />
+    <ClInclude Include="include\bit7z\include\bitmemcompressor.hpp" />
+    <ClInclude Include="include\bit7z\include\bitmemextractor.hpp" />
+    <ClInclude Include="include\bit7z\include\bitpropvariant.hpp" />
+    <ClInclude Include="include\bit7z\include\bitstreamcompressor.hpp" />
+    <ClInclude Include="include\bit7z\include\bitstreamextractor.hpp" />
+    <ClInclude Include="include\bit7z\include\bittypes.hpp" />
+    <QtMoc Include="src\bar.h" />
+    <ClInclude Include="src\archiver.h" />
+    <ClInclude Include="src\dom.h" />
+    <ClInclude Include="src\index.h" />
+    <ClInclude Include="src\path.h" />
+    <ClInclude Include="src\project.h" />
+    <ClInclude Include="src\uni.h" />
     <ClInclude Include="src\version.h" />
     <QtMoc Include="src\fernanda.h" />
     <ClInclude Include="src\io.h" />
-    <ClInclude Include="src\project.h" />
     <ClInclude Include="src\sample.h" />
     <ClInclude Include="src\userdata.h" />
     <QtMoc Include="src\pane.h" />
@@ -136,6 +174,7 @@
   <ItemGroup>
     <QtRcc Include="res\fonts.qrc" />
     <QtRcc Include="res\icons.qrc" />
+    <QtRcc Include="res\lib.qrc" />
     <QtRcc Include="res\sample.qrc" />
     <QtRcc Include="res\themes.qrc" />
   </ItemGroup>

@@ -6,7 +6,8 @@ TextEditor::TextEditor(QWidget* parent)
     : QPlainTextEdit(parent)
 {
     lineNumberArea = new LineNumberArea(this);
-    //
+    setReadOnly(true);
+    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     addScrollBarWidget(scrollUp, Qt::AlignTop);
     addScrollBarWidget(scrollPrevious, Qt::AlignTop);
@@ -14,12 +15,13 @@ TextEditor::TextEditor(QWidget* parent)
     addScrollBarWidget(scrollDown, Qt::AlignBottom);
     scrollUp->setAutoRepeat(true);
     scrollDown->setAutoRepeat(true);
-    scrollUp->setText("\U000025B2");
-    scrollPrevious->setText("\U000025B2");
-    scrollNext->setText("\U000025BC");
-    scrollDown->setText("\U000025BC");
+    scrollUp->setText(Uni::ico.triangleUp);
+    scrollPrevious->setText(Uni::ico.triangleUp);
+    scrollNext->setText(Uni::ico.triangleDown);
+    scrollDown->setText(Uni::ico.triangleDown);
     for (auto& button : { scrollUp, scrollPrevious, scrollNext, scrollDown })
         button->setMinimumHeight(30);
+    setObjectName("textEditor");
     lineNumberArea->setObjectName("lineNumberArea");
     horizontalScrollBar()->setObjectName("hScrollBar");
     verticalScrollBar()->setObjectName("vScrollBar");
@@ -27,20 +29,7 @@ TextEditor::TextEditor(QWidget* parent)
     scrollPrevious->setObjectName("scrollPrevious");
     scrollNext->setObjectName("scrollNext");
     scrollDown->setObjectName("scrollDown");
-    //
-    connect(scrollUp, &QPushButton::clicked, this, [&]()
-        {
-            verticalScrollBar()->triggerAction(QAbstractSlider::SliderSingleStepSub);
-        });
-    connect(scrollDown, &QPushButton::clicked, this, [&]()
-        {
-            verticalScrollBar()->triggerAction(QAbstractSlider::SliderSingleStepAdd);
-        });
-    connect(scrollPrevious, &QPushButton::clicked, this, &TextEditor::scrollPreviousClicked);
-    connect(scrollNext, &QPushButton::clicked, this, &TextEditor::scrollNextClicked);
-    connect(this, &TextEditor::blockCountChanged, this, &TextEditor::updateLineNumberAreaWidth);
-    connect(this, &TextEditor::updateRequest, this, &TextEditor::updateLineNumberArea);
-    connect(this, &TextEditor::cursorPositionChanged, this, &TextEditor::highlightCurrentLine);
+    connections();
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
 }
@@ -107,21 +96,38 @@ void TextEditor::toggleLineNumberArea(bool checked)
     updateLineNumberAreaWidth(0);
 }
 
-void TextEditor::storeCursors(QString relFilePath)
+void TextEditor::toggleScrolls(bool checked)
 {
-    auto cursor_pos = QTextCursor(textCursor()).position();
-    auto anchor_pos = QTextCursor(textCursor()).anchor();
-    cursorPositions << std::tuple<QString, int, int>(relFilePath, cursor_pos, anchor_pos);
+    scrollUp->setVisible(checked);
+    scrollDown->setVisible(checked);
 }
 
-void TextEditor::recallCursors(QString relFilePath)
+void TextEditor::toggleExtraScrolls(bool checked)
 {
-    for (auto& tuple : cursorPositions)
-        if (relFilePath == std::get<0>(tuple))
+    scrollPrevious->setVisible(checked);
+    scrollNext->setVisible(checked);
+}
+
+void TextEditor::storeCursors(QString key)
+{
+    for (auto& item : cursors_metaDoc)
+        if (key == item.key)
+            cursors_metaDoc.removeAll(item);
+    cursors_metaDoc << MetaDocCursor{
+        key,
+        QTextCursor(textCursor()).position(),
+        QTextCursor(textCursor()).anchor()
+    };
+}
+
+void TextEditor::recallCursors(QString key)
+{
+    for (auto& item : cursors_metaDoc)
+        if (key == item.key)
         {
             auto cursor(textCursor());
-            auto cursor_pos = std::get<1>(tuple);
-            auto anchor_pos = std::get<2>(tuple);
+            auto cursor_pos = item.position;
+            auto anchor_pos = item.anchor;
             if (cursor_pos == anchor_pos)
                 cursor.setPosition(cursor_pos);
             else
@@ -130,17 +136,17 @@ void TextEditor::recallCursors(QString relFilePath)
                 cursor.setPosition(cursor_pos, QTextCursor::KeepAnchor);
             }
             setTextCursor(cursor);
-            cursorPositions.removeAll(tuple);
+            cursors_metaDoc.removeAll(item);
             break;
-        }
+        }    
 }
 
-void TextEditor::storeUndoStacks(QString relFilePath)
+void TextEditor::storeUndoStacks(QString key)
 {
     //
 }
 
-void TextEditor::recallUndoStacks(QString relFilePath)
+void TextEditor::recallUndoStacks(QString key)
 {
     //
 }
@@ -161,23 +167,40 @@ void TextEditor::paintEvent(QPaintEvent* event)
     painter.fillRect(rect, cursorColor());
 }
 
+void TextEditor::wheelEvent(QWheelEvent* event)
+{
+    if (event->modifiers() == Qt::ControlModifier)
+        if (event->angleDelta().y() > 0)
+            askFontSliderZoom(Zoom::In);
+        else
+            askFontSliderZoom(Zoom::Out);
+    else
+        QPlainTextEdit::wheelEvent(event);
+    event->accept();
+}
+
+void TextEditor::connections()
+{
+    connect(scrollUp, &QPushButton::clicked, this, [&]()
+        {
+            verticalScrollBar()->triggerAction(QAbstractSlider::SliderSingleStepSub);
+        });
+    connect(scrollDown, &QPushButton::clicked, this, [&]()
+        {
+            verticalScrollBar()->triggerAction(QAbstractSlider::SliderSingleStepAdd);
+        });
+    connect(scrollPrevious, &QPushButton::clicked, this, &TextEditor::scrollPreviousClicked);
+    connect(scrollNext, &QPushButton::clicked, this, &TextEditor::scrollNextClicked);
+    connect(this, &TextEditor::blockCountChanged, this, &TextEditor::updateLineNumberAreaWidth);
+    connect(this, &TextEditor::updateRequest, this, &TextEditor::updateLineNumberArea);
+    connect(this, &TextEditor::cursorPositionChanged, this, &TextEditor::highlightCurrentLine);
+}
+
 const QColor TextEditor::cursorColor()
 {
     QColor cursor_color(cursorColorHex);
     cursor_color.setAlpha(180);
     return cursor_color;
-}
-
-void TextEditor::wheelEvent(QWheelEvent* event)
-{
-    if (event->modifiers() == Qt::ControlModifier)
-        if (event->angleDelta().y() > 0)
-            askFontSliderZoom(true);
-        else
-            askFontSliderZoom(false);
-    else
-        QPlainTextEdit::wheelEvent(event);
-    event->accept();
 }
 
 void TextEditor::updateLineNumberAreaWidth(int newBlockCount)

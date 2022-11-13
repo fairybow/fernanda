@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <tuple>
+#include "uni.h"
 
 #include <QAbstractSlider>
 #include <QColor>
@@ -17,7 +17,6 @@
 #include <QResizeEvent>
 #include <QScrollBar>
 #include <QSize>
-#include <QString>
 #include <QTextBlock>
 #include <QTextCursor>
 #include <QTextFormat>
@@ -33,7 +32,14 @@ class TextEditor : public QPlainTextEdit
 public:
     TextEditor(QWidget* parent = nullptr);
     ~TextEditor() = default;
+
+    enum class Zoom {
+        In,
+        Out
+    };
+
     QString cursorColorHex;
+
     void lineNumberAreaPaintEvent(QPaintEvent* event);
     int lineNumberAreaWidth();
     void lineNumberAreaFont(int size, QString fontName);
@@ -41,13 +47,17 @@ public:
 public slots:
     void toggleLineHighlight(bool checked);
     void toggleLineNumberArea(bool checked);
-    void storeCursors(QString relFilePath);
-    void recallCursors(QString relFilePath);
-    void storeUndoStacks(QString relFilePath);
-    void recallUndoStacks(QString relFilePath);
+    void toggleScrolls(bool checked);
+    void toggleExtraScrolls(bool checked);
+    void storeCursors(QString key);
+    void recallCursors(QString key);
+    void storeUndoStacks(QString key);
+    void recallUndoStacks(QString key);
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
+    void paintEvent(QPaintEvent* event) override;
+    void wheelEvent(QWheelEvent* event) override;
 
 private:
     QWidget* lineNumberArea;
@@ -55,14 +65,25 @@ private:
     QPushButton* scrollPrevious = new QPushButton(this);
     QPushButton* scrollNext = new QPushButton(this);
     QPushButton* scrollDown = new QPushButton(this);
-    QVector<std::tuple<QString, int, int>> cursorPositions;
+
+    struct MetaDocCursor {
+        QString key;
+        int position;
+        int anchor;
+        bool operator==(const MetaDocCursor&) const = default;
+        bool operator!=(const MetaDocCursor&) const = default;
+    };
+
+    QVector<MetaDocCursor> cursors_metaDoc;
+    //QVector<QUndoStack> undoStacks_metaDoc;
+
     bool hasLineHighlight = true;
-    void paintEvent(QPaintEvent* event);
+
+    void connections();
     const QColor cursorColor();
-    void wheelEvent(QWheelEvent* event);
 
 private slots:
-    void updateLineNumberAreaWidth(int newBlockCount); // <- this isn't used?
+    void updateLineNumberAreaWidth(int newBlockCount); // <- this arg isn't used?
     void highlightCurrentLine();
     void updateLineNumberArea(const QRect& rect, int dy);
     void scrollPreviousClicked();
@@ -70,7 +91,7 @@ private slots:
 
 signals:
     bool askHasProject();
-    void askFontSliderZoom(bool zoomDirection);
+    void askFontSliderZoom(Zoom direction);
     void askNavPrevious();
     void askNavNext();
 };

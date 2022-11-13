@@ -2,9 +2,10 @@
 
 #pragma once
 
+#include "io.h"
+
 #include <filesystem>
 #include <string>
-#include <tuple>
 
 #include <QDir>
 #include <QDirIterator>
@@ -15,55 +16,40 @@
 
 namespace Sample
 {
-	inline void make(std::filesystem::path path)
+	struct SampleRCPair {
+		std::filesystem::path rcPath;
+		std::filesystem::path udPath;
+	};
+
+	inline QVector<Io::ArchivePaths> make()
 	{
-		QDirIterator files_1(":/sample/Candide/Chapters 1-10/", QStringList() << "*.txt", QDir::Files);
-		QDirIterator files_2(":/sample/Candide/Chapters 11-20/", QStringList() << "*.txt", QDir::Files);
-		QDirIterator files_3(":/sample/Candide/Chapters 21-30/", QStringList() << "*.txt", QDir::Files);
-		QDirIterator files_4(":/sample/Candide/Misc/", QStringList() << "*.txt", QDir::Files);
-		auto subfolder_1 = path / std::string("Chapters 1-10");
-		auto subfolder_2 = path / std::string("Chapters 11-20");
-		auto subfolder_3 = path / std::string("Chapters 21-30");
-		auto subfolder_4 = path / std::string("Misc");
-		for (auto& folder : { subfolder_1, subfolder_2, subfolder_3, subfolder_4 })
-			std::filesystem::create_directory(folder);
-		QVector<std::tuple<QDirIterator&, std::filesystem::path>> iteratorAndPathPairs = {
-			std::tuple<QDirIterator&, std::filesystem::path>(files_1, subfolder_1),
-			std::tuple<QDirIterator&, std::filesystem::path>(files_2, subfolder_2),
-			std::tuple<QDirIterator&, std::filesystem::path>(files_3, subfolder_3),
-			std::tuple<QDirIterator&, std::filesystem::path>(files_4, subfolder_4),
-		};
-		for (auto& pair : iteratorAndPathPairs)
+		QVector<Io::ArchivePaths> result;
+		auto rootPath = ":\\sample\\Candide\\";
+		QDirIterator it(rootPath, QVector<QString>() << "*.*", QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files, QDirIterator::Subdirectories);
+		while (it.hasNext())
 		{
-			auto& iterator = std::get<0>(pair);
-			auto& folder_path = std::get<1>(pair);
-			while (iterator.hasNext())
-			{
-				iterator.next();
-				auto file = iterator.filePath();
-				auto name = iterator.fileName();
-				auto path = folder_path / name.toStdString();
-				auto copy_path = QString::fromStdString(path.string());
-				QFile::copy(file, copy_path);
-				QFile(copy_path).setPermissions(QFile::WriteUser);
-			}
+			it.next();
+			auto read_path = it.filePath();
+			auto rel_path = Path::relPath(rootPath, read_path);
+			if (it.fileInfo().isDir())
+				result << Io::ArchivePaths{ "story" / rel_path };
+			else
+				result << Io::ArchivePaths{ "story" / rel_path, read_path };
 		}
+		return result;
 	}
 
 	inline void makeRc(std::filesystem::path path)
 	{
-		auto font_fs = path / "Merriweather.ttf";
-		auto editor_theme_fs = path / "sample.fernanda_theme";
-		auto win_theme_fs = path / "sample.fernanda_wintheme";
-		QVector<std::tuple<QString, QString>> file_pairs = {
-			std::tuple<QString, QString>(":/sample/Merriweather.ttf", QString::fromStdString(font_fs.string())),
-			std::tuple<QString, QString>(":/sample/sample.fernanda_theme", QString::fromStdString(editor_theme_fs.string())),
-			std::tuple<QString, QString>(":/sample/sample.fernanda_wintheme", QString::fromStdString(win_theme_fs.string()))
+		QVector<SampleRCPair> pairs{
+			SampleRCPair{ ":\\sample\\Merriweather.ttf", std::filesystem::path(path / "Merriweather.ttf") },
+			SampleRCPair{ ":\\sample\\sample.fernanda_theme", std::filesystem::path(path / "sample.fernanda_theme") },
+			SampleRCPair{ ":\\sample\\sample.fernanda_wintheme", std::filesystem::path(path / "sample.fernanda_wintheme") }
 		};
-		for (auto& file_pair : file_pairs)
+		for (auto& pair : pairs)
 		{
-			auto& lhs = std::get<0>(file_pair);
-			auto& rhs = std::get<1>(file_pair);
+			auto lhs = QString::fromStdString(pair.rcPath.string());
+			auto rhs = QString::fromStdString(pair.udPath.string());
 			if (QFile(rhs).exists())
 				QFile(rhs).moveToTrash(); // font will be held by system
 			QFile::copy(lhs, rhs);
