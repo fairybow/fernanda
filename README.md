@@ -11,6 +11,7 @@
 	<a href="https://www.qt.io/"><img src="https://img.shields.io/badge/Qt-6.4.0-green?logo=qt" alt="Qt: 6.4.0"/></a>
 	<a href="https://github.com/rikyoz/bit7z"><img src="https://img.shields.io/badge/Bit7z-3.1.5-blue" alt="Bit7z: 3.1.5"/></a>
 	<a href="https://www.7-zip.org/"><img src="https://img.shields.io/badge/7zip-blueviolet" alt="7zip"/></a>
+	<a href="https://shields.io/"><img src="https://img.shields.io/badge/these-are_so_cute_omg-ff69b4" alt="Shields.io"/></a>
 </p>
 
 ## :wave: **hi**
