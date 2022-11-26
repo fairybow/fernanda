@@ -2,13 +2,13 @@
 
 #pragma once
 
+#include "path.h"
+
 #include <shlobj_core.h>
 
 #include <filesystem>
 #include <string>
 #include <time.h>
-
-#include "path.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -39,7 +39,7 @@ namespace Ud
         QRect
     };
 
-    struct {
+    inline struct DataVars {
         QString appName;
     } dataVars;
 

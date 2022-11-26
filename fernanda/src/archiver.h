@@ -13,9 +13,6 @@ class Archiver
 {
 
 public:
-    Archiver() = default;
-    ~Archiver() = default;
-
     enum class Op {
         Add,
         Create,
@@ -23,7 +20,7 @@ public:
     };
 
     template<typename T, typename U>
-    inline void arc(Op operation, T in, U out)
+    void arc(Op operation, T in, U out)
     {
         switch (operation) {
         case Op::Add:
@@ -42,7 +39,7 @@ public:
     }
 
     template<typename T, typename U, typename V>
-    inline bool arc(Op operation, T in, U filter, V out)
+    bool arc(Op operation, T in, U filter, V out)
     {
         if (operation != Op::Extract) return false;
         auto was_found = extractMatch(in, filter, out);

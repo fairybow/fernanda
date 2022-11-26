@@ -2,16 +2,15 @@
 
 #pragma once
 
+#include "uni.h"
+
 #include <algorithm>
 #include <filesystem>
 #include <string>
 
-#include "uni.h"
-
 #include <QDir>
 #include <QDirIterator>
 #include <QFontDatabase>
-#include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <QRegularExpressionMatchIterator>
 #include <QString>
@@ -75,14 +74,14 @@ namespace Res
 
     inline const QString createStyleSheetFromTheme(QString styleSheet, QString themeSheet)
     {
-        QRegularExpressionMatchIterator matches = QRegularExpression(Uni::regex.themeSheetLine).globalMatch(themeSheet);
+        QRegularExpressionMatchIterator matches = Uni::regex(Uni::Re::ThemeSheetLine).globalMatch(themeSheet);
         while (matches.hasNext())
         {
             QRegularExpressionMatch match = matches.next();
             if (match.hasMatch())
             {
-                QString variable = match.captured(0).replace(QRegularExpression(Uni::regex.themeSheetValue), nullptr);
-                QString value = match.captured(0).replace(QRegularExpression(Uni::regex.themeSheetVariable), nullptr);
+                QString variable = match.captured(0).replace(Uni::regex(Uni::Re::ThemeSheetValue), nullptr);
+                QString value = match.captured(0).replace(Uni::regex(Uni::Re::ThemeSheetVariable), nullptr);
                 styleSheet.replace(QRegularExpression(variable), value);
             }
         }

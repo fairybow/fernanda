@@ -111,11 +111,12 @@
 	border: none;
 }
 
-#pathDisplay, #positions, #counters
+#positions, #separator, #counts
 {
 	color: @fontColor2;
 	font-weight: 600;
-	padding-left: 2px;
+	padding-left: 1px;
+	padding-right: 1px;
 }
 
 #aot

@@ -14,7 +14,6 @@
 #include <QMenu>
 #include <QMouseEvent>
 #include <QPoint>
-#include <QRegularExpression>
 #include <QStandardItem>
 #include <QStandardItemModel>
 #include <QTreeView>
@@ -25,7 +24,6 @@ class Pane : public QTreeView
 
 public:
     Pane(QWidget* parent = nullptr);
-    ~Pane() = default;
 
     enum class Nav {
         Prev,

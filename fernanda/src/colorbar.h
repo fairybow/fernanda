@@ -1,4 +1,4 @@
-// bar.h, fernanda
+// colorbar.h, fernanda
 
 #pragma once
 
@@ -8,25 +8,28 @@
 #include <QString>
 #include <QTimeLine>
 #include <QTimer>
+#include <QVBoxLayout>
 #include <QWidget>
 
-class ColorBar : public QProgressBar
+class ColorBar : public QWidget
 {
     Q_OBJECT
 
 public:
     ColorBar(QWidget* parent = nullptr);
-    ~ColorBar() = default;
 
     void delayedStartUp();
     void pastels();
     void green();
     void red();
+    void align(Qt::AlignmentFlag alignment);
 
 public slots:
     void toggleSelf(bool checked);
 
 private:
+    QProgressBar* bar = new QProgressBar(this);
+    QVBoxLayout* layout = new QVBoxLayout(this);
     QTimer* barTimer = new QTimer(this);
 
     enum class Color {
@@ -42,4 +45,4 @@ private:
     void style(Color theme);
 };
 
-// bar.h, fernanda
+// colorbar.h, fernanda

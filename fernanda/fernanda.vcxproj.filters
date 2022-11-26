@@ -95,7 +95,7 @@
     <ClCompile Include="src\userdata.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\bar.cpp">
+    <ClCompile Include="src\colorbar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\project.cpp">
@@ -210,6 +210,9 @@
     <ClInclude Include="src\dom.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\keyfilter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\fernanda.h">
@@ -224,7 +227,13 @@
     <QtMoc Include="src\delegate.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="src\bar.h">
+    <QtMoc Include="src\colorbar.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="src\splitter.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="src\indicator.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

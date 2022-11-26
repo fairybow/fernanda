@@ -234,10 +234,9 @@ QStandardItem* Pane::makeTempItem(Path::Type type)
 const QString Pane::renameItem()
 {
     bool has_input = false;
-    QRegularExpression regex(Uni::regex.forbidden);
     QString text = QInputDialog::getText(this, tr(""), tr(""), QLineEdit::Normal, nullptr, &has_input);
     if (has_input && !text.isEmpty())
-        return text.replace(regex, "_");
+        return text.replace(Uni::regex(Uni::Re::Forbidden), "_");
     return nullptr;
 }
 

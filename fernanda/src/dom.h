@@ -13,10 +13,8 @@ class Dom
 {
 
 public:
-    Dom() = default;
-    ~Dom() = default;
-
     void set(QString xml);
+    //QDomDocument value();
     bool hasValue();
     const QString string();
     bool hasChanges();

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "keyfilter.h"
 #include "uni.h"
 
 #include <QAbstractSlider>
@@ -16,12 +17,12 @@
 #include <QRect>
 #include <QResizeEvent>
 #include <QScrollBar>
+#include <QShortcut>
 #include <QSize>
 #include <QTextBlock>
 #include <QTextCursor>
 #include <QTextFormat>
 #include <QTextEdit>
-#include <QVector>
 #include <QWheelEvent>
 #include <QWidget>
 
@@ -31,7 +32,6 @@ class TextEditor : public QPlainTextEdit
 
 public:
     TextEditor(QWidget* parent = nullptr);
-    ~TextEditor() = default;
 
     enum class Zoom {
         In,
@@ -43,23 +43,25 @@ public:
     void lineNumberAreaPaintEvent(QPaintEvent* event);
     int lineNumberAreaWidth();
     void lineNumberAreaFont(int size, QString fontName);
+    bool handleKeySwap(QString oldKey, QString newKey);
+    void handleTextSwap(QString key, QString text);
+    int selectedLineCount();
 
 public slots:
     void toggleLineHighlight(bool checked);
+    void toggleKeyfilter(bool checked);
     void toggleLineNumberArea(bool checked);
     void toggleScrolls(bool checked);
     void toggleExtraScrolls(bool checked);
-    void storeCursors(QString key);
-    void recallCursors(QString key);
-    void storeUndoStacks(QString key);
-    void recallUndoStacks(QString key);
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
     void paintEvent(QPaintEvent* event) override;
     void wheelEvent(QWheelEvent* event) override;
+    void keyPressEvent(QKeyEvent* event) override;
 
 private:
+    Keyfilter* keyfilter = new Keyfilter;
     QWidget* lineNumberArea;
     QPushButton* scrollUp = new QPushButton(this);
     QPushButton* scrollPrevious = new QPushButton(this);
@@ -75,12 +77,15 @@ private:
     };
 
     QVector<MetaDocCursor> cursors_metaDoc;
-    //QVector<QUndoStack> undoStacks_metaDoc;
 
     bool hasLineHighlight = true;
+    bool hasKeyfilter = true;
 
     void connections();
     const QColor cursorColor();
+    void storeCursors(QString key);
+    void recallCursors(QString key);
+    void recallUndoStacks(QString key); // WIP
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount); // <- this arg isn't used?
@@ -100,7 +105,6 @@ class LineNumberArea : public QWidget
 {
 public:
     LineNumberArea(TextEditor* editor) : QWidget(editor), textEditor(editor) {}
-    ~LineNumberArea() = default;
 
     QSize sizeHint() const override
     {

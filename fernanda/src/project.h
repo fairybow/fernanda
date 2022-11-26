@@ -22,7 +22,6 @@ public:
     };
 
     Project(QString filePath, SP opt = SP::None);
-    ~Project() = default;
 
     QVector<QString> makeInitExpansions();
     QVector<QStandardItem*> makeItems();
@@ -37,10 +36,8 @@ public:
     void renameDomElement(QString newName, QString key);
 
 private:
-    //
-
-    Archiver* archiver = new Archiver();
-    Dom* dom = new Dom(); // compare self against initialSelf before closing
+    Archiver* archiver = new Archiver;
+    Dom* dom = new Dom; // compare self against initialSelf before closing
     QString activeArchive = nullptr;
     QString activeKey = nullptr;
     QString cleanText = nullptr;

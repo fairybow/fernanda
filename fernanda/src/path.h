@@ -40,8 +40,8 @@ namespace Path
 	{
 		if (QFileInfo(path).isFile())
 			if (QFile(path).exists()) return true;
-			else
-				if (QDir(path).exists()) return true;
+		else
+			if (QDir(path).exists()) return true;
 		return false;
 	}
 
@@ -69,7 +69,7 @@ namespace Path
 
 	inline QString makePosix(QString path) // may not need, as bit7z only takes \\ paths for searching
 	{
-		return path.replace(QRegularExpression("\\\\"), "/");
+		return path.replace(QRegularExpression(R"(\)"), "/");
 	}
 
 	inline QString relPath(QString rootPath, QString currentPath)

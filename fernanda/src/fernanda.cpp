@@ -5,7 +5,6 @@
 Fernanda::Fernanda(QWidget* parent)
     : QMainWindow(parent)
 {
-    Ud::windowsReg();
     addWidgets();
     connections();
     Ud::userData(Ud::Op::Create, ferName);
@@ -62,32 +61,14 @@ void Fernanda::closeEvent(QCloseEvent* event)
 
 void Fernanda::addWidgets()
 {
-    QWidget* main_container = new QWidget(this);
-    QWidget* editor_container = new QWidget(this);
-    QWidget* bar_container = new QWidget(this);
-    QStackedLayout* main_stack = new QStackedLayout(main_container);
-    QStackedLayout* editor_stack = new QStackedLayout(editor_container);
-    barLayout = new QVBoxLayout(bar_container);
-    barLayout->addWidget(colorBar);
-    main_stack->addWidget(bar_container);
-    main_stack->addWidget(splitter);
-    editor_stack->addWidget(overlay);
-    editor_stack->addWidget(textEditor);
-    editor_stack->addWidget(underlay);
-    splitter->addWidget(pane);
-    splitter->addWidget(editor_container);
+    auto main_container = stackWidgets({ colorBar, splitter });
+    auto editor_container = stackWidgets({ overlay, textEditor, underlay });
+    splitter->addWidgets({ pane, editor_container });
 
     statusBar->setSizeGripEnabled(true);
-    main_stack->setStackingMode(QStackedLayout::StackAll);
-    editor_stack->setStackingMode(QStackedLayout::StackAll);
-    barLayout->setContentsMargins(0, 0, 0, 0);
-    bar_container->setAttribute(Qt::WA_TransparentForMouseEvents);
     overlay->setAttribute(Qt::WA_TransparentForMouseEvents);
     overlay->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     underlay->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    splitter->setCollapsible(0, true);
-    splitter->setCollapsible(1, false);
-    splitter->setStretchFactor(1, 100);
 
     setWindowTitle(ferName);
     setMenuBar(menuBar);
@@ -95,40 +76,65 @@ void Fernanda::addWidgets()
     setCentralWidget(main_container);
 
     aot->setCheckable(true);
-    aot->setText(Uni::ico.pushpin);
+    aot->setText(Uni::ico(Uni::Ico::Pushpin));
+    auto aotEffect = new QGraphicsOpacityEffect(this);
+    aotEffect->setOpacity(0.8);
+    aot->setGraphicsEffect(aotEffect);
 
-    statusBar->addPermanentWidget(positions, 0);
-    statusBar->addPermanentWidget(counters, 0);
+    statusBar->addPermanentWidget(indicator, 0);
     statusBar->addPermanentWidget(spacer, 1);
     statusBar->addPermanentWidget(aot, 0);
     statusBar->setMaximumHeight(22);
 
     menuBar->setObjectName("menuBar");
     statusBar->setObjectName("statusBar");
-    splitter->setObjectName("splitter");
     overlay->setObjectName("overlay");
     underlay->setObjectName("underlay");
     fontSlider->setObjectName("fontSlider");
-    positions->setObjectName("positions");
-    counters->setObjectName("counters");
     spacer->setObjectName("spacer");
     aot->setObjectName("aot");
+}
+
+QWidget* Fernanda::stackWidgets(QVector<QWidget*> widgets)
+{
+    QWidget* container = new QWidget(this);
+    QStackedLayout* stack_layout = new QStackedLayout(container);
+    stack_layout->setStackingMode(QStackedLayout::StackAll);
+    for (auto& widget : widgets)
+        stack_layout->addWidget(widget);
+    return container;
 }
 
 void Fernanda::connections()
 {
     connect(textEditor, &TextEditor::askNavPrevious, pane, [&]() { pane->nav(Pane::Nav::Prev); });
     connect(textEditor, &TextEditor::askNavNext, pane, [&]() { pane->nav(Pane::Nav::Next); });
-    connect(splitter, &QSplitter::splitterMoved, this, [&]()
-        {
-            Ud::saveConfig("window", "splitter", splitter->saveState());
-        });
     connect(this, &Fernanda::startAutoTempSave, this, [&]() { autoTempSave->start(30000); });
+    connect(textEditor, &TextEditor::cursorPositionChanged, this, [&]()
+        {
+            updatePositions(textEditor->textCursor().blockNumber(), textEditor->textCursor().positionInBlock());
+        });
+    connect(textEditor, &TextEditor::textChanged, this, [&]()
+        {
+            updateCounts(textEditor->toPlainText(), textEditor->blockCount());
+        });
+    connect(textEditor, &TextEditor::selectionChanged, this, [&]()
+        {
+            if (!textEditor->textCursor().hasSelection())
+            {
+                textEditor->textChanged();
+                return;
+            }
+            updateSelection(textEditor->textCursor().selectedText(), textEditor->selectedLineCount());
+        });
     connect(autoTempSave, &QTimer::timeout, this, [&]()
         {
             if (!activeProject.has_value()) return;
             activeProject.value().autoTempSave(textEditor->toPlainText());
         });
+    connect(this, &Fernanda::updatePositions, indicator, &Indicator::updatePositions);
+    connect(this, &Fernanda::updateCounts, indicator, &Indicator::updateCounts);
+    connect(this, &Fernanda::updateSelection, indicator, &Indicator::updateSelection);
     connect(pane, &Pane::askDomMove, this, &Fernanda::domMove);
     connect(pane, &Pane::askAddElement, this, &Fernanda::addElement);
     connect(pane, &Pane::askRenameElement, this, &Fernanda::renameElement);
@@ -137,21 +143,16 @@ void Fernanda::connections()
     connect(textEditor, &TextEditor::askHasProject, this, &Fernanda::replyHasProject);
     connect(this, &Fernanda::sendColorBarToggle, colorBar, &ColorBar::toggleSelf);
     connect(this, &Fernanda::sendLineHighlightToggle, textEditor, &TextEditor::toggleLineHighlight);
+    connect(this, &Fernanda::sendKeyfilterToggle, textEditor, &TextEditor::toggleKeyfilter);
     connect(this, &Fernanda::sendLineNumberAreaToggle, textEditor, &TextEditor::toggleLineNumberArea);
     connect(this, &Fernanda::sendScrollsToggle, textEditor, &TextEditor::toggleScrolls);
     connect(this, &Fernanda::sendExtraScrollsToggle, textEditor, &TextEditor::toggleExtraScrolls);
     connect(aot, &QPushButton::toggled, this, &Fernanda::aotToggled);
-    connect(textEditor, &TextEditor::cursorPositionChanged, this, &Fernanda::updatePositions);
-    connect(textEditor, &TextEditor::textChanged, this, &Fernanda::updateCounters);
     connect(this, &Fernanda::sendInitExpansions, pane, &Pane::receiveInitExpansions);
     connect(this, &Fernanda::sendItems, pane, &Pane::receiveItems);
     connect(pane, &Pane::askSendToEditor, this, &Fernanda::handleEditorText);
     connect(textEditor, &TextEditor::textChanged, this, &Fernanda::sendEditedText);
     connect(this, &Fernanda::sendEditsList, pane, &Pane::receiveEditsList);
-    connect(this, &Fernanda::saveCursors, textEditor, &TextEditor::storeCursors);
-    connect(this, &Fernanda::applyCursors, textEditor, &TextEditor::recallCursors);
-    connect(this, &Fernanda::saveUndoStacks, textEditor, &TextEditor::storeUndoStacks);
-    connect(this, &Fernanda::applyUndoStacks, textEditor, &TextEditor::recallUndoStacks);
 }
 
 void Fernanda::makeMenuBar()
@@ -298,6 +299,15 @@ void Fernanda::makeViewMenu() // clean me
     toggle_line_highlight->setCheckable(true);
     loadMenuToggle(toggle_line_highlight, "editor", "line_highlight", true);
 
+    auto* toggle_keyfilter = new QAction(tr("&Toggle key filter"), this);
+    connect(toggle_keyfilter, &QAction::toggled, this, [&](bool checked)
+        {
+            sendKeyfilterToggle(checked);
+            Ud::saveConfig("editor", "key_filter", checked);
+        });
+    toggle_keyfilter->setCheckable(true);
+    loadMenuToggle(toggle_keyfilter, "editor", "key_filter", true);
+
     auto* toggle_line_numbers = new QAction(tr("&Toggle line number area"), this);
     connect(toggle_line_numbers, &QAction::toggled, this, [&](bool checked)
         {
@@ -316,10 +326,18 @@ void Fernanda::makeViewMenu() // clean me
     toggle_scrolls->setCheckable(true);
     loadMenuToggle(toggle_scrolls, "editor", "nav_scrolls", true);
 
+    auto* toggle_indicator = new QAction(tr("&Toggle indicator"), this);
+    connect(toggle_indicator, &QAction::toggled, this, [&](bool checked)
+        {
+            toggleWidget(indicator, "window", "indicator", checked);
+        });
+    toggle_indicator->setCheckable(true);
+    loadMenuToggle(toggle_indicator, "window", "indicator", true);
+
     auto* toggle_line_pos = new QAction(tr("&Toggle line position"), this);
     connect(toggle_line_pos, &QAction::toggled, this, [&](bool checked)
         {
-            toggleGlobals(hasLinePos, "window", "position_line", checked, Toggle::Pos);
+            toggleGlobals(indicator->has.linePos, "window", "position_line", checked, Toggle::Pos);
         });
     toggle_line_pos->setCheckable(true);
     loadMenuToggle(toggle_line_pos, "window", "position_line", false);
@@ -327,7 +345,7 @@ void Fernanda::makeViewMenu() // clean me
     auto* toggle_col_pos = new QAction(tr("&Toggle column position"), this);
     connect(toggle_col_pos, &QAction::toggled, this, [&](bool checked)
         {
-            toggleGlobals(hasColPos, "window", "position_column", checked, Toggle::Pos);
+            toggleGlobals(indicator->has.colPos, "window", "position_column", checked, Toggle::Pos);
         });
     toggle_col_pos->setCheckable(true);
     loadMenuToggle(toggle_col_pos, "window", "position_column", false);
@@ -335,7 +353,7 @@ void Fernanda::makeViewMenu() // clean me
     auto* toggle_line_count = new QAction(tr("&Toggle line count"), this);
     connect(toggle_line_count, &QAction::toggled, this, [&](bool checked)
         {
-            toggleGlobals(hasLineCount, "window", "count_lines", checked, Toggle::Count);
+            toggleGlobals(indicator->has.lineCount, "window", "count_lines", checked, Toggle::Count);
         });
     toggle_line_count->setCheckable(true);
     loadMenuToggle(toggle_line_count, "window", "count_lines", false);
@@ -343,7 +361,7 @@ void Fernanda::makeViewMenu() // clean me
     auto* toggle_word_count = new QAction(tr("&Toggle word count"), this);
     connect(toggle_word_count, &QAction::toggled, this, [&](bool checked)
         {
-            toggleGlobals(hasWordCount, "window", "count_words", checked, Toggle::Count);
+            toggleGlobals(indicator->has.wordCount, "window", "count_words", checked, Toggle::Count);
         });
     toggle_word_count->setCheckable(true);
     loadMenuToggle(toggle_word_count, "window", "count_words", false);
@@ -351,7 +369,7 @@ void Fernanda::makeViewMenu() // clean me
     auto* toggle_char_count = new QAction(tr("&Toggle character count"), this);
     connect(toggle_char_count, &QAction::toggled, this, [&](bool checked)
         {
-            toggleGlobals(hasCharCount, "window", "count_characters", checked, Toggle::Count);
+            toggleGlobals(indicator->has.charCount, "window", "count_characters", checked, Toggle::Count);
         });
     toggle_char_count->setCheckable(true);
     loadMenuToggle(toggle_char_count, "window", "count_characters", false);
@@ -383,9 +401,11 @@ void Fernanda::makeViewMenu() // clean me
     view->addAction(toggle_statusbar);
     view->addSeparator();
     view->addAction(toggle_line_highlight);
+    view->addAction(toggle_keyfilter);
     view->addAction(toggle_line_numbers);
     view->addAction(toggle_scrolls);
     view->addSeparator();
+    view->addAction(toggle_indicator);
     auto* positions = view->addMenu(tr("&Show line and column positions"));
     positions->addAction(toggle_line_pos);
     positions->addAction(toggle_col_pos);
@@ -444,8 +464,7 @@ void Fernanda::loadConfigs()
     loadWinConfigs();
     auto value = Ud::loadConfig("editor", "font_size", 14, Ud::Type::Int).toInt();
     fontSlider->setValue(value);
-    auto state = Ud::loadConfig("window", "splitter").toByteArray();
-    splitter->restoreState(state);
+    splitter->loadConfig();
     auto has_project = Ud::loadConfig("data", "load_most_recent", false, Ud::Type::Bool).toBool();
     if (has_project)
     {
@@ -529,7 +548,7 @@ void Fernanda::setEditorStyle()
         auto theme_path = selection->data().toString();
         auto style_sheet = Res::createStyleSheetFromTheme(Io::readFile(":\\themes\\editor.qss"), Io::readFile(theme_path));
         auto theme_cursor = Io::readFile(theme_path);
-        QRegularExpressionMatch match_cursor = QRegularExpression(Uni::regex.themeSheetCursor).match(theme_cursor);
+        QRegularExpressionMatch match_cursor = Uni::regex(Uni::Re::ThemeSheetCursor).match(theme_cursor);
         QString cursor_color = match_cursor.captured(2);
         if (!hasTheme)
         {
@@ -583,12 +602,12 @@ void Fernanda::aotToggled(bool checked)
     if (checked)
     {
         setWindowFlags(windowFlags() | Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint);
-        aot->setText(Uni::ico.balloon);
+        aot->setText(Uni::ico(Uni::Ico::Balloon));
     }
     else
     {
         setWindowFlags(windowFlags() ^ (Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint));
-        aot->setText(Uni::ico.pushpin);
+        aot->setText(Uni::ico(Uni::Ico::Pushpin));
     }
     show();
     Ud::saveConfig("window", "always_on_top", checked);
@@ -627,9 +646,9 @@ void Fernanda::setBarAlignment()
     {
         auto alignment = selection->data().toString();
         if (alignment == "Top")
-            barLayout->setAlignment(Qt::AlignTop);
+            colorBar->align(Qt::AlignTop);
         else if (alignment == "Bottom")
-            barLayout->setAlignment(Qt::AlignBottom);
+            colorBar->align(Qt::AlignBottom);
         Ud::saveConfig("window", "bar_alignment", alignment);
     }
 }
@@ -640,42 +659,11 @@ void Fernanda::toggleGlobals(bool& globalBool, QString group, QString valueName,
     Ud::saveConfig(group, valueName, value);
     switch (type) {
     case Toggle::None: break;
-    case Toggle::Count: updateCounters(); break;
-    case Toggle::Pos: updatePositions(); break;
+    case Toggle::Count: textEditor->textChanged(); break;
+    case Toggle::Pos: textEditor->cursorPositionChanged(); break;
     case Toggle::WinTheme: setWindowStyle(); break;
     case Toggle::Theme: setEditorStyle(); break;
     }
-}
-
-void Fernanda::updatePositions()
-{
-    const auto line_pos = textEditor->textCursor().blockNumber();
-    const auto col_pos = textEditor->textCursor().positionInBlock();
-    QStringList elements;
-    if (hasLinePos)
-        elements << "ln " + QString::number(line_pos + 1);
-    if (hasColPos)
-        elements << "col " + QString::number(col_pos + 1);
-    auto pos_display = elements.join(", ");
-    positions->setText(pos_display);
-}
-
-void Fernanda::updateCounters()
-{
-    const auto text = textEditor->toPlainText();
-    const auto line_count = textEditor->blockCount();
-    const auto word_count = text.split(QRegularExpression(Uni::regex.splitCount)).count();
-    const auto char_count = text.count();
-    QStringList elements;
-    if (hasLineCount)
-        elements << QString::number(line_count) + " lines";
-    if (hasWordCount)
-        elements << QString::number(word_count - 1) + " words"; // - 1, whyyyyy
-    // The above always displays at least 1, even when editor is blank?
-    if (hasCharCount)
-        elements << QString::number(char_count) + " chars";
-    auto counter_display = elements.join(", ");
-    counters->setText(counter_display);
 }
 
 void Fernanda::fileSave()
@@ -722,26 +710,10 @@ void Fernanda::handleEditorText(QString key)
     if (!activeProject.has_value()) return;
     if (overlay->isVisible())
         overlay->hide();
-    if (textEditor->isReadOnly())
-        textEditor->setReadOnly(false);
     auto& project = activeProject.value();
-    auto old_key = project.getActiveKey();
-    if (old_key == key) // can we do this in project?
-    {
-        textEditor->setFocus();
-        return;
-    }
-    if (old_key != nullptr) // can we do this in project?
-    {
-        saveCursors(old_key);
-        saveUndoStacks(old_key);
-    }
+    if (!textEditor->handleKeySwap(project.getActiveKey(), key)) return;
     auto text = project.saveOld_openNew(key, textEditor->toPlainText());
-    textEditor->clear();
-    textEditor->setPlainText(text);
-    applyCursors(key);
-    applyUndoStacks(key);
-    textEditor->setFocus();
+    textEditor->handleTextSwap(key, text);
     startAutoTempSave();
 }
 

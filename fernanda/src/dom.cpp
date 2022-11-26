@@ -22,7 +22,7 @@ const QString Dom::string()
 bool Dom::hasChanges()
 {
 	if (renames_metaDoc.isEmpty()) return false;
-	else return true; // also include comparing self to initialSelf
+	else return true;
 }
 
 const QString Dom::relPath(QString key)
@@ -70,6 +70,7 @@ const QString Dom::elementName(QString key)
 
 void Dom::moveElement(QString pivotKey, QString fulcrumKey, Io::Move pos) // clean me!
 {
+	//auto& dom = activeDom.value();
 	if (pivotKey == nullptr) return;
 	auto pivot_node = findElement(pivotKey);
 	auto fulcrum_node = findElement(fulcrumKey);
@@ -117,6 +118,8 @@ void Dom::moveElement(QString pivotKey, QString fulcrumKey, Io::Move pos) // cle
 void Dom::newElement(QString newName, Path::Type type, QString parentKey)
 {
 	if (newName == nullptr) return;
+	//if (!activeDom.has_value()) return;
+	//auto& dom = activeDom.value();
 	QString tag_name;
 	QString file_name;
 	switch (type) {
@@ -158,7 +161,9 @@ void Dom::newElement(QString newName, Path::Type type, QString parentKey)
 
 void Dom::renameElement(QString newName, QString key)
 {
+	// make the new path
 	if (newName == nullptr) return;
+	//if (!activeDom.has_value()) return;
 	auto element = findElement(key);
 	auto nearest_dir_key = nearestParentKeyOfType_recursor(element, Path::Type::Dir);
 	auto nearest_dir = filteredRelPath(nearest_dir_key);

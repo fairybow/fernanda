@@ -63,7 +63,7 @@ const QString Project::saveOld_openNew(QString newKey, QString oldText)
 QVector<QString> Project::handleEditsList(QString currentText)
 {
 	QVector<QString> result;
-	if (activeKey == nullptr || cleanText == nullptr) return result;
+	if (activeKey == nullptr) return result;
 	if (cleanText != currentText)
 		Io::amendVector(edits_metaDoc, activeKey, Io::AmendVector::Add);
 	else

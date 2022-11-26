@@ -8,9 +8,10 @@
 </p>
 <p align="center">
 	<a href="LICENSE"><img src="https://img.shields.io/github/license/fairybow/fernanda" alt="license: GPL-3.0"/></a>
-	<a href="https://www.qt.io/"><img src="https://img.shields.io/badge/Qt-6.4.0-green?logo=qt" alt="Qt: 6.4.0"/></a>
+	<a href="https://www.qt.io/"><img src="https://img.shields.io/badge/Qt-6.4.1-green?logo=qt" alt="Qt: 6.4.1"/></a>
 	<a href="https://github.com/rikyoz/bit7z"><img src="https://img.shields.io/badge/Bit7z-3.1.5-blue" alt="Bit7z: 3.1.5"/></a>
-	<a href="https://www.7-zip.org/"><img src="https://img.shields.io/badge/7zip-blueviolet" alt="7zip"/></a>
+	<a href="https://www.7-zip.org/"><img src="https://img.shields.io/badge/7zip-22.01-blueviolet" alt="7zip: 22.01"/></a>
+	<a href="https://shields.io/"><img src="https://img.shields.io/badge/these-are_so_cute_omg-ff69b4" alt="Shields.io"/></a>
 </p>
 
 ## :wave: **hi**
@@ -22,17 +23,6 @@ This is a personal project, a work-in-progress, and I am *clearly* not a program
 ## :compass: **so, what's coming?**
 
 A beta, by god. (What's here at the moment is *hella alpha*, and I don't recommend using it. Obviously.)
-
-Here's what's happening ATM:
-
-- Currently, I'm in the process of abstracting file-handling away from Fernanda's other classes.
-
-- A global rewrite is also in-progress, as I continue to learn more about C++ (Number 3! :weary:)
-
-- Custom ordering to, and pairing of, files within Fernanda.
-
-- "Files" (kinda)
-	- Currently, Fernanda works with regular directories. However, the plan is to implement self-contained "pseudo-files": single archives containing all your project's files. Much like Scrivener's `.scriv` folders, you'll find an XML file inside telling Fernanda how to render any special orderings or pairings of your project's files. Unlike a `.scriv` folder, however, your files will be in a human-navigable file tree (each file in the same subdirectory as it appears in your project in Fernanda).
 
 ## :honeybee:
 

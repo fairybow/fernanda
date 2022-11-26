@@ -1,10 +1,11 @@
-REDO!
-
 fernanda.h
-	bar.h
+	colorbar.h
 		io.h
 			path.h
 	editor.h
+		keyfilter.h
+		uni.h
+	indicator.h
 		uni.h
 	pane.h
 		delegate.h
@@ -13,25 +14,47 @@ fernanda.h
 		io.h
 			path.h
 	project.h
+		archiver.h
+			userdata.h
+				path.h
+		dom.h
+			io.h
+				path.h
 		sample.h
 			io.h
 				path.h
-		userdata.h
 	res.h
+	splitter.h
+		userdata.h
+			path.h
 
 /* ==================== */
 
-// bar.h
-/*#include "io.h"
+// archiver.h
+/*
+#include "bit7z/include/bit7z.hpp"
+
+#include "userdata.h"
+
+#include <map>
+#include <type_traits>
+*/
+
+// colorbar.h
+/*
+#include "io.h"
 
 #include <QProgressBar>
 #include <QString>
 #include <QTimeLine>
 #include <QTimer>
-#include <QWidget>*/
+#include <QVBoxLayout>
+#include <QWidget>
+*/
 
 // delegate.h
-/*#include "index.h"
+/*
+#include "index.h"
 #include "uni.h"
 
 #include <QColor>
@@ -44,10 +67,23 @@ fernanda.h
 #include <QStyledItemDelegate>
 #include <QStyleOptionViewItem>
 #include <QVector>
-#include <QWidget>*/
+#include <QWidget>
+*/
+
+// dom.h
+/*
+#include "io.h"
+
+#include <QDomDocument>
+#include <QDomElement>
+#include <QUuid>
+#include <QVector>
+*/
 
 // editor.h
-/*#include "uni.h"
+/*
+#include "keyfilter.h"
+#include "uni.h"
 
 #include <QAbstractSlider>
 #include <QColor>
@@ -61,21 +97,25 @@ fernanda.h
 #include <QRect>
 #include <QResizeEvent>
 #include <QScrollBar>
+#include <QShortcut>
 #include <QSize>
 #include <QTextBlock>
 #include <QTextCursor>
 #include <QTextFormat>
 #include <QTextEdit>
-#include <QVector>
 #include <QWheelEvent>
-#include <QWidget>*/
+#include <QWidget>
+*/
 
 // fernanda.h
-/*#include "bar.h"
+/*
+#include "colorbar.h"
 #include "editor.h"
+#include "indicator.h"
 #include "pane.h"
 #include "project.h"
 #include "res.h"
+#include "splitter.h"
 
 #include <tuple>
 
@@ -84,39 +124,60 @@ fernanda.h
 #include <QCloseEvent>
 #include <QCoreApplication>
 #include <QFileDialog>
-#include <QLabel>
 #include <QMainWindow>
 #include <QMenuBar>
 #include <QMessageBox>
-#include <QMetaObject>
 #include <QMoveEvent>
 #include <QShowEvent>
 #include <QSizePolicy>
 #include <QSlider>
-#include <QSplitter>
 #include <QStatusBar>
 #include <QStackedLayout>
 #include <QTextOption>
-#include <QVBoxLayout>
-#include <QWidgetAction>*/
+#include <QWidgetAction>
+*/
 
 // index.h
-/*#include <QModelIndex>
+/*
+#include <QModelIndex>
 #include <QString>
 #include <Qt>
-#include <QVariant>*/
+#include <QVariant>
+*/
+
+// indicator.h
+/*
+#include "uni.h"
+
+#include <QGraphicsOpacityEffect>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QString>
+#include <QStringList>
+#include <QWidget>
+*/
 
 // io.h
-/*#include "path.h"
+/*
+#include "path.h"
 
 #include <optional>
 
 #include <QFile>
 #include <QIODevice>
-#include <QTextStream>*/
+#include <QTextStream>
+*/
+
+// keyfilter.h
+/*
+#include <QChar>
+#include <QKeyEvent>
+#include <QVector>
+*/
 
 // pane.h
-/*#include "delegate.h"
+/*
+#include "delegate.h"
 #include "io.h"
 
 #include <QAbstractItemView>
@@ -128,48 +189,55 @@ fernanda.h
 #include <QMenu>
 #include <QMouseEvent>
 #include <QPoint>
-#include <QRegularExpression>
 #include <QStandardItem>
 #include <QStandardItemModel>
-#include <QTreeView>*/
+#include <QTreeView>
+*/
+
+// path.h
+/*
+#include <filesystem>
+
+#include <QDir>
+#include <QFileInfo>
+#include <QRegularExpression>
+#include <QString>
+*/
 
 // project.h
-/*#include "microtar/microtar.h"
-
+/*
+#include "archiver.h"
+#include "dom.h"
 #include "sample.h"
-#include "userdata.h"
-
-#include <algorithm>
-#include <cstring>
-#include <fstream>
-#include <vector>
 
 #include <QByteArray>
-#include <QDomDocument>
-#include <QDomElement>
 #include <QStandardItem>
 #include <QTemporaryDir>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
-#include <QUuid>*/
+*/
 
 // res.h
-/*#include <algorithm>
+/*
+#include <algorithm>
 #include <filesystem>
 #include <string>
+
+#include "uni.h"
 
 #include <QDir>
 #include <QDirIterator>
 #include <QFontDatabase>
-#include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <QRegularExpressionMatchIterator>
 #include <QString>
 #include <QStringList>
-#include <QVector>*/
+#include <QVector>
+*/
 
 // sample.h
-/*#include "io.h"
+/*
+#include "io.h"
 
 #include <filesystem>
 #include <string>
@@ -179,17 +247,34 @@ fernanda.h
 #include <QFile>
 #include <QString>
 #include <QStringList>
-#include <QVector>*/
+#include <QVector>
+*/
+
+// splitter.h
+/*
+#include "userdata.h"
+
+#include <QByteArray>
+#include <QSplitter>
+#include <QVector>
+#include <QWidget>
+*/
 
 // uni.h
-/*#include <QString>*/
+/*
+#include <QRegularExpression>
+#include <QString>
+*/
 
 // userdata.h
-/*#include <shlobj_core.h>
+/*
+#include <shlobj_core.h>
 
 #include <filesystem>
 #include <string>
 #include <time.h>
+
+#include "path.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -198,4 +283,5 @@ fernanda.h
 #include <QSettings>
 #include <QStandardPaths>
 #include <QString>
-#include <QVariant>*/
+#include <QVariant>
+*/

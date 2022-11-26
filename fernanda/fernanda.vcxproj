@@ -31,13 +31,13 @@
     <Import Project="$(QtMsBuild)\qt_defaults.props" />
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
-    <QtInstall>6.4.0_msvc2019_64</QtInstall>
+    <QtInstall>6.4.1_msvc2019_64</QtInstall>
     <QtModules>core;gui;widgets;xml</QtModules>
     <QtBuildConfig>debug</QtBuildConfig>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
-    <QtInstall>6.3.1_msvc2019_64</QtInstall>
-    <QtModules>core;gui;widgets</QtModules>
+    <QtInstall>6.4.1_msvc2019_64</QtInstall>
+    <QtModules>core;gui;widgets;xml</QtModules>
     <QtBuildConfig>release</QtBuildConfig>
   </PropertyGroup>
   <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
@@ -74,7 +74,12 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Link>
       <AdditionalDependencies>include/bit7z/lib/bit7z64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/NODEFAULTLIB:MSVCRT.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
+    <ClCompile>
+      <AdditionalIncludeDirectories>include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
     <ClCompile>
@@ -120,7 +125,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\archiver.cpp" />
-    <ClCompile Include="src\bar.cpp" />
+    <ClCompile Include="src\colorbar.cpp" />
     <ClCompile Include="src\dom.cpp" />
     <ClCompile Include="src\project.cpp" />
     <ClCompile Include="src\userdata.cpp" />
@@ -154,12 +159,15 @@
     <ClInclude Include="include\bit7z\include\bitstreamcompressor.hpp" />
     <ClInclude Include="include\bit7z\include\bitstreamextractor.hpp" />
     <ClInclude Include="include\bit7z\include\bittypes.hpp" />
-    <QtMoc Include="src\bar.h" />
+    <QtMoc Include="src\colorbar.h" />
     <ClInclude Include="src\archiver.h" />
+    <QtMoc Include="src\indicator.h" />
     <ClInclude Include="src\dom.h" />
     <ClInclude Include="src\index.h" />
+    <ClInclude Include="src\keyfilter.h" />
     <ClInclude Include="src\path.h" />
     <ClInclude Include="src\project.h" />
+    <QtMoc Include="src\splitter.h" />
     <ClInclude Include="src\uni.h" />
     <ClInclude Include="src\version.h" />
     <QtMoc Include="src\fernanda.h" />

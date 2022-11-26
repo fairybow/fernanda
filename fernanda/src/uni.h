@@ -2,29 +2,92 @@
 
 #pragma once
 
+#include <QRegularExpression>
 #include <QString>
 
 namespace Uni
 {
-	struct {
-		QString balloon = "\U0001F388";
-		QString file = "\U0001F4C4";
-		QString folderClosed = "\U0001F4C1";
-		QString folderOpen = "\U0001F4C2";
-		QString pushpin = "\U0001F4CC";
-		QString triangleDown = "\U000025BC";
-		QString triangleUp = "\U000025B2";
-		QString unknown = "\U00002754";
-	} ico;
+	enum class Ico {
+		Balloon,
+		File,
+		FolderClosed,
+		FolderOpen,
+		Pushpin,
+		QuestionMark,
+		TriangleDown,
+		TriangleUp
+	};
 
-	struct {
-		QString forbidden = "(<|>|:|\\/|\\\\|\\||\\?|\\*|\")";
-		QString themeSheetLine = "(@.*\\n?)";
-		QString themeSheetValue = "(\\s=.*;)";
-		QString themeSheetVariable = "(@.*=\\s)";
-		QString themeSheetCursor = "(@cursorColor; = )(.*)(;$)";
-		QString splitCount = "(\\s|\\n|\\r)+";
-	} regex;
+	enum class Re {
+		Forbidden,
+		ParagraphSeparator,
+		Split,
+		ThemeSheetCursor,
+		ThemeSheetLine,
+		ThemeSheetValue,
+		ThemeSheetVariable
+	};
+
+	inline const QString ico(Ico name)
+	{
+		QString result;
+		switch (name) {
+		case Ico::Balloon:
+			result = "\U0001F388";
+			break;
+		case Ico::File:
+			result = "\U0001F4C4";
+			break;
+		case Ico::FolderClosed:
+			result = "\U0001F4C1";
+			break;
+		case Ico::FolderOpen:
+			result = "\U0001F4C2";
+			break;
+		case Ico::Pushpin:
+			result = "\U0001F4CC";
+			break;
+		case Ico::QuestionMark:
+			result = "\U00002754";
+			break;
+		case Ico::TriangleDown:
+			result = "\U000025BC";
+			break;
+		case Ico::TriangleUp:
+			result = "\U000025B2";
+			break;
+		}
+		return result;
+	}
+
+	inline const QRegularExpression regex(Re operation)
+	{
+		QRegularExpression result;
+		switch (operation) {
+		case Re::Forbidden:
+			result = QRegularExpression(R"((<|>|:|\/|\\|\||\?|\*|\"))");
+			break;
+		case Re::ParagraphSeparator:
+			result = QRegularExpression("\U00002029");
+			break;
+		case Re::Split:
+			result = QRegularExpression("(\\s|\\n|\\r|\U00002029|^)+");
+			break;
+		case Re::ThemeSheetCursor:
+			result = QRegularExpression("(@cursorColor; = )(.*)(;$)");
+			break;
+		case Re::ThemeSheetLine:
+			result = QRegularExpression("(@.*\\n?)");
+			break;
+		case Re::ThemeSheetValue:
+			result = QRegularExpression("(\\s=.*;)");
+			break;
+		case Re::ThemeSheetVariable:
+			result = QRegularExpression("(@.*=\\s)");
+			break;
+		}
+		return result;
+	}
 }
 
 // uni.h, fernanda

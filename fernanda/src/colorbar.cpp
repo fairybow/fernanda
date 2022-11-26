@@ -1,20 +1,24 @@
-// bar.cpp, fernanda
+// colorbar.cpp, fernanda
 
-#include "bar.h"
+#include "colorbar.h"
 
 ColorBar::ColorBar(QWidget* parent)
-    : QProgressBar(parent)
+    : QWidget(parent)
 {
     setAttribute(Qt::WA_TransparentForMouseEvents);
-    setMaximumHeight(3);
-    setTextVisible(false);
-    setRange(0, 100);
-    hide();
-    setObjectName("colorBar");
+    setLayout(layout);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->addWidget(bar);
+    bar->setAttribute(Qt::WA_TransparentForMouseEvents);
+    bar->setMaximumHeight(3);
+    bar->setTextVisible(false);
+    bar->setRange(0, 100);
+    bar->hide();
+    bar->setObjectName("colorBar");
     connect(barTimer, &QTimer::timeout, this, [&]()
         {
-            hide();
-            reset();
+            bar->hide();
+            bar->reset();
         });
 }
 
@@ -38,6 +42,11 @@ void ColorBar::red()
     run(Color::Red);
 }
 
+void ColorBar::align(Qt::AlignmentFlag alignment)
+{
+    layout->setAlignment(alignment);
+}
+
 void ColorBar::toggleSelf(bool checked)
 {
     hasColorBar = checked;
@@ -49,9 +58,9 @@ void ColorBar::run(Color theme)
     if (!hasColorBar) return;
     style(theme);
     auto* bar_fill = new QTimeLine(125, this);
-    connect(bar_fill, &QTimeLine::frameChanged, this, &QProgressBar::setValue);
+    connect(bar_fill, &QTimeLine::frameChanged, bar, &QProgressBar::setValue);
     bar_fill->setFrameRange(0, 100);
-    show();
+    bar->show();
     barTimer->start(1000);
     bar_fill->start();
 }
@@ -70,7 +79,7 @@ void ColorBar::style(Color theme)
         style_sheet = Io::readFile(":\\themes\\bar\\pastels.qss");
         break;
     }
-    setStyleSheet(style_sheet);
+    bar->setStyleSheet(style_sheet);
 }
 
-// bar.cpp, fernanda
+// colorbar.cpp, fernanda

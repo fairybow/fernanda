@@ -18,41 +18,41 @@ const QString Ud::userData(Op operation, QString name)
         dataVars.appName = name;
     else
         name = dataVars.appName;
-    auto user_data = std::filesystem::path((QDir::homePath() / QString("." + name)).toStdString());
-    auto active_temp = user_data / std::string(".active_temp");
-    auto backup = user_data / std::string("backup");
-    auto dll = user_data / std::string("dll");
-    auto rollback = backup / std::string(".rollback");
-    auto config = user_data / std::string(name.toStdString() + ".ini");
-    std::filesystem::path docs = QStandardPaths::locate(QStandardPaths::DocumentsLocation, nullptr, QStandardPaths::LocateDirectory).toStdString();
-    auto user_docs = docs / std::string("Fernanda");
+    auto user_data = (QDir::homePath() / QString("." + name));
+    auto active_temp = user_data / ".active_temp";
+    auto backup = user_data / "backup";
+    auto dll = user_data / "dll";
+    auto rollback = backup / ".rollback";
+    auto config = user_data / name + ".ini";
+    auto docs = QStandardPaths::locate(QStandardPaths::DocumentsLocation, nullptr, QStandardPaths::LocateDirectory);
+    auto user_docs = docs / "Fernanda";
     QString result;
     switch (operation) {
     case Op::Config:
-        result = QString::fromStdString(config.string());
+        result = config;
         break;
     case Op::Create:
         for (auto& data_folder : { user_data, active_temp, backup, dll, rollback, user_docs})
-            Path::makeDirs(QString::fromStdString(data_folder.string()));
+            Path::makeDirs(data_folder);
         result = nullptr;
         break;
     case Op::GetBackup:
-        result = QString::fromStdString(backup.string());
+        result = backup;
         break;
     case Op::GetDLL:
-        result = QString::fromStdString(dll.string());
+        result = dll;
         break;
     case Op::GetDocs:
-        result = QString::fromStdString(user_docs.string());
+        result = user_docs;
         break;
     case Op::GetRollback:
-        result = QString::fromStdString(rollback.string());
+        result = rollback;
         break;
     case Op::GetTemp:
-        result = QString::fromStdString(active_temp.string());
+        result = active_temp;
         break;
     case Op::GetUserData:
-        result = QString::fromStdString(user_data.string());
+        result = user_data;
         break;
     }
     return result;
@@ -105,7 +105,7 @@ std::wstring Ud::dll()
 {
     auto dll_path = userData(Op::GetDLL) / "7z.dll";
     if (!Path::exists(dll_path))
-        QFile::copy(":\\lib\\7zip\\64\\7z.dll", dll_path);
+        QFile::copy(":\\lib\\7zip 22.01\\7z64.dll", dll_path);
     return dll_path.toStdWString();
 }
 

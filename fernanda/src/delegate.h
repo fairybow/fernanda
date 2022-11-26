@@ -45,7 +45,7 @@ private:
         auto s_w = opt_s.width();
         auto icon_r = QRect((r_l - s_w + 15), r_t, s_w, s_h);
         auto text_r = QRect((r_l + 16), (r_t + 2), r_w, r_h);
-        auto highlight_r = QRect(5, r_t, (r_w + 50), r_h);
+        auto highlight_r = QRect(5, r_t, (r_w + 50), r_h); // issue here
         return Geometry{ icon_r, text_r, highlight_r };
     }
 
@@ -68,14 +68,14 @@ private:
         if (Index::isDir(index))
         {
             if (option.state & QStyle::State_Open)
-                painter->drawText(geo.icon, Uni::ico.folderOpen);
+                painter->drawText(geo.icon, Uni::ico(Uni::Ico::FolderOpen));
             else
-                painter->drawText(geo.icon, Uni::ico.folderClosed);
+                painter->drawText(geo.icon, Uni::ico(Uni::Ico::FolderClosed));
         }
         else if (Index::isFile(index))
-            painter->drawText(geo.icon, Uni::ico.file);
+            painter->drawText(geo.icon, Uni::ico(Uni::Ico::File));
         else
-            painter->drawText(geo.icon, Uni::ico.unknown);
+            painter->drawText(geo.icon, Uni::ico(Uni::Ico::QuestionMark));
         painter->drawText(geo.text, name);
         for (auto& entry : paintAsEdited)
             if (item_key == entry)
