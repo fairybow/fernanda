@@ -10,6 +10,8 @@
 #include "res.h"
 #include "splitter.h"
 
+#include <tuple>
+
 #include <QAbstractButton>
 #include <QActionGroup>
 #include <QCloseEvent>
@@ -123,7 +125,6 @@ signals:
     void sendLineNumberAreaToggle(bool checked);
     void sendScrollsToggle(bool checked);
     void sendExtraScrollsToggle(bool checked);
-    void sendInitExpansions(QVector<QString> initExpansions);
     void sendItems(QVector<QStandardItem*> items);
     void sendEditsList(QVector<QString> editedFiles);
     void startAutoTempSave();

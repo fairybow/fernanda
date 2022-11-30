@@ -16,9 +16,6 @@ class Splitter : public QSplitter
 public:
     Splitter(QWidget* parent = nullptr)
     {
-        setCollapsible(0, true);
-        setCollapsible(1, false);
-        setStretchFactor(1, 100);
         setObjectName("splitter");
         connect(this, &QSplitter::splitterMoved, this, [&]()
             {
@@ -30,12 +27,18 @@ public:
     {
         for (auto& widget : widgets)
             addWidget(widget);
+        setCollapsible(0, true);
+        setCollapsible(1, false);
+        setStretchFactor(1, 100);
     }
 
-    void loadConfig()
+    void loadConfig(QRect geo)
     {
-        auto state = Ud::loadConfig("window", "splitter").toByteArray();
-        restoreState(state);
+        auto state = Ud::loadConfig("window", "splitter", QVariant()).toByteArray();
+        if (state.isEmpty() || state.isNull())
+            setSizes(QVector<int>{ static_cast<int>(geo.width() * 0.2), static_cast<int>(geo.width() * 0.8) });
+        else
+            restoreState(state);
     }
 };
 

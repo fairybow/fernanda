@@ -27,8 +27,6 @@ namespace Io
 	struct ArchivePaths {
 		QString archivePath;
 		std::optional<QString> readPath;
-		//bool operator==(const ArchivePaths&) const = default;
-		//bool operator!=(const ArchivePaths&) const = default;
 	};
 
 	inline const QString readFile(QString filePath)

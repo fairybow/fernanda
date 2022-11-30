@@ -25,26 +25,23 @@ Pane::Pane(QWidget* parent)
     connect(this, &Pane::expanded, this, [&](const QModelIndex& index)
         {
             auto key = Index::key(index);
-            Io::amendVector(expanded_metaDoc, key, Io::AmendVector::Add);
+            askSetExpansion(key, true);
         });
     connect(this, &Pane::collapsed, this, [&](const QModelIndex& index)
         {
             auto key = Index::key(index);
-            Io::amendVector(expanded_metaDoc, key, Io::AmendVector::Remove);
+            askSetExpansion(key, false);
         });
 }
 
 void Pane::nav(Nav direction)
 {
     QModelIndex next;
-    if (direction == Nav::Prev)
-        next = indexAbove(currentIndex());
-    else
-        next = indexBelow(currentIndex());
+    (direction == Nav::Previous)
+        ? next = indexAbove(currentIndex())
+        : next = indexBelow(currentIndex());
     if (next.isValid())
-    {
         setCurrentIndex(next);
-    }
     else
     {
         setCurrentIndex(model()->index(0, 0));
@@ -52,10 +49,9 @@ void Pane::nav(Nav direction)
         while (valid)
         {
             QModelIndex wrap_around;
-            if (direction == Nav::Prev)
-                wrap_around = indexBelow(currentIndex());
-            else
-                wrap_around = indexAbove(currentIndex());
+            (direction == Nav::Previous)
+                ? wrap_around = indexBelow(currentIndex())
+                : wrap_around = indexAbove(currentIndex());
             if (wrap_around.isValid())
                 setCurrentIndex(wrap_around);
             else
@@ -69,18 +65,13 @@ void Pane::nav(Nav direction)
         clicked(currentIndex());
 }
 
-void Pane::receiveInitExpansions(QVector<QString> initExpansions)
-{
-    expanded_metaDoc << initExpansions;
-}
-
 void Pane::receiveItems(QVector<QStandardItem*> items)
 {
     itemModel->clear();
     for (auto& item : items)
     {
         itemModel->appendRow(item);
-        expandItem_recursor(item);
+        expandItems_recursor(item);
     }
 }
 
@@ -119,7 +110,6 @@ void Pane::dropEvent(QDropEvent* event)
         pos = Io::Move::Viewport;
         break;
     }
-    // event accept/ignore? deal with early return?
     askDomMove(Index::key(pivot), Index::key(fulcrum), pos);
 }
 
@@ -173,13 +163,14 @@ void Pane::contextMenuEvent(QContextMenuEvent* event)
     menu->exec(event->globalPos());
 }
 
-void Pane::expandItem_recursor(QStandardItem* item)
+void Pane::expandItems_recursor(QStandardItem* item)
 {
-    if (expanded_metaDoc.contains(Index::key(item->index())))
-        setExpanded(item->index(), true);
+    auto index = item->index();
+    if (Index::isExpanded(index))
+        setExpanded(index, true);
     if (item->hasChildren())
         for (auto i = 0; i < item->rowCount(); ++i)
-            expandItem_recursor(item->child(i));
+            expandItems_recursor(item->child(i));
 }
 
 void Pane::refresh()
@@ -199,16 +190,14 @@ void Pane::addTempItem(QPoint eventPos, Path::Type type)
             itemModel->appendRow(temp_item);
         break;
     case Path::Type::File:
-        if (parent_index.isValid())
-            itemModel->itemFromIndex(parent_index)->appendRow(temp_item);
-        else
-            itemModel->appendRow(temp_item);
+        (parent_index.isValid())
+            ? itemModel->itemFromIndex(parent_index)->appendRow(temp_item)
+            : itemModel->appendRow(temp_item);
         break;
     }
     if (parent_index.isValid())
         expand(parent_index);
     temp_item->setEnabled(false);
-    //openPersistentEditor(itemModel->indexFromItem(temp_item));
     auto name = renameItem();
     QString parent_key;
     if (parent_index.isValid())

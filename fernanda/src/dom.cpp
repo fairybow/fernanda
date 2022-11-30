@@ -10,8 +10,8 @@ void Dom::set(QString xml)
 
 bool Dom::hasValue()
 {
-	if (self.toString().isEmpty() || self.toString().isNull()) return false;
-	else return true;
+	if (!self.toString().isEmpty() || !self.toString().isNull()) return true;
+	return false;
 }
 
 const QString Dom::string()
@@ -21,8 +21,8 @@ const QString Dom::string()
 
 bool Dom::hasChanges()
 {
-	if (renames_metaDoc.isEmpty()) return false;
-	else return true;
+	if (!renames_metaDoc.isEmpty()) return true;
+	return false;
 }
 
 const QString Dom::relPath(QString key)
@@ -180,6 +180,12 @@ void Dom::renameElement(QString newName, QString key)
 	handleRenamesList(renames);
 }
 
+void Dom::setElementExpansionState(QString key, bool isExpanded)
+{
+	auto element = findElement(key);
+	element.setAttribute("expanded", QString(isExpanded ? "true" : "false"));
+}
+
 bool Dom::isChanged(QString key)
 {
 	auto result = false;
@@ -277,10 +283,9 @@ QVector<Dom::MetaDocRename> Dom::getElementChildTree_recursor(QDomElement node, 
 		auto nearest_dir_name = Path::getName(filteredRelPath(nearest_dir_key));
 		auto stem_path_name = Path::getName(stemPathParent);
 		QString next_stem_path;
-		if (stem_path_name == nearest_dir_name)
-			next_stem_path = stemPathParent;
-		else
-			next_stem_path = stemPathParent / nearest_dir_name;
+		(stem_path_name == nearest_dir_name)
+			? next_stem_path = stemPathParent
+			: next_stem_path = stemPathParent / nearest_dir_name;
 		auto short_path = next_stem_path / child_name;
 		result << MetaDocRename{ child_key, short_path };
 		result << getElementChildTree_recursor(child, next_stem_path);
@@ -301,10 +306,9 @@ void Dom::handleRenamesList(QVector<MetaDocRename> renames)
 		auto& key = rename.key;
 		auto& changed_rel_path = rename.changedRelPath;
 		auto tar_rel_path = relPath(key);
-		if (tar_rel_path != nullptr)
-			renames_metaDoc << MetaDocRename{ key, changed_rel_path, tar_rel_path };
-		else
-			renames_metaDoc << MetaDocRename{ key, changed_rel_path };
+		(tar_rel_path != nullptr)
+			? renames_metaDoc << MetaDocRename{ key, changed_rel_path, tar_rel_path }
+			: renames_metaDoc << MetaDocRename{ key, changed_rel_path };
 	}
 }
 

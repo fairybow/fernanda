@@ -36,15 +36,6 @@ namespace Path
 		std::filesystem::create_directories(parent);
 	}
 
-	inline bool exists(QString path)
-	{
-		if (QFileInfo(path).isFile())
-			if (QFile(path).exists()) return true;
-		else
-			if (QDir(path).exists()) return true;
-		return false;
-	}
-
 	inline QString getName(QString path)
 	{
 		std::filesystem::path name;
@@ -67,7 +58,7 @@ namespace Path
 		return QString::fromStdString(std::filesystem::path(path.toStdString()).make_preferred().string());
 	}
 
-	inline QString makePosix(QString path) // may not need, as bit7z only takes \\ paths for searching
+	inline QString makePosix(QString path)
 	{
 		return path.replace(QRegularExpression(R"(\)"), "/");
 	}

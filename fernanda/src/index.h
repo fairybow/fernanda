@@ -27,16 +27,22 @@ namespace Index
 		return index.data(Qt::UserRole + 2).toString();
 	}
 
+	inline bool isExpanded(QModelIndex index)
+	{
+		if (!index.isValid()) return false;
+		return index.data(Qt::UserRole + 3).toBool();
+	}
+
 	inline bool isDir(QModelIndex index)
 	{
 		if (type(index) == "dir") return true;
-		else return false;
+		return false;
 	}
 
 	inline bool isFile(QModelIndex index)
 	{
 		if (type(index) == "file") return true;
-		else return false;
+		return false;
 	}
 }
 

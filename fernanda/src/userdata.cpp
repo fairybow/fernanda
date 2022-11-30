@@ -2,22 +2,23 @@
 
 #include "userdata.h"
 
+#include "io.h"
+
 void Ud::windowsReg()
 {
-    //
+    // WIP
 }
 
 void Ud::linuxReg()
 {
-    //
+    // WIP
 }
 
 const QString Ud::userData(Op operation, QString name)
 {
-    if (name != nullptr)
-        dataVars.appName = name;
-    else
-        name = dataVars.appName;
+    (name != nullptr)
+        ? dataVars.appName = name
+        : name = dataVars.appName;
     auto user_data = (QDir::homePath() / QString("." + name));
     auto active_temp = user_data / ".active_temp";
     auto backup = user_data / "backup";
@@ -76,13 +77,24 @@ QVariant Ud::loadConfig(QString group, QString valueName, QVariant fallback, Ud:
     ini.beginGroup(group);
     if (!ini.childKeys().contains(valueName)) return fallback;
     auto result = ini.value(valueName);
-    if (type == Ud::Type::Bool) // no idea why, but switch is not working out here
-        if (result != "true" && result != "false") return fallback;
-    if (type == Ud::Type::Int)
-        if (result.toInt() < 1) return fallback;
-    if (type == Ud::Type::QRect)
-        if (!result.canConvert<QRect>()) return fallback;
+    auto bad_result = false;
+    switch (type) {
+    case Ud::Type::Bool:
+        if (result != "true" && result != "false")
+            bad_result = true;
+        break;
+    case Ud::Type::Int:
+        if (result.toInt() < 1)
+            bad_result = true;
+        break;
+    case Ud::Type::QRect:
+        if (!result.canConvert<QRect>())
+            bad_result = true;
+        break;
+    default: break;
+    }
     ini.endGroup();
+    if (bad_result) return fallback;
     return result;
 }
 
@@ -95,18 +107,18 @@ void Ud::clear(QString dirPath, bool clearSelf)
         std::filesystem::remove(dir);
 }
 
-int Ud::getTime()
+QString Ud::timestamp()
 {
-    time_t now = time(0);
-    return now;
+    const time_t now = std::time(0);
+    return QString::fromLocal8Bit(std::ctime(&now));
 }
 
-std::wstring Ud::dll()
+std::string Ud::dll()
 {
     auto dll_path = userData(Op::GetDLL) / "7z.dll";
-    if (!Path::exists(dll_path))
-        QFile::copy(":\\lib\\7zip 22.01\\7z64.dll", dll_path);
-    return dll_path.toStdWString();
+    if (!QFile(dll_path).exists())
+        QFile::copy(":\\lib\\7zip\\7z64.dll", dll_path);
+    return dll_path.toStdString();
 }
 
 // userdata.cpp, fernanda

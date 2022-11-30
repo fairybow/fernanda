@@ -26,14 +26,13 @@ public:
     Pane(QWidget* parent = nullptr);
 
     enum class Nav {
-        Prev,
-        Next
+        Next,
+        Previous
     };
 
     void nav(Nav direction);
 
 public slots:
-    void receiveInitExpansions(QVector<QString> initExpansions);
     void receiveItems(QVector<QStandardItem*> items);
     void receiveEditsList(QVector<QString> editedFiles);
 
@@ -46,13 +45,11 @@ private:
     QStandardItemModel* itemModel = new QStandardItemModel(this);
     PaneDelegate* paneDelegate = new PaneDelegate(this);
 
-    QVector<QString> expanded_metaDoc;
-
-    void expandItem_recursor(QStandardItem* item);
+    void expandItems_recursor(QStandardItem* item);
     void refresh();
     void addTempItem(QPoint eventPos, Path::Type type);
     QStandardItem* makeTempItem(Path::Type type);
-    const QString renameItem(); // persistentEditor or input dialog?
+    const QString renameItem();
 
 signals:
     bool askHasProject();
@@ -60,6 +57,7 @@ signals:
     void askDomMove(QString pivotKey, QString fulcrumKey, Io::Move pos);
     void askAddElement(QString newName, Path::Type type, QString parentKey);
     void askRenameElement(QString newName, QString key);
+    void askSetExpansion(QString key, bool isExpanded);
 };
 
 // pane.h, fernanda

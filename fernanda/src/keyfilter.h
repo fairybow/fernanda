@@ -41,10 +41,9 @@ public:
             result << commaSkip(event, chars);
             break;
         case Qt::Key_Minus:
-            if (checkPrevious(chars, '-'))
-                result << &backspace << &emDash;
-            else
-                result << event;
+            (checkPrevious(chars, '-'))
+                ? result << &backspace << &emDash
+                : result << event;
             break;
         case Qt::Key_ParenLeft:
             result << autoClose(event, &parenRight);
@@ -59,10 +58,9 @@ public:
             result << commaSkip(event, chars);
             break;
         case Qt::Key_QuoteDbl:
-            if (checkCurrent(chars, '"'))
-                result << &right;
-            else
-                result << autoClose(event, event);
+            (checkCurrent(chars, '"'))
+                ? result << &right
+                : result << autoClose(event, event);
             break;
         case Qt::Key_Space:
         {
@@ -75,10 +73,9 @@ public:
         }
             break;
         default:
-            if (checkPrevAndBeforeLast(chars, ' ', ' '))
-                result << &backspace << event;
-            else
-                result << event;
+            (checkPrevAndBeforeLast(chars, ' ', ' '))
+                ? result << &backspace << event
+                : result << event;
         }
         return result;
     }
@@ -109,10 +106,9 @@ private:
     QVector<QKeyEvent*> dontDuplicate(QKeyEvent* event, ProximalChars chars, char current)
     {
         QVector<QKeyEvent*> result;
-        if (checkCurrent(chars, current))
-            result << &right;
-        else
-            result << event;
+        (checkCurrent(chars, current))
+            ? result << &right
+            : result << event;
         return result;
     }
 

@@ -31,10 +31,9 @@ namespace Sample
 			it.next();
 			auto read_path = it.filePath();
 			auto rel_path = Path::relPath(rootPath, read_path);
-			if (it.fileInfo().isDir())
-				result << Io::ArchivePaths{ "story" / rel_path };
-			else
-				result << Io::ArchivePaths{ "story" / rel_path, read_path };
+			(it.fileInfo().isDir())
+				? result << Io::ArchivePaths{ "story" / rel_path }
+				: result << Io::ArchivePaths{ "story" / rel_path, read_path };
 		}
 		return result;
 	}
@@ -50,8 +49,9 @@ namespace Sample
 		{
 			auto lhs = QString::fromStdString(pair.rcPath.string());
 			auto rhs = QString::fromStdString(pair.udPath.string());
-			if (QFile(rhs).exists())
-				QFile(rhs).moveToTrash(); // font will be held by system
+			auto qf_rhs = QFile(rhs);
+			if (qf_rhs.exists())
+				qf_rhs.moveToTrash();
 			QFile::copy(lhs, rhs);
 			QFile(rhs).setPermissions(QFile::WriteUser);
 		}

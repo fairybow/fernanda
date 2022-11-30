@@ -43,14 +43,14 @@ namespace Ud
         QString appName;
     } dataVars;
 
-    void windowsReg();
-    void linuxReg();
+    void windowsReg(); // WIP
+    void linuxReg(); // WIP
     const QString userData(Op operation, QString name = nullptr);
     void saveConfig(QString group, QString valueName, QVariant value);
     QVariant loadConfig(QString group, QString valueName, QVariant fallback = "", Ud::Type type = Ud::Type::QVariant);
     void clear(QString dirPath, bool clearSelf = false);
-    int getTime();
-    std::wstring dll();
+    QString timestamp();
+    std::string dll();
 }
 
 // userdata.h, fernanda

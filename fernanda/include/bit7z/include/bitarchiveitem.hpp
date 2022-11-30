@@ -1,116 +1,98 @@
 /*
- * bit7z - A C++ static library to interface with the 7-zip DLLs.
- * Copyright (c) 2014-2019  Riccardo Ostani - All Rights Reserved.
+ * bit7z - A C++ static library to interface with the 7-zip shared libraries.
+ * Copyright (c) 2014-2022 Riccardo Ostani - All Rights Reserved.
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * Bit7z is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with bit7z; if not, see https://www.gnu.org/licenses/.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
 #ifndef BITARCHIVEITEM_HPP
 #define BITARCHIVEITEM_HPP
 
-#include <map>
-
-#include "../include/bitpropvariant.hpp"
+#include "bitgenericitem.hpp"
 
 namespace bit7z {
-    using std::wstring;
-    using std::map;
 
-    /**
-     * @brief The BitArchiveItem class represents an item contained in an archive and contains all its properties.
-     */
-    class BitArchiveItem {
-        public:
-            /**
-             * @brief BitArchiveItem destructor.
-             */
-            virtual ~BitArchiveItem();
+/**
+ * The BitArchiveItem class represents a generic item inside an archive.
+ */
+class BitArchiveItem : public BitGenericItem {
+    public:
+        /**
+         * @brief BitArchiveItem destructor.
+         */
+        ~BitArchiveItem() override = default;
 
-            /**
-             * @return the index of the item in the archive.
-             */
-            uint32_t index() const;
+        /**
+         * @return the index of the item in the archive.
+         */
+        BIT7Z_NODISCARD uint32_t index() const noexcept;
 
-            /**
-             * @return true if and only if the item is a directory (i.e. it has the property BitProperty::IsDir).
-             */
-            bool isDir() const;
+        /**
+         * @return true if and only if the item is a directory (i.e., it has the property BitProperty::IsDir).
+         */
+        BIT7Z_NODISCARD bool isDir() const override;
 
-            /**
-             * @return the name of the item, if available or inferable from the path, or an empty string otherwise.
-             */
-            wstring name() const;
+        /**
+         * @return the item's name; if not available, it tries to get it from the element's path or,
+         *         if not possible, it returns an empty string.
+         */
+        BIT7Z_NODISCARD tstring name() const override;
 
-            /**
-             * @return the extension of the item, if available or inferable from the name, or an empty string otherwise
-             * (e.g. when the item is a folder).
-             */
-            wstring extension() const;
+        /**
+         * @return the extension of the item, if available or if it can be inferred from the name;
+         *         otherwise it returns an empty string (e.g., when the item is a folder).
+         */
+        BIT7Z_NODISCARD tstring extension() const;
 
-            /**
-             * @return the path of the item in the archive, if available or inferable from the name, or an empty string
-             * otherwise.
-             */
-            wstring path() const;
+        /**
+         * @return the path of the item in the archive, if available or inferable from the name, or an empty string
+         *         otherwise.
+         */
+        BIT7Z_NODISCARD tstring path() const override;
 
-            /**
-             * @return the uncompressed size of the item.
-             */
-            uint64_t size() const;
+        /**
+         * @return the uncompressed size of the item.
+         */
+        BIT7Z_NODISCARD uint64_t size() const override;
 
-            /**
-             * @return the compressed size of the item.
-             */
-            uint64_t packSize() const;
+        /**
+         * @return the item creation time.
+         */
+        BIT7Z_NODISCARD time_type creationTime() const;
 
-            /**
-             * @return true if and only if the item is encrypted.
-             */
-            bool isEncrypted() const;
+        /**
+         * @return the item last access time.
+         */
+        BIT7Z_NODISCARD time_type lastAccessTime() const;
 
-            /**
-             * @brief Gets the specified item property.
-             *
-             * @param property  the property to be retrieved.
-             *
-             * @return the value of the item property, if available, or an empty BitPropVariant.
-             */
-            BitPropVariant getProperty( BitProperty property ) const;
+        /**
+         * @return the item last write time.
+         */
+        BIT7Z_NODISCARD time_type lastWriteTime() const;
 
-            /**
-             * @return a map of all the available (i.e. non empty) item properties and their respective values.
-             */
-            map< BitProperty, BitPropVariant > itemProperties() const;
+        /**
+         * @return the item attributes.
+         */
+        BIT7Z_NODISCARD uint32_t attributes() const override;
 
-        private:
-            uint32_t mItemIndex;
-            map< BitProperty, BitPropVariant > mItemProperties;
+        /**
+         * @return the compressed size of the item.
+         */
+        BIT7Z_NODISCARD uint64_t packSize() const;
 
-            /* BitArchiveItem objects can be created and updated only by BitArchiveReader */
-            explicit BitArchiveItem( uint32_t item_index );
+        /**
+         * @return true if and only if the item is encrypted.
+         */
+        BIT7Z_NODISCARD bool isEncrypted() const;
 
-            void setProperty( BitProperty property, const BitPropVariant& value );
+    protected:
+        uint32_t mItemIndex; //Note: it is not const since the subclass BitArchiveItemOffset can increment it!
 
-            friend class BitArchiveInfo;
-    };
+        explicit BitArchiveItem( uint32_t item_index ) noexcept;
+};
 
-    /* Ensuring that users can apply the operations in <algorithm> on the vector returned by BitArchiveInfo::items().
-     * E.g., calling std::sort on a std::vector<T> requires the type T to be MoveConstructible and MoveAssignable. */
-    static_assert(std::is_copy_constructible<BitArchiveItem>::value, "BitArchiveItem must be copy-constructible!");
-    static_assert(std::is_copy_assignable<BitArchiveItem>::value, "BitArchiveItem must be copy-assignable!");
-    static_assert(std::is_move_constructible<BitArchiveItem>::value, "BitArchiveItem must be move-constructible!");
-    static_assert(std::is_move_assignable<BitArchiveItem>::value, "BitArchiveItem must be move-assignable!");
-}
+}  // namespace bit7z
 
 #endif // BITARCHIVEITEM_HPP

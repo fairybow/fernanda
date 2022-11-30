@@ -9,7 +9,7 @@
 <p align="center">
 	<a href="LICENSE"><img src="https://img.shields.io/github/license/fairybow/fernanda" alt="license: GPL-3.0"/></a>
 	<a href="https://www.qt.io/"><img src="https://img.shields.io/badge/Qt-6.4.1-green?logo=qt" alt="Qt: 6.4.1"/></a>
-	<a href="https://github.com/rikyoz/bit7z"><img src="https://img.shields.io/badge/Bit7z-3.1.5-blue" alt="Bit7z: 3.1.5"/></a>
+	<a href="https://github.com/rikyoz/bit7z"><img src="https://img.shields.io/badge/Bit7z-4.0.0_beta-blue" alt="Bit7z: 4.0.0-beta"/></a>
 	<a href="https://www.7-zip.org/"><img src="https://img.shields.io/badge/7zip-22.01-blueviolet" alt="7zip: 22.01"/></a>
 	<a href="https://shields.io/"><img src="https://img.shields.io/badge/these-are_so_cute_omg-ff69b4" alt="Shields.io"/></a>
 </p>

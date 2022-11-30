@@ -5,6 +5,7 @@
 #include "archiver.h"
 #include "dom.h"
 #include "sample.h"
+#include "uni.h"
 
 #include <QByteArray>
 #include <QStandardItem>
@@ -23,21 +24,21 @@ public:
 
     Project(QString filePath, SP opt = SP::None);
 
-    QVector<QString> makeInitExpansions();
     QVector<QStandardItem*> makeItems();
     const QString getActiveKey();
     void autoTempSave(QString oldText);
     const QString saveOld_openNew(QString newKey, QString oldText = nullptr);
     QVector<QString> handleEditsList(QString currentText);
     bool hasAnyChanges();
-    void saveProject(QString currentText);
+    void saveProject(QString currentText); // WIP
     void domMove(QString pivotKey, QString fulcrumKey, Io::Move pos);
     void newDomElement(QString newName, Path::Type type, QString parentKey);
     void renameDomElement(QString newName, QString key);
+    void setDomElementExpansionState(QString key, bool isExpanded);
 
 private:
     Archiver* archiver = new Archiver;
-    Dom* dom = new Dom; // compare self against initialSelf before closing
+    Dom* dom = new Dom;
     QString activeArchive = nullptr;
     QString activeKey = nullptr;
     QString cleanText = nullptr;
@@ -56,6 +57,7 @@ private:
     const QString readInArchive(QString filePath, QString relPath);
     const QString tempPath(QString key);
     bool isEdited(QString key);
+    void bak();
 };
 
 // project.h, fernanda

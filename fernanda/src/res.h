@@ -45,13 +45,9 @@ namespace Res
         {
             iterator.next();
             auto label = capitalizeName(iterator.filePath());
-            if (resourceType == Type::Font)
-                listOfPathPairs << DataPair{
-                QFontDatabase::applicationFontFamilies(QFontDatabase::addApplicationFont(iterator.filePath())).at(0),
-                label
-            };
-            else
-                listOfPathPairs << DataPair{ iterator.filePath(), label };
+            (resourceType == Type::Font)
+                ? listOfPathPairs << DataPair{ QFontDatabase::applicationFontFamilies(QFontDatabase::addApplicationFont(iterator.filePath())).at(0), label }
+                : listOfPathPairs << DataPair{ iterator.filePath(), label };
         }
     }
 

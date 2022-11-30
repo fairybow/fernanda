@@ -24,7 +24,7 @@ public:
     {
         switch (operation) {
         case Op::Add:
-            if constexpr (std::is_same<T, std::map<std::wstring, std::wstring>>::value)
+            if constexpr (std::is_same<T, std::map<std::string, std::string>>::value)
                 add(in, out);
             break;
         case Op::Create:
@@ -48,12 +48,13 @@ public:
 
 private:
     const bit7z::BitInOutFormat& format = bit7z::BitFormat::SevenZip;
-    bit7z::BitCompressionLevel level = bit7z::BitCompressionLevel::NONE;
+    bit7z::BitCompressionLevel level = bit7z::BitCompressionLevel::None;
 
     void create(QString readPath, QString writePath);
-    void add(std::map<std::wstring, std::wstring> inMap, QString filePath);
+    void add(std::map<std::string, std::string> inMap, QString filePath);
     void extract(QString filePath, QString extractPath);
     bool extractMatch(QString filePath, QString relPath, QString extractPath);
+
 };
 
 // archiver.h, fernanda

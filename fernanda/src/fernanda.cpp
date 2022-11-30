@@ -107,8 +107,8 @@ QWidget* Fernanda::stackWidgets(QVector<QWidget*> widgets)
 
 void Fernanda::connections()
 {
-    connect(textEditor, &TextEditor::askNavPrevious, pane, [&]() { pane->nav(Pane::Nav::Prev); });
     connect(textEditor, &TextEditor::askNavNext, pane, [&]() { pane->nav(Pane::Nav::Next); });
+    connect(textEditor, &TextEditor::askNavPrevious, pane, [&]() { pane->nav(Pane::Nav::Previous); });
     connect(this, &Fernanda::startAutoTempSave, this, [&]() { autoTempSave->start(30000); });
     connect(textEditor, &TextEditor::cursorPositionChanged, this, [&]()
         {
@@ -132,6 +132,11 @@ void Fernanda::connections()
             if (!activeProject.has_value()) return;
             activeProject.value().autoTempSave(textEditor->toPlainText());
         });
+    connect(pane, &Pane::askSetExpansion, this, [&](QString key, bool isExpanded)
+        {
+            if (!activeProject.has_value()) return;
+            activeProject.value().setDomElementExpansionState(key, isExpanded);
+        });
     connect(this, &Fernanda::updatePositions, indicator, &Indicator::updatePositions);
     connect(this, &Fernanda::updateCounts, indicator, &Indicator::updateCounts);
     connect(this, &Fernanda::updateSelection, indicator, &Indicator::updateSelection);
@@ -148,7 +153,6 @@ void Fernanda::connections()
     connect(this, &Fernanda::sendScrollsToggle, textEditor, &TextEditor::toggleScrolls);
     connect(this, &Fernanda::sendExtraScrollsToggle, textEditor, &TextEditor::toggleExtraScrolls);
     connect(aot, &QPushButton::toggled, this, &Fernanda::aotToggled);
-    connect(this, &Fernanda::sendInitExpansions, pane, &Pane::receiveInitExpansions);
     connect(this, &Fernanda::sendItems, pane, &Pane::receiveItems);
     connect(pane, &Pane::askSendToEditor, this, &Fernanda::handleEditorText);
     connect(textEditor, &TextEditor::textChanged, this, &Fernanda::sendEditedText);
@@ -464,12 +468,12 @@ void Fernanda::loadConfigs()
     loadWinConfigs();
     auto value = Ud::loadConfig("editor", "font_size", 14, Ud::Type::Int).toInt();
     fontSlider->setValue(value);
-    splitter->loadConfig();
+    splitter->loadConfig(geometry());
     auto has_project = Ud::loadConfig("data", "load_most_recent", false, Ud::Type::Bool).toBool();
     if (has_project)
     {
         auto project = Ud::loadConfig("data", "project").toString();
-        if (!Path::exists(project) || project.isEmpty()) return;
+        if (!QFile(project).exists() || project.isEmpty()) return;
         openProject(project);
         hasStartUpBar = false;
     }
@@ -521,7 +525,6 @@ void Fernanda::openProject(QString fileName, Project::SP opt)
     }
     activeProject = Project(fileName, opt);
     auto& project = activeProject.value();
-    sendInitExpansions(project.makeInitExpansions());
     sendItems(project.makeItems());
     Ud::saveConfig("data", "project", fileName);
     colorBar->green();
@@ -727,7 +730,7 @@ void Fernanda::sendEditedText()
 bool Fernanda::replyHasProject()
 {
     if (activeProject.has_value()) return true;
-    else return false;
+    return false;
 }
 
 void Fernanda::domMove(QString pivotKey, QString fulcrumKey, Io::Move pos)

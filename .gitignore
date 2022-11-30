@@ -12,11 +12,6 @@
 *.dll
 *.dylib
 
-# Exceptions to the above
-
-!7z.dll
-!7za.dll
-
 # Qt-es
 object_script.*.Release
 object_script.*.Debug
@@ -161,10 +156,6 @@ StyleCopReport.xml
 *.pidb
 *.svclog
 *.scc
-
-# Exceptions to the above
-
-!bit7z64_d.pdb
 
 # Chutzpah Test files
 _Chutzpah*
@@ -464,3 +455,12 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+### 7zip
+
+!7z32.dll
+!7z64.dll
+
+### Bit7z
+
+!bit7z.pdb

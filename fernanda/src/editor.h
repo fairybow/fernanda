@@ -33,6 +33,10 @@ class TextEditor : public QPlainTextEdit
 public:
     TextEditor(QWidget* parent = nullptr);
 
+    enum class Scroll {
+        Next,
+        Previous
+    };
     enum class Zoom {
         In,
         Out
@@ -86,13 +90,12 @@ private:
     void storeCursors(QString key);
     void recallCursors(QString key);
     void recallUndoStacks(QString key); // WIP
+    void scrollNavClicked(Scroll direction);
 
 private slots:
-    void updateLineNumberAreaWidth(int newBlockCount); // <- this arg isn't used?
+    void updateLineNumberAreaWidth(int newBlockCount);
     void highlightCurrentLine();
     void updateLineNumberArea(const QRect& rect, int dy);
-    void scrollPreviousClicked();
-    void scrollNextClicked();
 
 signals:
     bool askHasProject();

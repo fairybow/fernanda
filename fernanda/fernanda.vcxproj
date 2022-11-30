@@ -67,13 +67,13 @@
     <Link>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
-      <AdditionalDependencies>include/bit7z/lib/bit7z64_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>include/bit7z/lib/64/d/bit7z.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/NODEFAULTLIB:MSVCRT.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Link>
-      <AdditionalDependencies>include/bit7z/lib/bit7z64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>include/bit7z/lib/64/r/bit7z.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/NODEFAULTLIB:MSVCRT.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <ClCompile>
@@ -138,28 +138,40 @@
     <ResourceCompile Include="res\resource.rc" />
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="src\colorbar.h" />
     <ClInclude Include="include\bit7z\include\bit7z.hpp" />
     <ClInclude Include="include\bit7z\include\bit7zlibrary.hpp" />
-    <ClInclude Include="include\bit7z\include\bitarchivecreator.hpp" />
-    <ClInclude Include="include\bit7z\include\bitarchivehandler.hpp" />
-    <ClInclude Include="include\bit7z\include\bitarchiveinfo.hpp" />
+    <ClInclude Include="include\bit7z\include\bitabstractarchivecreator.hpp" />
+    <ClInclude Include="include\bit7z\include\bitabstractarchivehandler.hpp" />
+    <ClInclude Include="include\bit7z\include\bitabstractarchiveopener.hpp" />
+    <ClInclude Include="include\bit7z\include\bitarchiveeditor.hpp" />
     <ClInclude Include="include\bit7z\include\bitarchiveitem.hpp" />
-    <ClInclude Include="include\bit7z\include\bitarchiveopener.hpp" />
+    <ClInclude Include="include\bit7z\include\bitarchiveiteminfo.hpp" />
+    <ClInclude Include="include\bit7z\include\bitarchiveitemoffset.hpp" />
+    <ClInclude Include="include\bit7z\include\bitarchivereader.hpp" />
+    <ClInclude Include="include\bit7z\include\bitarchivewriter.hpp" />
     <ClInclude Include="include\bit7z\include\bitcompressionlevel.hpp" />
     <ClInclude Include="include\bit7z\include\bitcompressionmethod.hpp" />
     <ClInclude Include="include\bit7z\include\bitcompressor.hpp" />
+    <ClInclude Include="include\bit7z\include\bitdefines.hpp" />
+    <ClInclude Include="include\bit7z\include\biterror.hpp" />
     <ClInclude Include="include\bit7z\include\bitexception.hpp" />
     <ClInclude Include="include\bit7z\include\bitextractor.hpp" />
+    <ClInclude Include="include\bit7z\include\bitfilecompressor.hpp" />
+    <ClInclude Include="include\bit7z\include\bitfileextractor.hpp" />
     <ClInclude Include="include\bit7z\include\bitformat.hpp" />
-    <ClInclude Include="include\bit7z\include\bitguids.hpp" />
+    <ClInclude Include="include\bit7z\include\bitfs.hpp" />
+    <ClInclude Include="include\bit7z\include\bitgenericitem.hpp" />
     <ClInclude Include="include\bit7z\include\bitinputarchive.hpp" />
+    <ClInclude Include="include\bit7z\include\bititemsvector.hpp" />
     <ClInclude Include="include\bit7z\include\bitmemcompressor.hpp" />
     <ClInclude Include="include\bit7z\include\bitmemextractor.hpp" />
+    <ClInclude Include="include\bit7z\include\bitoutputarchive.hpp" />
     <ClInclude Include="include\bit7z\include\bitpropvariant.hpp" />
     <ClInclude Include="include\bit7z\include\bitstreamcompressor.hpp" />
     <ClInclude Include="include\bit7z\include\bitstreamextractor.hpp" />
     <ClInclude Include="include\bit7z\include\bittypes.hpp" />
-    <QtMoc Include="src\colorbar.h" />
+    <ClInclude Include="include\bit7z\include\bitwindows.hpp" />
     <ClInclude Include="src\archiver.h" />
     <QtMoc Include="src\indicator.h" />
     <ClInclude Include="src\dom.h" />

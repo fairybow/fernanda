@@ -159,13 +159,11 @@ void TextEditor::paintEvent(QPaintEvent* event)
 
 void TextEditor::wheelEvent(QWheelEvent* event)
 {
-    if (event->modifiers() == Qt::ControlModifier)
-        if (event->angleDelta().y() > 0)
-            askFontSliderZoom(Zoom::In);
-        else
-            askFontSliderZoom(Zoom::Out);
-    else
-        QPlainTextEdit::wheelEvent(event);
+    (event->modifiers() == Qt::ControlModifier)
+        ? (event->angleDelta().y() > 0)
+            ? askFontSliderZoom(Zoom::In)
+            : askFontSliderZoom(Zoom::Out)
+        : QPlainTextEdit::wheelEvent(event);
     event->accept();
 }
 
@@ -195,6 +193,8 @@ void TextEditor::keyPressEvent(QKeyEvent* event)
 
 void TextEditor::connections()
 {
+    connect(scrollNext, &QPushButton::clicked, this, [&]() { scrollNavClicked(Scroll::Next); });
+    connect(scrollPrevious, &QPushButton::clicked, this, [&]() { scrollNavClicked(Scroll::Previous); });
     connect(scrollUp, &QPushButton::clicked, this, [&]()
         {
             verticalScrollBar()->triggerAction(QAbstractSlider::SliderSingleStepSub);
@@ -203,8 +203,6 @@ void TextEditor::connections()
         {
             verticalScrollBar()->triggerAction(QAbstractSlider::SliderSingleStepAdd);
         });
-    connect(scrollPrevious, &QPushButton::clicked, this, &TextEditor::scrollPreviousClicked);
-    connect(scrollNext, &QPushButton::clicked, this, &TextEditor::scrollNextClicked);
     connect(this, &TextEditor::blockCountChanged, this, &TextEditor::updateLineNumberAreaWidth);
     connect(this, &TextEditor::updateRequest, this, &TextEditor::updateLineNumberArea);
     connect(this, &TextEditor::cursorPositionChanged, this, &TextEditor::highlightCurrentLine);
@@ -280,36 +278,37 @@ void TextEditor::highlightCurrentLine()
 
 void TextEditor::updateLineNumberArea(const QRect& rect, int dy)
 {
-    if (dy)
-        lineNumberArea->scroll(0, dy);
-    else
-        lineNumberArea->update(0, rect.y(), lineNumberArea->width(), rect.height());
+    (dy)
+        ? lineNumberArea->scroll(0, dy)
+        : lineNumberArea->update(0, rect.y(), lineNumberArea->width(), rect.height());
     if (rect.contains(viewport()->rect()))
         updateLineNumberAreaWidth(0);
 }
 
-void TextEditor::scrollPreviousClicked()
+void TextEditor::scrollNavClicked(Scroll direction)
 {
-    auto project = askHasProject();
-    if (!project) return;
-    if (verticalScrollBar()->sliderPosition() != verticalScrollBar()->minimum())
-    {
-        verticalScrollBar()->triggerAction(QAbstractSlider::SliderToMinimum);
-        return;
+    if (!askHasProject()) return;
+    auto early_return = false;
+    switch (direction) {
+        case Scroll::Next:
+            if (verticalScrollBar()->sliderPosition() != verticalScrollBar()->maximum())
+            {
+                verticalScrollBar()->triggerAction(QAbstractSlider::SliderToMaximum);
+                early_return = true;
+            }
+        break;
+        case Scroll::Previous:
+            if (verticalScrollBar()->sliderPosition() != verticalScrollBar()->minimum())
+            {
+                verticalScrollBar()->triggerAction(QAbstractSlider::SliderToMinimum);
+                early_return = true;
+            }
+        break;
     }
-    askNavPrevious();
-}
-
-void TextEditor::scrollNextClicked()
-{
-    auto project = askHasProject();
-    if (!project) return;
-    if (verticalScrollBar()->sliderPosition() != verticalScrollBar()->maximum())
-    {
-        verticalScrollBar()->triggerAction(QAbstractSlider::SliderToMaximum);
-        return;
-    }
-    askNavNext();
+    if (early_return) return;
+    (direction == Scroll::Next)
+        ? askNavNext()
+        : askNavPrevious();
 }
 
 // editor.cpp, fernanda

@@ -25,6 +25,7 @@ public:
     void moveElement(QString pivotKey, QString fulcrumKey, Io::Move pos); // clean me!
     void newElement(QString newName, Path::Type type, QString parentKey);
     void renameElement(QString newName, QString key);
+    void setElementExpansionState(QString key, bool isExpanded);
 
 private:
     struct MetaDocRename {
@@ -46,7 +47,7 @@ private:
     QString nearestParentKeyOfType_recursor(QDomElement node, Path::Type type, QString result = nullptr);
     QVector<MetaDocRename> getElementChildTree_recursor(QDomElement node, QString stemPathParent, QVector<MetaDocRename> result = QVector<MetaDocRename>());
     void handleRenamesList(QVector<MetaDocRename> renames);
-    void makeMovePaths(QString& newPivotPath, QString& newPivotParentPath, QString pivotName, QDomElement fulcrumNode); // move to Path?
+    void makeMovePaths(QString& newPivotPath, QString& newPivotParentPath, QString pivotName, QDomElement fulcrumNode);
 };
 
 // dom.h, fernanda
