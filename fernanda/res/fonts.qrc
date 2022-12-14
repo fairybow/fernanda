@@ -2,6 +2,7 @@
     <qresource prefix="/">
         <file>fonts/Bree Serif.ttf</file>
         <file>fonts/Cascadia Mono.ttf</file>
+        <file>fonts/Cozette.ttf</file>
         <file>fonts/Day Roman.ttf</file>
         <file>fonts/Dot Matrix.ttf</file>
         <file>fonts/Fixedsys Excelsior.ttf</file>
