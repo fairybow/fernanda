@@ -20,9 +20,6 @@
     <Filter Include="Header Files\Includes">
       <UniqueIdentifier>{d743d864-b650-4c9b-890e-6361ddc9b1f1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Includes">
-      <UniqueIdentifier>{9b7aa008-9e75-4117-bdd7-fc3b16924d40}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resource Files\Stylesheets">
       <UniqueIdentifier>{23bccbdc-c410-4bba-95b6-044e60d463c3}</UniqueIdentifier>
     </Filter>
@@ -38,6 +35,9 @@
     <Filter Include="Header Files\Includes\bit7z">
       <UniqueIdentifier>{494aa906-9c37-4693-9cae-92d695af3152}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Stylesheets\Sample Themes">
+      <UniqueIdentifier>{58f267fe-da2f-47a1-9f74-967be5f1a6c8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore" />
@@ -51,22 +51,22 @@
     <None Include="res\themes\bar\pastels.qss">
       <Filter>Resource Files\Stylesheets\Bar Stylesheets</Filter>
     </None>
-    <None Include="res\themes\editor\amber.fernanda_theme">
+    <None Include="res\themes\editor\Amber.fernanda_theme">
       <Filter>Resource Files\Stylesheets\Editor Themes</Filter>
     </None>
-    <None Include="res\themes\editor\blue.fernanda_theme">
+    <None Include="res\themes\editor\Blue.fernanda_theme">
       <Filter>Resource Files\Stylesheets\Editor Themes</Filter>
     </None>
-    <None Include="res\themes\editor\green.fernanda_theme">
+    <None Include="res\themes\editor\Green.fernanda_theme">
       <Filter>Resource Files\Stylesheets\Editor Themes</Filter>
     </None>
-    <None Include="res\themes\editor\grey.fernanda_theme">
+    <None Include="res\themes\editor\Grey.fernanda_theme">
       <Filter>Resource Files\Stylesheets\Editor Themes</Filter>
     </None>
-    <None Include="res\themes\window\dark.fernanda_wintheme">
+    <None Include="res\themes\window\Dark.fernanda_wintheme">
       <Filter>Resource Files\Stylesheets\Window Themes</Filter>
     </None>
-    <None Include="res\themes\window\light.fernanda_wintheme">
+    <None Include="res\themes\window\Light.fernanda_wintheme">
       <Filter>Resource Files\Stylesheets\Window Themes</Filter>
     </None>
     <None Include="res\themes\window.qss">
@@ -74,6 +74,42 @@
     </None>
     <None Include="res\themes\editor.qss">
       <Filter>Resource Files\Stylesheets</Filter>
+    </None>
+    <None Include="res\themes\window\Sandstone.fernanda_wintheme">
+      <Filter>Resource Files\Stylesheets\Window Themes</Filter>
+    </None>
+    <None Include="res\themes\editor\Pocket.fernanda_theme">
+      <Filter>Resource Files\Stylesheets\Editor Themes</Filter>
+    </None>
+    <None Include="res\themes\editor\Ink.fernanda_theme">
+      <Filter>Resource Files\Stylesheets\Editor Themes</Filter>
+    </None>
+    <None Include="res\themes\shadow.qss">
+      <Filter>Resource Files\Stylesheets</Filter>
+    </None>
+    <None Include="res\themes\editor_base.qss">
+      <Filter>Resource Files\Stylesheets</Filter>
+    </None>
+    <None Include="res\themes\window_base.qss">
+      <Filter>Resource Files\Stylesheets</Filter>
+    </None>
+    <None Include="res\sample\Sample.fernanda_theme">
+      <Filter>Resource Files\Stylesheets\Sample Themes</Filter>
+    </None>
+    <None Include="res\sample\Sample.fernanda_wintheme">
+      <Filter>Resource Files\Stylesheets\Sample Themes</Filter>
+    </None>
+    <None Include="res\themes\window\Olivine.fernanda_wintheme">
+      <Filter>Resource Files\Stylesheets\Window Themes</Filter>
+    </None>
+    <None Include="res\themes\editor\Snooze.fernanda_theme">
+      <Filter>Resource Files\Stylesheets\Editor Themes</Filter>
+    </None>
+    <None Include="res\themes\editor\Snooze-Alt.fernanda_theme">
+      <Filter>Resource Files\Stylesheets\Editor Themes</Filter>
+    </None>
+    <None Include="res\themes\editor\Pocket-Alt.fernanda_theme">
+      <Filter>Resource Files\Stylesheets\Editor Themes</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -98,7 +134,7 @@
     <ClCompile Include="src\colorbar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\project.cpp">
+    <ClCompile Include="src\story.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\archiver.cpp">
@@ -132,19 +168,10 @@
     <ClInclude Include="src\index.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\project.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\uni.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\path.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\archiver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\dom.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\keyfilter.h">
@@ -248,6 +275,15 @@
     </ClInclude>
     <ClInclude Include="include\bit7z\include\bitwindows.hpp">
       <Filter>Header Files\Includes\bit7z</Filter>
+    </ClInclude>
+    <ClInclude Include="src\archiver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\dom.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\story.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

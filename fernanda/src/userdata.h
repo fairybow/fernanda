@@ -33,10 +33,10 @@ namespace Ud
     };
 
     enum class Type {
-        QVariant = 0,
         Bool,
         Int,
-        QRect
+        QRect,
+        QVariant
     };
 
     inline struct DataVars {
@@ -45,7 +45,8 @@ namespace Ud
 
     void windowsReg(); // WIP
     void linuxReg(); // WIP
-    const QString userData(Op operation, QString name = nullptr);
+    void setName(QString name);
+    const QString userData(Op operation = Op::Create);
     void saveConfig(QString group, QString valueName, QVariant value);
     QVariant loadConfig(QString group, QString valueName, QVariant fallback = "", Ud::Type type = Ud::Type::QVariant);
     void clear(QString dirPath, bool clearSelf = false);

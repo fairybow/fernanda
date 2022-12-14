@@ -1,7 +1,28 @@
-@bgColor; = #f7f8f8;
-@bgColorHover; = #ccc;
-@bgColor2; = #f3f3f3;
-@borderColor; = #bbb;
-@fontColor; = #666;
-@fontColor2; = #999;
-@fontColor2Hover; = #000;
+@statusBarButton; = #f7f8f8;
+@menuBg; = #f7f8f8;
+@scrollButtonBg; = #f7f8f8;
+@statusBarBg; = #f7f8f8;
+@scrollHandle; = #f7f8f8;
+
+@paneBg; = #f3f3f3;
+@splitterHandle; = #bbb;
+
+@statusBarButtonHover; = #ccc;
+@menuHover; = #ccc;
+@scrollButtonHover; = #ccc;
+@scrollBg; = #ccc;
+
+@menuFont; = #666;
+
+@statusBarButtonFont; = #999;
+@indicatorFont; = #999;
+@paneFont; = #999;
+@scrollButtonFont; = #999;
+@scrollHandleHover; = #999;
+@scrollHandlePress; = #999;
+
+@statusBarButtonFontHover; = #000;
+@menuFontHover; = #000;
+@scrollButtonFontHover; = #000;
+
+@border; = #bbb;

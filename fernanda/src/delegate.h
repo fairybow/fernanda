@@ -24,7 +24,8 @@ class PaneDelegate : public QStyledItemDelegate
 public:
     using QStyledItemDelegate::QStyledItemDelegate;
 
-    QVector<QString> paintAsEdited;
+    QVector<QString> paintEdited;
+    QSize paneSize;
 
 private:
     struct Geometry {
@@ -33,7 +34,12 @@ private:
         QRect highlight;
     };
 
-    Geometry getRectSizes(const QStyleOptionViewItem& option) const
+    const QColor highlight() const
+    {
+        return QColor(0, 0, 0, 33);
+    }
+
+    const Geometry getRectSizes(const QStyleOptionViewItem& option) const
     {
         auto opt_r = option.rect;
         auto r_h = opt_r.height();
@@ -45,26 +51,28 @@ private:
         auto s_w = opt_s.width();
         auto icon_r = QRect((r_l - s_w + 15), r_t, s_w, s_h);
         auto text_r = QRect((r_l + 16), (r_t + 2), r_w, r_h);
-        auto highlight_r = QRect(5, r_t, (r_w + 50), r_h); // issue here
+        auto highlight_r = QRect(0, r_t, paneSize.width(), r_h);
         return Geometry{ icon_r, text_r, highlight_r };
     }
 
     void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override
     {
-        //QStyledItemDelegate::updateEditorGeometry(editor, option, index);
         auto geo = getRectSizes(option);
         editor->setGeometry(geo.text);
-    } // note: this overrides a public function, and idk if that matters
+    }
 
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
     {
         auto item_key = Index::key(index);
         auto name = Index::name(index);
         auto geo = getRectSizes(option);
+        auto dirty = false;
         QFont font;
         QFont italics;
         italics.setItalic(true);
         painter->setFont(font);
+        if (option.state & QStyle::State_MouseOver || option.state & QStyle::State_Selected)
+            painter->fillRect(geo.highlight, highlight());
         if (Index::isDir(index))
         {
             if (option.state & QStyle::State_Open)
@@ -76,17 +84,17 @@ private:
             painter->drawText(geo.icon, Uni::ico(Uni::Ico::File));
         else
             painter->drawText(geo.icon, Uni::ico(Uni::Ico::QuestionMark));
-        painter->drawText(geo.text, name);
-        for (auto& entry : paintAsEdited)
+        for (auto& entry : paintEdited)
             if (item_key == entry)
-            {
-                painter->eraseRect(geo.text);
-                painter->setFont(italics);
-                painter->drawText(geo.text, name + "*");
-            }
-        if (option.state & QStyle::State_MouseOver || option.state & QStyle::State_Selected)
-            painter->fillRect(geo.highlight, QColor(0, 0, 0, 33));
-    } // note: this overrides a public function, and idk if that matters
+                dirty = true;
+        if (dirty)
+        {
+            painter->setFont(italics);
+            painter->drawText(geo.text, name + "*");
+        }
+        else
+            painter->drawText(geo.text, name);
+    }
 };
 
 // delegate.h, fernanda

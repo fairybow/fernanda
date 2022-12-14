@@ -14,6 +14,11 @@ inline QString operator/(const QString& lhs, const QString& rhs)
 	return lhs + "\\" + rhs;
 }
 
+inline void operator<<(std::vector<std::string>& lhs, const std::string& rhs)
+{
+	return lhs.push_back(rhs);
+}
+
 namespace Path
 {
 	enum class Type {
@@ -53,9 +58,14 @@ namespace Path
 		return QString::fromStdString(name.string());
 	}
 
-	inline QString makePreferred(QString path)
+	inline QString sanitize(QString path)
 	{
-		return QString::fromStdString(std::filesystem::path(path.toStdString()).make_preferred().string());
+		auto fs_path = std::filesystem::path(path.toStdString());
+		fs_path.make_preferred();
+		auto result = QString::fromStdString(fs_path.string());
+		result.replace(QRegularExpression(R"(/)"), R"(\)");
+		result.replace(QRegularExpression(R"(\\\\)"), R"(\)");
+		return result;
 	}
 
 	inline QString makePosix(QString path)
@@ -66,7 +76,7 @@ namespace Path
 	inline QString relPath(QString rootPath, QString currentPath)
 	{
 		auto rel = relative(std::filesystem::path(currentPath.toStdString()), std::filesystem::path(rootPath.toStdString()));
-		return makePreferred(QString::fromStdString(rel.string()));
+		return sanitize(QString::fromStdString(rel.string()));
 	}
 
 	inline void makeDirs(QString dirPath)

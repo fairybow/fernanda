@@ -5,6 +5,7 @@
 #include "path.h"
 
 #include <optional>
+#include <utility>
 
 #include <QFile>
 #include <QIODevice>
@@ -19,14 +20,19 @@ namespace Io
 		Viewport
 	};
 
-	enum class AmendVector {
-		Add,
-		Remove
+	struct ArcWRPaths {
+		QString writeRelPath;
+		std::optional<QString> readFullPath;
 	};
-
-	struct ArchivePaths {
-		QString archivePath;
-		std::optional<QString> readPath;
+	struct ArcWrite {
+		QString text;
+		QString writeRelPath;
+	};
+	struct ArcRename {
+		QString key;
+		QString relPath;
+		std::optional<QString> origRelPath;
+		std::optional<Path::Type> typeIfNewOrCut;
 	};
 
 	inline const QString readFile(QString filePath)
@@ -42,7 +48,7 @@ namespace Io
 		return text;
 	}
 
-	inline void writeFile(QString filePath, QString text)
+	inline void writeFile(QString filePath, QString text = nullptr)
 	{
 		Path::makeParent(filePath);
 		QFile file(filePath);
@@ -51,21 +57,6 @@ namespace Io
 			QTextStream out(&file);
 			out << text;
 			file.close();
-		}
-	}
-
-	template<typename T>
-	inline void amendVector(QVector<T>& vector, T item, AmendVector op)
-	{
-		switch (op) {
-		case AmendVector::Add:
-			if (!vector.contains(item))
-				vector << item;
-			break;
-		case AmendVector::Remove:
-			if (vector.contains(item))
-				vector.removeAll(item);
-			break;
 		}
 	}
 }

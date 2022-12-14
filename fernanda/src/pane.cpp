@@ -7,7 +7,7 @@ Pane::Pane(QWidget* parent)
 {
     setObjectName("pane");
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    setItemDelegate(paneDelegate);
+    setItemDelegate(delegate);
     setModel(itemModel);
     setHeaderHidden(true);
     setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -24,13 +24,11 @@ Pane::Pane(QWidget* parent)
         });
     connect(this, &Pane::expanded, this, [&](const QModelIndex& index)
         {
-            auto key = Index::key(index);
-            askSetExpansion(key, true);
+            askSetExpansion(Index::key(index), true);
         });
     connect(this, &Pane::collapsed, this, [&](const QModelIndex& index)
         {
-            auto key = Index::key(index);
-            askSetExpansion(key, false);
+            askSetExpansion(Index::key(index), false);
         });
 }
 
@@ -77,8 +75,8 @@ void Pane::receiveItems(QVector<QStandardItem*> items)
 
 void Pane::receiveEditsList(QVector<QString> editedFiles)
 {
-    if (editedFiles == paneDelegate->paintAsEdited) return;
-    paneDelegate->paintAsEdited = editedFiles;
+    if (editedFiles == delegate->paintEdited) return;
+    delegate->paintEdited = editedFiles;
     refresh();
 }
 
@@ -111,6 +109,7 @@ void Pane::dropEvent(QDropEvent* event)
         break;
     }
     askDomMove(Index::key(pivot), Index::key(fulcrum), pos);
+    event->ignore();
 }
 
 void Pane::contextMenuEvent(QContextMenuEvent* event)
@@ -118,18 +117,20 @@ void Pane::contextMenuEvent(QContextMenuEvent* event)
     auto project = askHasProject();
     if (!project) return;
     auto& pos = event->pos();
+    auto index = indexAt(pos);
     auto menu = new QMenu(this);
     auto* rename_item = new QAction(tr("&Rename"), this);
-    auto* delete_item = new QAction(tr("&Delete (WIP)"), this);
+    auto* cut_item = new QAction(tr("&Cut"), this);
     auto* new_folder = new QAction(tr("&New folder"), this);
     auto* new_file = new QAction(tr("&New file"), this);
     connect(rename_item, &QAction::triggered, this, [&]()
         {
-            auto name = renameItem();
-            auto key = Index::key(currentIndex());
-            askRenameElement(name, key);
+            askRenameElement(rename(), Index::key(currentIndex()));
         });
-    connect(delete_item, &QAction::triggered, this, [&]() {});
+    connect(cut_item, &QAction::triggered, this, [&]()
+        {
+            askCutElement(Index::key(currentIndex()));
+        });
     connect(new_folder, &QAction::triggered, this, [&]()
         {
             addTempItem(pos, Path::Type::Dir);
@@ -138,22 +139,22 @@ void Pane::contextMenuEvent(QContextMenuEvent* event)
         {
             addTempItem(pos, Path::Type::File);
         });
-    if (Index::isFile(indexAt(pos)))
+    if (Index::isFile(index))
     {
         menu->addAction(rename_item);
         menu->addSeparator();
         menu->addAction(new_file);
         menu->addSeparator();
-        menu->addAction(delete_item);
+        menu->addAction(cut_item);
     }
-    else if (Index::isDir(indexAt(pos)))
+    else if (Index::isDir(index))
     {
         menu->addAction(rename_item);
         menu->addSeparator();
         menu->addAction(new_folder);
         menu->addAction(new_file);
         menu->addSeparator();
-        menu->addAction(delete_item);
+        menu->addAction(cut_item);
     }
     else
     {
@@ -161,6 +162,13 @@ void Pane::contextMenuEvent(QContextMenuEvent* event)
         menu->addAction(new_file);
     }
     menu->exec(event->globalPos());
+}
+
+void Pane::resizeEvent(QResizeEvent* event)
+{
+    delegate->paneSize = event->size();
+    QTreeView::resizeEvent(event);
+    refresh();
 }
 
 void Pane::expandItems_recursor(QStandardItem* item)
@@ -180,7 +188,7 @@ void Pane::refresh()
 
 void Pane::addTempItem(QPoint eventPos, Path::Type type)
 {
-    auto temp_item = makeTempItem(type);
+    auto temp_item = tempItem(type);
     auto parent_index = indexAt(eventPos);
     switch (type) {
     case Path::Type::Dir:
@@ -198,14 +206,13 @@ void Pane::addTempItem(QPoint eventPos, Path::Type type)
     if (parent_index.isValid())
         expand(parent_index);
     temp_item->setEnabled(false);
-    auto name = renameItem();
     QString parent_key;
     if (parent_index.isValid())
         parent_key = Index::key(parent_index);
-    askAddElement(name, type, parent_key);
+    askAddElement(rename(), type, parent_key);
 }
 
-QStandardItem* Pane::makeTempItem(Path::Type type)
+QStandardItem* Pane::tempItem(Path::Type type)
 {
     QStandardItem* result = new QStandardItem();
     switch (type) {
@@ -220,7 +227,7 @@ QStandardItem* Pane::makeTempItem(Path::Type type)
     return result;
 }
 
-const QString Pane::renameItem()
+const QString Pane::rename()
 {
     bool has_input = false;
     QString text = QInputDialog::getText(this, tr(""), tr(""), QLineEdit::Normal, nullptr, &has_input);

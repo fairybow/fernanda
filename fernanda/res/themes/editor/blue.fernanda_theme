@@ -1,5 +1,7 @@
 @bgColor; = #0005a4;
-@fontColor; = #eeeeee;
-@selectionBgColor; = #eeeeee;
+@fontColor; = #cccccc;
+@selectionBgColor; = #cccccc;
 @selectionColor; = #0005a4;
-@cursorColor; = #eeeeee;
+@lnaBg; = rgba(255, 255, 255, 0.15);
+@lnaFont; = rgba(255, 255, 255, 0.3);
+@cursorColor; = #cccccc;

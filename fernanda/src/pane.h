@@ -14,6 +14,7 @@
 #include <QMenu>
 #include <QMouseEvent>
 #include <QPoint>
+#include <QResizeEvent>
 #include <QStandardItem>
 #include <QStandardItemModel>
 #include <QTreeView>
@@ -40,16 +41,17 @@ protected:
     void mouseDoubleClickEvent(QMouseEvent* event) override;
     void dropEvent(QDropEvent* event) override;
     void contextMenuEvent(QContextMenuEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
 
 private:
     QStandardItemModel* itemModel = new QStandardItemModel(this);
-    PaneDelegate* paneDelegate = new PaneDelegate(this);
+    PaneDelegate* delegate = new PaneDelegate(this);
 
     void expandItems_recursor(QStandardItem* item);
     void refresh();
     void addTempItem(QPoint eventPos, Path::Type type);
-    QStandardItem* makeTempItem(Path::Type type);
-    const QString renameItem();
+    QStandardItem* tempItem(Path::Type type);
+    const QString rename();
 
 signals:
     bool askHasProject();
@@ -58,6 +60,7 @@ signals:
     void askAddElement(QString newName, Path::Type type, QString parentKey);
     void askRenameElement(QString newName, QString key);
     void askSetExpansion(QString key, bool isExpanded);
+    void askCutElement(QString key);
 };
 
 // pane.h, fernanda

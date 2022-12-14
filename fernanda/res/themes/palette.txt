@@ -28,8 +28,8 @@ Editor themes:
 
 	Blue:
 
-		Very light gray
-		rbg(238, 238, 238) / #eeeeee
+		Light gray
+		rbg(204, 204, 204) / #cccccc
 
 		Dark blue
 		rbg(0, 5, 164) / #0005a4
@@ -51,8 +51,56 @@ Editor themes:
 		Very dark gray (mostly black)
 		rbg(8, 8, 8) / #080808
 
+	Ink:
+
+		Very dark (mostly black) blue
+		rbg(30, 32, 38) / #1e2026
+
+		Very pale yellow
+		rbg(255, 255, 204) / #ffffcc
+
+	Pocket:
+
+		Very dark lime green
+		rbg(15, 56, 15) / #0f380f
+
+		Strong yellow
+		rbg(155, 188, 15) / #9bbc0f
+
+	Pocket-Alt:
+
+		Very dark (mostly black) lime green
+		rbg(27, 33, 27) / #1b211b
+
+		Grayish yellow
+		rbg(182, 188, 159) / #b6bc9f
+
+	Snooze:
+
+		Pure (or mostly pure) orange
+		rbg(255, 110, 0) / #ff6e00
+
+		Very dark (mostly black) orange [Brown tone]
+		rbg(29, 14, 3) / #1d0e03
+
+	Snooze-Alt:
+
+		Pure (or mostly pure) red
+		rbg(255, 0, 0) / #ff0000
+
+		Very dark (mostly black) red
+		rbg(29, 2, 2) / #1d0202
+
 Window themes:
 
 	Pending, they need a rewrite
 
+	@borderColor & @bgColorHover (viz., Menubar & AOT hovers);
+	@bgColor (viz., Statusbar, Menubar);
+	@bgColor2 (viz., Pane background);
+	@fontColor (viz., only Menu font?);
+	@fontColor2 (viz., Scroll Nav, Indicator [which is dimmed], & Pane fonts);
+	@fontColor2Hover (viz., Menubar & Scroll Nav font hovers);
+
 // https://www.colorhexa.com/
+// https://colorkit.co/

@@ -21,9 +21,9 @@ namespace Sample
 		std::filesystem::path udPath;
 	};
 
-	inline QVector<Io::ArchivePaths> make()
+	inline QVector<Io::ArcWRPaths> make()
 	{
-		QVector<Io::ArchivePaths> result;
+		QVector<Io::ArcWRPaths> result;
 		auto rootPath = ":\\sample\\Candide\\";
 		QDirIterator it(rootPath, QVector<QString>() << "*.*", QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files, QDirIterator::Subdirectories);
 		while (it.hasNext())
@@ -32,8 +32,8 @@ namespace Sample
 			auto read_path = it.filePath();
 			auto rel_path = Path::relPath(rootPath, read_path);
 			(it.fileInfo().isDir())
-				? result << Io::ArchivePaths{ "story" / rel_path }
-				: result << Io::ArchivePaths{ "story" / rel_path, read_path };
+				? result << Io::ArcWRPaths{ "story" / rel_path }
+				: result << Io::ArcWRPaths{ "story" / rel_path, read_path };
 		}
 		return result;
 	}
@@ -41,9 +41,9 @@ namespace Sample
 	inline void makeRc(std::filesystem::path path)
 	{
 		QVector<SampleRCPair> pairs{
-			SampleRCPair{ ":\\sample\\Merriweather.ttf", std::filesystem::path(path / "Merriweather.ttf") },
-			SampleRCPair{ ":\\sample\\sample.fernanda_theme", std::filesystem::path(path / "sample.fernanda_theme") },
-			SampleRCPair{ ":\\sample\\sample.fernanda_wintheme", std::filesystem::path(path / "sample.fernanda_wintheme") }
+			SampleRCPair{ ":\\sample\\Kaushan Script.otf", std::filesystem::path(path / "Kaushan Script.otf") },
+			SampleRCPair{ ":\\sample\\Sample.fernanda_theme", std::filesystem::path(path / "Sample.fernanda_theme") },
+			SampleRCPair{ ":\\sample\\Sample.fernanda_wintheme", std::filesystem::path(path / "Sample.fernanda_wintheme") }
 		};
 		for (auto& pair : pairs)
 		{

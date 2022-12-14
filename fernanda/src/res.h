@@ -30,13 +30,11 @@ namespace Res
         QString label;
     };
 
-    inline const QString capitalizeName(QString path)
+    inline const QString name(QString path)
     {
         std::filesystem::path file_path = path.toStdString();
         auto stem = file_path.stem();
-        auto name = QString::fromStdString(stem.string());
-        auto name_capped = name.left(1).toUpper() + name.mid(1);
-        return name_capped;
+        return QString::fromStdString(stem.string());
     }
 
     inline void collectResources(QDirIterator& iterator, Type resourceType, QVector<DataPair>& listOfPathPairs)
@@ -44,16 +42,18 @@ namespace Res
         while (iterator.hasNext())
         {
             iterator.next();
-            auto label = capitalizeName(iterator.filePath());
+            auto label = name(iterator.filePath());
             (resourceType == Type::Font)
                 ? listOfPathPairs << DataPair{ QFontDatabase::applicationFontFamilies(QFontDatabase::addApplicationFont(iterator.filePath())).at(0), label }
                 : listOfPathPairs << DataPair{ iterator.filePath(), label };
         }
     }
 
-    inline const QVector<DataPair> iterateResources(QString path, QString ext, QString dataPath, Type resourceType)
+    inline const QVector<DataPair> iterateResources(QString path, QString ext, QString dataPath, Type resourceType, QVector<DataPair> existingList = QVector<DataPair>())
     {
         QVector<DataPair> dataAndLabels;
+        if (!existingList.isEmpty())
+            dataAndLabels << existingList;
         QDirIterator assets(path, QStringList() << ext, QDir::Files, QDirIterator::Subdirectories);
         if (QDir(dataPath).exists())
         {

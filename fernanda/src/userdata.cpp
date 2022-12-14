@@ -2,29 +2,29 @@
 
 #include "userdata.h"
 
-#include "io.h"
-
-void Ud::windowsReg()
+void Ud::windowsReg() // WIP
 {
-    // WIP
+    //
 }
 
-void Ud::linuxReg()
+void Ud::linuxReg() // WIP
 {
-    // WIP
+    //
 }
 
-const QString Ud::userData(Op operation, QString name)
+void Ud::setName(QString name)
 {
-    (name != nullptr)
-        ? dataVars.appName = name
-        : name = dataVars.appName;
-    auto user_data = (QDir::homePath() / QString("." + name));
+    dataVars.appName = name;
+}
+
+const QString Ud::userData(Op operation)
+{
+    auto user_data = (QDir::homePath() / QString("." + dataVars.appName));
     auto active_temp = user_data / ".active_temp";
     auto backup = user_data / "backup";
     auto dll = user_data / "dll";
     auto rollback = backup / ".rollback";
-    auto config = user_data / name + ".ini";
+    auto config = user_data / dataVars.appName + ".ini";
     auto docs = QStandardPaths::locate(QStandardPaths::DocumentsLocation, nullptr, QStandardPaths::LocateDirectory);
     auto user_docs = docs / "Fernanda";
     QString result;

@@ -6,14 +6,13 @@
 #include "editor.h"
 #include "indicator.h"
 #include "pane.h"
-#include "project.h"
 #include "res.h"
 #include "splitter.h"
-
-#include <tuple>
+#include "story.h"
 
 #include <QAbstractButton>
 #include <QActionGroup>
+#include <QApplication>
 #include <QCloseEvent>
 #include <QCoreApplication>
 #include <QFileDialog>
@@ -22,6 +21,7 @@
 #include <QMessageBox>
 #include <QMoveEvent>
 #include <QShowEvent>
+#include <QShortcut>
 #include <QSizePolicy>
 #include <QSlider>
 #include <QStatusBar>
@@ -62,28 +62,33 @@ private:
     QLabel* spacer = new QLabel(this);
     QPushButton* aot = new QPushButton(this);
     QTimer* autoTempSave = new QTimer(this);
-    QLabel* test1 = new QLabel;
-    QPushButton* test2 = new QPushButton;
-    QPushButton* test3 = new QPushButton;
 
-    const QString ferName = "fernanda";
-    std::optional<Project> activeProject;
+    std::optional<Story> activeStory;
+    bool isDev = false;
     bool isInitialized = false;
     bool hasStartUpBar = true;
     bool hasWinTheme = true;
     bool hasTheme = true;
+    bool hasShadow = true;
 
     enum class Toggle {
         None = 0,
         Count,
         Pos,
-        WinTheme,
-        Theme
+        Theme,
+        WinTheme
     };
-    
+    enum class WinStyle {
+        BaseOnly,
+        WithTheme
+    };
+
+    void dev();
+    void setName();
     void addWidgets();
     QWidget* stackWidgets(QVector<QWidget*> widgets);
     void connections();
+    void hotkeys();
     void makeMenuBar();
     void makeFileMenu();
     void makeViewMenu(); // clean me
@@ -93,7 +98,9 @@ private:
     void loadWinConfigs();
     void loadViewConfig(QVector<QAction*> actions, QString group, QString valueName, QVariant fallback);
     void loadMenuToggle(QAction* action, QString group, QString valueName, QVariant fallback);
-    void openProject(QString fileName, Project::SP opt = Project::SP::None);
+    void openStory(QString fileName, Story::Op opt = Story::Op::Normal);
+    void actionCycle(QActionGroup* group);
+    const QString windowStyle(WinStyle baseOnly = WinStyle::WithTheme);
 
 private slots:
     void setWindowStyle();
@@ -110,13 +117,16 @@ private slots:
     //void helpProjects();
     void helpMakeSampleProject();
     void helpMakeSampleRes();
+    void helpShortcuts();
     void helpAbout();
     void handleEditorText(QString key);
     void sendEditedText();
     bool replyHasProject();
     void domMove(QString pivotKey, QString fulcrumKey, Io::Move pos);
-    void addElement(QString newName, Path::Type type, QString parentKey);
-    void renameElement(QString newName, QString key);
+    void domAdd(QString newName, Path::Type type, QString parentKey);
+    void domRename(QString newName, QString key);
+    void domCut(QString key);
+    void cycleCoreEditorThemes();
 
 signals:
     void sendColorBarToggle(bool checked);

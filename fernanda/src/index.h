@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <type_traits>
+
 #include <QModelIndex>
 #include <QString>
 #include <Qt>
@@ -9,41 +11,36 @@
 
 namespace Index
 {
-	inline const QString type(QModelIndex index)
+	template<typename T>
+	inline const T userRoleData(QModelIndex index, int role = 0)
 	{
-		if (!index.isValid()) return nullptr;
-		return index.data(Qt::UserRole).toString();
+		T result{};
+		if constexpr (std::is_same<T, QString>::value)
+		{
+			(index.isValid())
+				? result = index.data(Qt::UserRole + role).toString()
+				: result = nullptr;
+		}
+		if constexpr (std::is_same<T, bool>::value)
+		{
+			(index.isValid())
+				? result = index.data(Qt::UserRole + role).toBool()
+				: result = false;
+		}
+		return result;
 	}
+	inline const QString type(QModelIndex index) { return userRoleData<QString>(index); }
+	inline const QString key(QModelIndex index) { return userRoleData<QString>(index, 1); }
+	inline const QString name(QModelIndex index) { return userRoleData<QString>(index, 2); }
+	inline bool isExpanded(QModelIndex index) { return userRoleData<bool>(index, 3); }
 
-	inline const QString name(QModelIndex index)
+	inline bool isThis(QModelIndex index, QString indexType)
 	{
-		if (!index.isValid()) return nullptr;
-		return index.data(Qt::UserRole + 1).toString();
-	}
-
-	inline const QString key(QModelIndex index)
-	{
-		if (!index.isValid()) return nullptr;
-		return index.data(Qt::UserRole + 2).toString();
-	}
-
-	inline bool isExpanded(QModelIndex index)
-	{
-		if (!index.isValid()) return false;
-		return index.data(Qt::UserRole + 3).toBool();
-	}
-
-	inline bool isDir(QModelIndex index)
-	{
-		if (type(index) == "dir") return true;
+		if (type(index) == indexType) return true;
 		return false;
 	}
-
-	inline bool isFile(QModelIndex index)
-	{
-		if (type(index) == "file") return true;
-		return false;
-	}
+	inline bool isDir(QModelIndex index) { return isThis(index, "dir"); }
+	inline bool isFile(QModelIndex index) { return isThis(index, "file"); }
 }
 
 // index.h, fernanda

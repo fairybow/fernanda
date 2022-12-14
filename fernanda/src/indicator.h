@@ -27,9 +27,9 @@ public:
         layout->addWidget(counts);
         layout->setContentsMargins(0, 0, 0, 0);
         setLayout(layout);
-        positions->setObjectName("positions");
-        separator->setObjectName("separator");
-        counts->setObjectName("counts");
+        positions->setObjectName("indicator");
+        separator->setObjectName("indicator");
+        counts->setObjectName("indicator");
         connect(this, &Indicator::toggled, this, [&]()
             {
                 if (positions->isHidden() || counts->isHidden())

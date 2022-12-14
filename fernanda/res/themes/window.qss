@@ -1,140 +1,21 @@
-#menuBar, QMenu
+#aot, #devPrint
 {
-	background: @bgColor;
-	color: @fontColor;
-	font-weight: 600;
+	background: @statusBarButton;
+	border: transparent;
+	border-radius: 3px;
+	color: @statusBarButtonFont;
 }
 
-#menuBar::item:selected, QMenu::item:selected, #fontSlider:hover
+#aot:hover, #devPrint:hover
 {
-	background: @bgColorHover;
-	color: @fontColor2Hover;
-}
-
-#splitter::handle
-{
-	background: @bgColor2;
-}
-
-#pane
-{
-	background: @bgColor2;
-	border: 0px solid @borderColor;
-	color: @fontColor2;
-	font-weight: 600;
-}
-
-#textEditor
-{
-	border: none;
-}
-
-#scrollPrevious, #scrollUp, #scrollDown, #scrollNext
-{
-	background: @bgColor;
-	border: none;
-	color: @fontColor2;
-	font-weight: 600;
-}
-
-#scrollPrevious
-{
-	text-decoration: overline;
-}
-
-#scrollNext
-{
-	text-decoration: underline;
-}
-
-#scrollPrevious:hover, #scrollUp:hover, #scrollDown:hover, #scrollNext:hover
-{
-	background: @bgColorHover;
-	color: @fontColor2Hover;
-}
-
-#vScrollBar:vertical
-{
-    background: @bgColorHover;
-	margin: 0px 0 0px 0;
-	width: 16px;
-}
-
-#vScrollBar::handle:vertical
-{
-    background: @bgColor;
-    min-height: 0px;
-}
-
-#vScrollBar::handle:vertical:hover
-{
-    background: @fontColor2;
-}
-
-#vScrollBar::handle:vertical:pressed
-{
-	background: @fontColor2;
-}
-
-#vScrollBar::add-line:vertical, #vScrollBar::sub-line:vertical
-{
-    border: none;
-    height: 0px;
-}
-
-#vScrollBar::up-arrow:vertical, #vScrollBar::down-arrow:vertical
-{
-    border: none;
-    height: 0px;
-	width: 0px;
-}
-
-#vScrollBar::add-page:vertical, #vScrollBar::sub-page:vertical
-{
-    background: none;
+	background: @statusBarButtonHover;
+	color: @statusBarButtonFontHover;
 }
 
 #colorBar
 {
 	background: transparent;
 	border: none;
-}
-
-#statusBar
-{
-	background-color: @bgColor;
-	border: none;
-}
-
-#statusBar::item
-{
-	border: none;
-}
-
-#positions, #separator, #counts
-{
-	color: @fontColor2;
-	font-weight: 600;
-	padding-left: 1px;
-	padding-right: 1px;
-}
-
-#aot
-{
-	background: @bgColor;
-	border: transparent;
-	border-radius: 3px;
-	min-width: 33px;
-	padding-bottom: 1px;
-	padding-left: 5px;
-	padding-right: 5px;
-	padding-top: 1px;
-}
-
-#aot:hover
-{
-	background: @bgColorHover;
-	color: @fontColor2Hover;
 }
 
 #fontSlider::groove:horizontal
@@ -216,7 +97,99 @@
 	background: #eee;
 }
 
+#indicator
+{
+	color: @indicatorFont;
+}
+
+#menuBar, QMenu
+{
+	background: @menuBg;
+	color: @menuFont;
+}
+
+#menuBar::item:selected, QMenu::item:selected, #fontSlider:hover
+{
+	background: @menuHover;
+	color: @menuFontHover;
+}
+
+#pane
+{
+	background: @paneBg;
+	color: @paneFont;
+}
+
 QSizeGrip
 {
-	image: none;
+	image: url(none);
+}
+
+#scrollPrevious, #scrollUp, #scrollDown, #scrollNext
+{
+	background: @scrollButtonBg;
+	border: none;
+	color: @scrollButtonFont;
+}
+
+#scrollPrevious:hover, #scrollUp:hover, #scrollDown:hover, #scrollNext:hover
+{
+	background: @scrollButtonHover;
+	color: @scrollButtonFontHover;
+}
+
+#splitter::handle
+{
+	background: @splitterHandle;
+}
+
+#statusBar
+{
+	background-color: @statusBarBg;
+	border: none;
+}
+
+#statusBar::item
+{
+	border: none;
+}
+
+#vScrollBar:vertical
+{
+	background: @scrollBg;
+	margin: 0px 0 0px 0;
+}
+
+#vScrollBar::handle:vertical
+{
+	background: @scrollHandle;
+	min-height: 0px;
+}
+
+#vScrollBar::handle:vertical:hover
+{
+	background: @scrollHandleHover;
+}
+
+#vScrollBar::handle:vertical:pressed
+{
+	background: @scrollHandlePress;
+}
+
+#vScrollBar::add-line:vertical, #vScrollBar::sub-line:vertical
+{
+	border: none;
+	height: 0px;
+}
+
+#vScrollBar::up-arrow:vertical, #vScrollBar::down-arrow:vertical
+{
+	border: none;
+	height: 0px;
+	width: 0px;
+}
+
+#vScrollBar::add-page:vertical, #vScrollBar::sub-page:vertical
+{
+	background: none;
 }

@@ -88,6 +88,11 @@ namespace Uni
 		}
 		return result;
 	}
+
+	inline const QString hotkeys()
+	{
+		return "<b>Alt + F10:</b> Cycle fonts<br><b>F11:</b> Cycle editor themes (Amber, Green, Grey)<br><b>Alt + F11:</b> Cycle editor themes (all)<br><b>Alt + F12:</b> Cycle window themes<br><b>Alt + Insert:</b> Nav previous<br><b>Alt + Delete:</b> Nav Next<br><b>Alt + - (Ctrl + Mouse Wheel Down):</b> Decrease font size<br><b>Alt + + (Ctrl + Mouse Wheel Up):</b> Increase font size";
+	}
 }
 
 // uni.h, fernanda

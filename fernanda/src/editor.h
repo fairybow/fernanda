@@ -50,6 +50,7 @@ public:
     bool handleKeySwap(QString oldKey, QString newKey);
     void handleTextSwap(QString key, QString text);
     int selectedLineCount();
+    void scrollNavClicked(Scroll direction);
 
 public slots:
     void toggleLineHighlight(bool checked);
@@ -87,10 +88,10 @@ private:
 
     void connections();
     const QColor cursorColor();
+    const QColor highlight();
     void storeCursors(QString key);
     void recallCursors(QString key);
     void recallUndoStacks(QString key); // WIP
-    void scrollNavClicked(Scroll direction);
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);

@@ -5,9 +5,12 @@
 Fernanda::Fernanda(QWidget* parent)
     : QMainWindow(parent)
 {
+    setName();
+    //Ud::windowsReg();
     addWidgets();
     connections();
-    Ud::userData(Ud::Op::Create, ferName);
+    Ud::userData();
+    if (isDev) dev();
     makeMenuBar();
     loadConfigs();
 }
@@ -38,11 +41,12 @@ void Fernanda::closeEvent(QCloseEvent* event)
     auto state = windowState();
     Ud::saveConfig("window", "state", state.toInt());
     setWindowState(Qt::WindowState::WindowActive);
-    if (activeProject.has_value() && activeProject.value().hasAnyChanges())
+    if (activeStory.has_value() && activeStory.value().hasChanges())
     {
         QMessageBox alert;
+        alert.setStyleSheet(windowStyle(WinStyle::BaseOnly));
         alert.setWindowTitle("Hey!");
-        alert.setText("You have unsaved changes. Are you sure you want to quit?");
+        alert.setText("You have <b>unsaved changes</b>. Are you sure you want to quit?");
         alert.addButton(QMessageBox::Yes);
         auto no = alert.addButton(QMessageBox::No);
         alert.setDefaultButton(no);
@@ -59,6 +63,59 @@ void Fernanda::closeEvent(QCloseEvent* event)
     event->accept();
 }
 
+void Fernanda::dev()
+{
+    auto print_dom = new QPushButton(this);
+    statusBar->addPermanentWidget(print_dom, 0);
+    print_dom->setText("Print DOM");
+    print_dom->setObjectName("devPrint");
+    connect(print_dom, &QPushButton::clicked, this, [&]()
+        {
+            if (!activeStory.has_value()) return;
+            Io::writeFile((Ud::userData(Ud::Op::GetDocs) / "__DOM.xml"), activeStory.value().devGetDom());
+        });
+    auto print_cuts = new QPushButton(this);
+    statusBar->addPermanentWidget(print_cuts, 0);
+    print_cuts->setText("Print Cuts");
+    print_cuts->setObjectName("devPrint");
+    connect(print_cuts, &QPushButton::clicked, this, [&]()
+        {
+            if (!activeStory.has_value()) return;
+            Io::writeFile((Ud::userData(Ud::Op::GetDocs) / "__Cuts.xml"), activeStory.value().devGetDom(Dom::Doc::Cuts));
+        });
+    auto print_renames = new QPushButton(this);
+    statusBar->addPermanentWidget(print_renames, 0);
+    print_renames->setText("Print Renames");
+    print_renames->setObjectName("devPrint");
+    connect(print_renames, &QPushButton::clicked, this, [&]()
+        {
+            if (!activeStory.has_value()) return;
+            auto renames = activeStory.value().devGetRenames();
+            QStringList test;
+            auto i = 0;
+            for (auto& entry : renames)
+            {
+                ++i;
+                QString result = QString::number(i) + "\nKey: " + entry.key + "\nRel Path: " + entry.relPath;
+                (entry.origRelPath.has_value())
+                    ? result = result + "\nOrig Path: " + entry.origRelPath.value()
+                    : result = result + "\nNew: " + QString((entry.typeIfNewOrCut.value() == Path::Type::Dir) ? "dir" : "file");
+                test << result;
+            }
+            Io::writeFile((Ud::userData(Ud::Op::GetDocs) / "__Renames.txt"), test.join("\n\n"));
+        });
+}
+
+void Fernanda::setName()
+{
+    QString name;
+    (isDev)
+        ? name = "fernanda-dev"
+        : name = "fernanda";
+    setWindowTitle(name);
+    Ud::setName(name);
+}
+
 void Fernanda::addWidgets()
 {
     auto main_container = stackWidgets({ colorBar, splitter });
@@ -70,7 +127,6 @@ void Fernanda::addWidgets()
     overlay->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     underlay->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
-    setWindowTitle(ferName);
     setMenuBar(menuBar);
     setStatusBar(statusBar);
     setCentralWidget(main_container);
@@ -107,9 +163,12 @@ QWidget* Fernanda::stackWidgets(QVector<QWidget*> widgets)
 
 void Fernanda::connections()
 {
+    hotkeys();
+    connect(this, &Fernanda::startAutoTempSave, this, [&]() { autoTempSave->start(30000); });
+    connect(autoTempSave, &QTimer::timeout, this, [&]() { activeStory.value().autoTempSave(textEditor->toPlainText()); });
+    connect(pane, &Pane::askSetExpansion, this, [&](QString key, bool isExpanded) { activeStory.value().setItemExpansion(key, isExpanded); });
     connect(textEditor, &TextEditor::askNavNext, pane, [&]() { pane->nav(Pane::Nav::Next); });
     connect(textEditor, &TextEditor::askNavPrevious, pane, [&]() { pane->nav(Pane::Nav::Previous); });
-    connect(this, &Fernanda::startAutoTempSave, this, [&]() { autoTempSave->start(30000); });
     connect(textEditor, &TextEditor::cursorPositionChanged, this, [&]()
         {
             updatePositions(textEditor->textCursor().blockNumber(), textEditor->textCursor().positionInBlock());
@@ -120,43 +179,55 @@ void Fernanda::connections()
         });
     connect(textEditor, &TextEditor::selectionChanged, this, [&]()
         {
-            if (!textEditor->textCursor().hasSelection())
-            {
-                textEditor->textChanged();
-                return;
-            }
-            updateSelection(textEditor->textCursor().selectedText(), textEditor->selectedLineCount());
-        });
-    connect(autoTempSave, &QTimer::timeout, this, [&]()
-        {
-            if (!activeProject.has_value()) return;
-            activeProject.value().autoTempSave(textEditor->toPlainText());
-        });
-    connect(pane, &Pane::askSetExpansion, this, [&](QString key, bool isExpanded)
-        {
-            if (!activeProject.has_value()) return;
-            activeProject.value().setDomElementExpansionState(key, isExpanded);
+            (textEditor->textCursor().hasSelection())
+                ? updateSelection(textEditor->textCursor().selectedText(), textEditor->selectedLineCount())
+                : textEditor->textChanged();
         });
     connect(this, &Fernanda::updatePositions, indicator, &Indicator::updatePositions);
     connect(this, &Fernanda::updateCounts, indicator, &Indicator::updateCounts);
     connect(this, &Fernanda::updateSelection, indicator, &Indicator::updateSelection);
-    connect(pane, &Pane::askDomMove, this, &Fernanda::domMove);
-    connect(pane, &Pane::askAddElement, this, &Fernanda::addElement);
-    connect(pane, &Pane::askRenameElement, this, &Fernanda::renameElement);
-    connect(textEditor, &TextEditor::askFontSliderZoom, this, &Fernanda::handleEditorZoom);
-    connect(pane, &Pane::askHasProject, this, &Fernanda::replyHasProject);
-    connect(textEditor, &TextEditor::askHasProject, this, &Fernanda::replyHasProject);
     connect(this, &Fernanda::sendColorBarToggle, colorBar, &ColorBar::toggleSelf);
     connect(this, &Fernanda::sendLineHighlightToggle, textEditor, &TextEditor::toggleLineHighlight);
     connect(this, &Fernanda::sendKeyfilterToggle, textEditor, &TextEditor::toggleKeyfilter);
     connect(this, &Fernanda::sendLineNumberAreaToggle, textEditor, &TextEditor::toggleLineNumberArea);
     connect(this, &Fernanda::sendScrollsToggle, textEditor, &TextEditor::toggleScrolls);
     connect(this, &Fernanda::sendExtraScrollsToggle, textEditor, &TextEditor::toggleExtraScrolls);
-    connect(aot, &QPushButton::toggled, this, &Fernanda::aotToggled);
     connect(this, &Fernanda::sendItems, pane, &Pane::receiveItems);
-    connect(pane, &Pane::askSendToEditor, this, &Fernanda::handleEditorText);
-    connect(textEditor, &TextEditor::textChanged, this, &Fernanda::sendEditedText);
     connect(this, &Fernanda::sendEditsList, pane, &Pane::receiveEditsList);
+    connect(textEditor, &TextEditor::askFontSliderZoom, this, &Fernanda::handleEditorZoom);
+    connect(textEditor, &TextEditor::askHasProject, this, &Fernanda::replyHasProject);
+    connect(textEditor, &TextEditor::textChanged, this, &Fernanda::sendEditedText);
+    connect(pane, &Pane::askDomMove, this, &Fernanda::domMove);
+    connect(pane, &Pane::askAddElement, this, &Fernanda::domAdd);
+    connect(pane, &Pane::askRenameElement, this, &Fernanda::domRename);
+    connect(pane, &Pane::askCutElement, this, &Fernanda::domCut);
+    connect(pane, &Pane::askHasProject, this, &Fernanda::replyHasProject);
+    connect(pane, &Pane::askSendToEditor, this, &Fernanda::handleEditorText);
+    connect(aot, &QPushButton::toggled, this, &Fernanda::aotToggled);
+}
+
+void Fernanda::hotkeys()
+{
+    connect(new QShortcut(Qt::ALT | Qt::Key_F10, this), &QShortcut::activated, this, [&]() { actionCycle(editorFonts); });
+    connect(new QShortcut(Qt::Key_F11, this), &QShortcut::activated, this, &Fernanda::cycleCoreEditorThemes);
+    connect(new QShortcut(Qt::ALT | Qt::Key_F11, this), &QShortcut::activated, this, [&]() { actionCycle(editorThemes); });
+    connect(new QShortcut(Qt::ALT | Qt::Key_F12, this), &QShortcut::activated, this, [&]() { actionCycle(windowThemes); });
+    connect(new QShortcut(Qt::ALT | Qt::Key_Insert, this), &QShortcut::activated, this, [&]()
+        {
+            textEditor->scrollNavClicked(TextEditor::Scroll::Previous);
+        });
+    connect(new QShortcut(Qt::ALT | Qt::Key_Delete, this), &QShortcut::activated, this, [&]()
+        {
+            textEditor->scrollNavClicked(TextEditor::Scroll::Next);
+        });
+    connect(new QShortcut(Qt::ALT | Qt::Key_Minus, this), &QShortcut::activated, this, [&]()
+        {
+            handleEditorZoom(TextEditor::Zoom::Out);
+        });
+    connect(new QShortcut(Qt::ALT | Qt::Key_Equal, this), &QShortcut::activated, this, [&]()
+        {
+            handleEditorZoom(TextEditor::Zoom::In);
+        });
 }
 
 void Fernanda::makeMenuBar()
@@ -169,26 +240,26 @@ void Fernanda::makeMenuBar()
 void Fernanda::makeFileMenu()
 {
     auto* file = menuBar->addMenu(tr("&File"));
-    auto* new_project = new QAction(tr("&New project..."), this);
-    auto* open_project = new QAction(tr("&Open an existing project..."), this);
+    auto* new_story = new QAction(tr("&New project..."), this);
+    auto* open_story = new QAction(tr("&Open an existing project..."), this);
     auto* save = new QAction(tr("&Save"), this);
     auto* quit = new QAction(tr("&Quit"), this);
     save->setShortcut(Qt::CTRL | Qt::Key_S);
     quit->setShortcut(Qt::CTRL | Qt::Key_Q);
-    connect(new_project, &QAction::triggered, this, [&]()
+    connect(new_story, &QAction::triggered, this, [&]()
         {
-            auto file_name = QFileDialog::getSaveFileName(this, tr("Create a new project"), Ud::userData(Ud::Op::GetDocs), tr("Fernanda project file (*.story)"));
-            openProject(file_name);
+            auto file_name = QFileDialog::getSaveFileName(this, tr("Create a new story..."), Ud::userData(Ud::Op::GetDocs), tr("Fernanda story file (*.story)"));
+            openStory(file_name);
         });
-    connect(open_project, &QAction::triggered, this, [&]()
+    connect(open_story, &QAction::triggered, this, [&]()
         {
-            auto file_name = QFileDialog::getOpenFileName(this, tr("Open an existing project"), Ud::userData(Ud::Op::GetDocs), tr("Fernanda project file (*.story)"));
-            openProject(file_name);
+            auto file_name = QFileDialog::getOpenFileName(this, tr("Open an existing story..."), Ud::userData(Ud::Op::GetDocs), tr("Fernanda story file (*.story)"));
+            openStory(file_name);
         });
     connect(save, &QAction::triggered, this, &Fernanda::fileSave);
     connect(quit, &QAction::triggered, this, &QCoreApplication::quit, Qt::QueuedConnection);
-    file->addAction(new_project);
-    file->addAction(open_project);
+    file->addAction(new_story);
+    file->addAction(open_story);
     file->addSeparator();
     file->addAction(save);
     file->addSeparator();
@@ -200,13 +271,17 @@ void Fernanda::makeViewMenu() // clean me
     auto user_data = Ud::userData(Ud::Op::GetUserData);
     auto win_theme_list = Res::iterateResources(":\\themes\\window\\", "*.fernanda_wintheme", user_data, Res::Type::WindowTheme);
     windowThemes = makeViewToggles(win_theme_list, &Fernanda::setWindowStyle);
-    loadViewConfig(windowThemes->actions(), "window", "wintheme", ":\\themes\\window\\light.fernanda_wintheme");
+    loadViewConfig(windowThemes->actions(), "window", "wintheme", ":\\themes\\window\\Light.fernanda_wintheme");
     auto editor_theme_list = Res::iterateResources(":\\themes\\editor\\", "*.fernanda_theme", user_data, Res::Type::EditorTheme);
     editorThemes = makeViewToggles(editor_theme_list, &Fernanda::setEditorStyle);
-    loadViewConfig(editorThemes->actions(), "editor", "theme", ":\\themes\\editor\\amber.fernanda_theme");
-    auto font_list = Res::iterateResources(":\\fonts\\", "*.ttf", user_data, Res::Type::Font);
+    loadViewConfig(editorThemes->actions(), "editor", "theme", ":\\themes\\editor\\Amber.fernanda_theme");
+    //
+    QVector<Res::DataPair> font_list;
+    auto ttfs = Res::iterateResources(":\\fonts\\", "*.ttf", user_data, Res::Type::Font);
+    font_list << Res::iterateResources(":\\fonts\\", "*.otf", user_data, Res::Type::Font, ttfs); // there's definitely a smarter way to do this...
+    //
     editorFonts = makeViewToggles(font_list, &Fernanda::setEditorFont);
-    loadViewConfig(editorFonts->actions(), "editor", "font", "Cascadia Code");
+    loadViewConfig(editorFonts->actions(), "editor", "font", "Cascadia Mono");
 
     auto* toggle_win_theme = new QAction(tr("&Toggle window theme"), this);
     connect(toggle_win_theme, &QAction::toggled, this, [&](bool checked)
@@ -302,6 +377,14 @@ void Fernanda::makeViewMenu() // clean me
         });
     toggle_line_highlight->setCheckable(true);
     loadMenuToggle(toggle_line_highlight, "editor", "line_highlight", true);
+
+    auto* toggle_shadow = new QAction(tr("&Toggle editor shadow"), this);
+    connect(toggle_shadow, &QAction::toggled, this, [&](bool checked)
+        {
+            toggleGlobals(hasShadow, "editor", "shadow", checked, Toggle::Theme);
+        });
+    toggle_shadow->setCheckable(true);
+    loadMenuToggle(toggle_shadow, "editor", "shadow", true);
 
     auto* toggle_keyfilter = new QAction(tr("&Toggle key filter"), this);
     connect(toggle_keyfilter, &QAction::toggled, this, [&](bool checked)
@@ -405,6 +488,7 @@ void Fernanda::makeViewMenu() // clean me
     view->addAction(toggle_statusbar);
     view->addSeparator();
     view->addAction(toggle_line_highlight);
+    view->addAction(toggle_shadow);
     view->addAction(toggle_keyfilter);
     view->addAction(toggle_line_numbers);
     view->addAction(toggle_scrolls);
@@ -426,7 +510,8 @@ void Fernanda::makeHelpMenu()
     auto* load_recent = new QAction(tr("&Load most recent project on open"), this);
     auto* sample_project = new QAction(tr("&Generate sample project"), this);
     auto* sample_themes = new QAction(tr("&Generate sample themes"), this);
-    auto* about = new QAction(tr("&About Fernanda"), this);
+    auto* shortcuts = new QAction(tr("&Shortcuts..."), this);
+    auto* about = new QAction(tr("&About Fernanda..."), this);
     //connect(projects_dir, &QAction::triggered, this, &Fernanda::helpProjects);
     load_recent->setCheckable(true);
     connect(load_recent, &QAction::toggled, this, [&](bool checked)
@@ -436,12 +521,15 @@ void Fernanda::makeHelpMenu()
     loadMenuToggle(load_recent, "data", "load_most_recent", false);
     connect(sample_project, &QAction::triggered, this, &Fernanda::helpMakeSampleProject);
     connect(sample_themes, &QAction::triggered, this, &Fernanda::helpMakeSampleRes);
+    connect(shortcuts, &QAction::triggered, this, &Fernanda::helpShortcuts);
     connect(about, &QAction::triggered, this, &Fernanda::helpAbout);
     //help->addAction(projects_dir);
     help->addAction(load_recent);
     help->addSeparator();
     help->addAction(sample_project);
     help->addAction(sample_themes);
+    help->addSeparator();
+    help->addAction(shortcuts);
     help->addSeparator();
     help->addAction(about);
 }
@@ -474,7 +562,7 @@ void Fernanda::loadConfigs()
     {
         auto project = Ud::loadConfig("data", "project").toString();
         if (!QFile(project).exists() || project.isEmpty()) return;
-        openProject(project);
+        openStory(project);
         hasStartUpBar = false;
     }
 }
@@ -495,13 +583,13 @@ void Fernanda::loadViewConfig(QVector<QAction*> actions, QString group, QString 
 {
     auto resource = Ud::loadConfig(group, valueName, fallback);
     for (auto action : actions)
-        if (action->data() == resource)
+        if (Path::sanitize(action->data().toString()) == resource)
         {
             action->setChecked(true);
             return;
         }
     for (auto action : actions)
-        if (action->data() == fallback)
+        if (Path::sanitize(action->data().toString()) == fallback)
         {
             action->setChecked(true);
             return;
@@ -516,32 +604,63 @@ void Fernanda::loadMenuToggle(QAction* action, QString group, QString valueName,
     action->setChecked(toggle_state);
 }
 
-void Fernanda::openProject(QString fileName, Project::SP opt)
+void Fernanda::openStory(QString fileName, Story::Op opt)
 {
     if (fileName.isEmpty())
     {
         colorBar->red();
         return;
     }
-    activeProject = Project(fileName, opt);
-    auto& project = activeProject.value();
-    sendItems(project.makeItems());
-    Ud::saveConfig("data", "project", fileName);
+    activeStory = Story(fileName, opt);
+    auto& story = activeStory.value();
+    sendItems(story.items());
+    Ud::saveConfig("data", "project", Path::sanitize(fileName));
     colorBar->green();
 }
 
-void Fernanda::setWindowStyle()
+void Fernanda::actionCycle(QActionGroup* group)
+{
+    auto actions = group->actions();
+    auto current_theme = group->checkedAction();
+    if (current_theme != actions.last())
+    {
+        auto set_next = false;
+        for (auto& action : actions)
+        {
+            if (set_next)
+            {
+                action->setChecked(true);
+                break;
+            }
+            if (action == current_theme)
+                set_next = true;
+        }
+    }
+    else
+        actions.first()->setChecked(true);
+}
+
+const QString Fernanda::windowStyle(WinStyle baseOnly)
 {
     if (auto selection = windowThemes->checkedAction(); selection != nullptr)
     {
         auto theme_path = selection->data().toString();
-        auto style_sheet = Res::createStyleSheetFromTheme(Io::readFile(":\\themes\\window.qss"), Io::readFile(theme_path));
-        if (!hasWinTheme)
-            style_sheet = nullptr;
-        setStyleSheet(style_sheet);
+        auto style_sheet = Io::readFile(":\\themes\\window_base.qss");
+        if (hasWinTheme && baseOnly != WinStyle::BaseOnly)
+        {
+            auto theme_sheet = Io::readFile(theme_path);
+            style_sheet = style_sheet + "\n\n" + Res::createStyleSheetFromTheme(Io::readFile(":\\themes\\window.qss"), theme_sheet);
+        }
         sendScrollsToggle(hasWinTheme);
-        Ud::saveConfig("window", "wintheme", theme_path);
+        Ud::saveConfig("window", "wintheme", Path::sanitize(theme_path));
+        return style_sheet;
     }
+    return nullptr;
+}
+
+void Fernanda::setWindowStyle()
+{
+    setStyleSheet(windowStyle());
 }
 
 void Fernanda::setEditorStyle()
@@ -549,20 +668,22 @@ void Fernanda::setEditorStyle()
     if (auto selection = editorThemes->checkedAction(); selection != nullptr)
     {
         auto theme_path = selection->data().toString();
-        auto style_sheet = Res::createStyleSheetFromTheme(Io::readFile(":\\themes\\editor.qss"), Io::readFile(theme_path));
-        auto theme_cursor = Io::readFile(theme_path);
-        QRegularExpressionMatch match_cursor = Uni::regex(Uni::Re::ThemeSheetCursor).match(theme_cursor);
-        QString cursor_color = match_cursor.captured(2);
-        if (!hasTheme)
+        auto style_sheet = Io::readFile(":\\themes\\editor_base.qss");
+        QString cursor_color = nullptr;
+        if (hasTheme)
         {
-            style_sheet = nullptr;
-            cursor_color = nullptr;
+            auto theme_sheet = Io::readFile(theme_path);
+            style_sheet = style_sheet + "\n\n" + Res::createStyleSheetFromTheme(Io::readFile(":\\themes\\editor.qss"), theme_sheet);
+            QRegularExpressionMatch match_cursor = Uni::regex(Uni::Re::ThemeSheetCursor).match(theme_sheet);
+            cursor_color = match_cursor.captured(2);
         }
+        if (hasShadow)
+            style_sheet = style_sheet + "\n\n" + Io::readFile(":\\themes\\shadow.qss");
         overlay->setStyleSheet(style_sheet);
-        textEditor->setStyleSheet(style_sheet);
         underlay->setStyleSheet(style_sheet);
+        textEditor->setStyleSheet(style_sheet);
         textEditor->cursorColorHex = cursor_color;
-        Ud::saveConfig("editor", "theme", theme_path);
+        Ud::saveConfig("editor", "theme", Path::sanitize(theme_path));
     }
 }
 
@@ -576,7 +697,7 @@ void Fernanda::setEditorFont()
         font.setHintingPreference(QFont::HintingPreference::PreferNoHinting);
         font.setPointSize(size);
         textEditor->setFont(font);
-        textEditor->setCursorWidth(size * 0.8);
+        textEditor->setCursorWidth(size * 0.75);
         textEditor->lineNumberAreaFont(size, selection->data().toString());
         Ud::saveConfig("editor", "font", selection->data().toString());
     }
@@ -648,10 +769,9 @@ void Fernanda::setBarAlignment()
     if (auto selection = barAlignments->checkedAction(); selection != nullptr)
     {
         auto alignment = selection->data().toString();
-        if (alignment == "Top")
-            colorBar->align(Qt::AlignTop);
-        else if (alignment == "Bottom")
-            colorBar->align(Qt::AlignBottom);
+        (alignment == "Bottom")
+            ? colorBar->align(Qt::AlignBottom)
+            : colorBar->align(Qt::AlignTop);
         Ud::saveConfig("window", "bar_alignment", alignment);
     }
 }
@@ -661,22 +781,32 @@ void Fernanda::toggleGlobals(bool& globalBool, QString group, QString valueName,
     globalBool = value;
     Ud::saveConfig(group, valueName, value);
     switch (type) {
-    case Toggle::None: break;
-    case Toggle::Count: textEditor->textChanged(); break;
-    case Toggle::Pos: textEditor->cursorPositionChanged(); break;
-    case Toggle::WinTheme: setWindowStyle(); break;
-    case Toggle::Theme: setEditorStyle(); break;
+    case Toggle::None:
+        break;
+    case Toggle::Count:
+        textEditor->textChanged();
+        break;
+    case Toggle::Pos:
+        textEditor->cursorPositionChanged();
+        break;
+    case Toggle::WinTheme:
+        setWindowStyle();
+        break;
+    case Toggle::Theme:
+        setEditorStyle();
+        break;
     }
 }
 
 void Fernanda::fileSave()
 {
-    if (!activeProject.has_value()) return;
-    auto& project = activeProject.value();
-    if (!project.hasAnyChanges()) return;
-    project.saveProject(textEditor->toPlainText());
+    if (!activeStory.has_value()) return;
+    auto& story = activeStory.value();
+    if (!story.hasChanges()) return;
+    story.save(textEditor->toPlainText());
+    Ud::clear(Ud::userData(Ud::Op::GetTemp));
     textEditor->textChanged();
-    sendItems(project.makeItems());
+    sendItems(story.items());
     colorBar->green();
 }
 
@@ -689,72 +819,120 @@ void Fernanda::helpMakeSampleProject()
 {
     // ask to save if another project is open
     auto path = Ud::userData(Ud::Op::GetDocs) / "Candide.story";
-    openProject(path, Project::SP::MakeSample);
+    openStory(path, Story::Op::Sample);
 }
 
 void Fernanda::helpMakeSampleRes()
 {
     auto path = Ud::userData(Ud::Op::GetUserData);
     Sample::makeRc(path.toStdString());
-    // popup to tell user to restart to see changes
+    colorBar->pastels();
+    QMessageBox alert;
+    alert.setStyleSheet(windowStyle(WinStyle::BaseOnly));
+    alert.setWindowTitle("Hey!");
+    alert.setText("You'll need to <b>restart</b> to see custom themes and fonts incorporated.");
+    auto ok = alert.addButton(tr("Okay"), QMessageBox::AcceptRole);
+    alert.setDefaultButton(ok);
+    alert.exec();
+}
+
+void Fernanda::helpShortcuts()
+{
+    QMessageBox shortcuts;
+    shortcuts.setStyleSheet(windowStyle(WinStyle::BaseOnly));
+    shortcuts.setWindowTitle("Shortcuts");
+    shortcuts.setText(Uni::hotkeys());
+    auto ok = shortcuts.addButton(tr("Okay"), QMessageBox::AcceptRole);
+    shortcuts.setDefaultButton(ok);
+    shortcuts.exec();
 }
 
 void Fernanda::helpAbout()
 {
     QMessageBox about;
+    about.setStyleSheet(windowStyle(WinStyle::BaseOnly));
     about.setWindowTitle("About");
-    about.setText("Fernanda is a personal project and a work-in-progress.");
-    QAbstractButton* ok = about.addButton(tr("Okay"), QMessageBox::AcceptRole);
+    about.setText("<b>Fernanda</b> is a personal project and a work-in-progress.<p>Version: hella beta<p><a href='https://github.com/fairybow/fernanda'>github.com/fairybow/fernanda</a>");
+    auto ok = about.addButton(tr("Okay"), QMessageBox::AcceptRole);
+    auto qt = about.addButton(tr("About Qt"), QMessageBox::AcceptRole);
+    connect(qt, &QPushButton::clicked, this, QApplication::aboutQt);
+    about.setDefaultButton(ok);
     about.exec();
 }
 
 void Fernanda::handleEditorText(QString key)
 {
-    if (!activeProject.has_value()) return;
     if (overlay->isVisible())
         overlay->hide();
-    auto& project = activeProject.value();
-    if (!textEditor->handleKeySwap(project.getActiveKey(), key)) return;
-    auto text = project.saveOld_openNew(key, textEditor->toPlainText());
+    auto& story = activeStory.value();
+    if (!textEditor->handleKeySwap(story.key(), key)) return;
+    auto text = story.tempSaveOld_openNew(key, textEditor->toPlainText());
     textEditor->handleTextSwap(key, text);
     startAutoTempSave();
 }
 
 void Fernanda::sendEditedText()
 {
-    if (!activeProject.has_value()) return;
-    auto list = activeProject.value().handleEditsList(textEditor->toPlainText());
-    sendEditsList(list);
+    if (!activeStory.has_value()) return;
+    sendEditsList(activeStory.value().edits(textEditor->toPlainText()));
 }
 
 bool Fernanda::replyHasProject()
 {
-    if (activeProject.has_value()) return true;
+    if (activeStory.has_value()) return true;
     return false;
 }
 
 void Fernanda::domMove(QString pivotKey, QString fulcrumKey, Io::Move pos)
 {
-    if (!activeProject.has_value()) return;
-    auto& project = activeProject.value();
-    project.domMove(pivotKey, fulcrumKey, pos);
-    sendItems(project.makeItems());
+    auto& story = activeStory.value();
+    story.move(pivotKey, fulcrumKey, pos);
+    sendItems(story.items());
 }
 
-void Fernanda::addElement(QString newName, Path::Type type, QString parentKey)
+void Fernanda::domAdd(QString newName, Path::Type type, QString parentKey)
 {
-    if (!activeProject.has_value()) return;
-    auto& project = activeProject.value();
-    project.newDomElement(newName, type, parentKey);
-    sendItems(project.makeItems());
+    auto& story = activeStory.value();
+    story.add(newName, type, parentKey);
+    sendItems(story.items());
 }
 
-void Fernanda::renameElement(QString newName, QString key)
+void Fernanda::domRename(QString newName, QString key)
 {
-    if (!activeProject.has_value()) return;
-    auto& project = activeProject.value();
-    project.renameDomElement(newName, key);
-    sendItems(project.makeItems());
+    auto& story = activeStory.value();
+    story.rename(newName, key);
+    sendItems(story.items());
+}
+
+void Fernanda::domCut(QString key)
+{
+    auto& story = activeStory.value();
+    story.cut(key);
+    sendItems(story.items());
+}
+
+void Fernanda::cycleCoreEditorThemes()
+{
+
+    auto actions = editorThemes->actions();
+    auto current_theme = editorThemes->checkedAction();
+    auto text = current_theme->text();
+    auto break_it = false;
+    for (auto& action : actions)
+    {
+        auto action_text = action->text();
+        if (text != "Amber" && text != "Green" && action_text == "Amber")
+            break_it = true;
+        else if (text == "Amber" && action_text == "Green")
+            break_it = true;
+        else if (text == "Green" && action_text == "Grey")
+            break_it = true;
+        if (break_it)
+        {
+            action->setChecked(true);
+            break;
+        }
+    }
 }
 
 // fernanda.cpp, fernanda

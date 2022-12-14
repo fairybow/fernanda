@@ -37,7 +37,6 @@ TextEditor::TextEditor(QWidget* parent)
 void TextEditor::lineNumberAreaPaintEvent(QPaintEvent* event)
 {
     QPainter painter(lineNumberArea);
-    painter.fillRect(event->rect(), QColor(255, 255, 255, 15));
     auto block = firstVisibleBlock();
     auto block_number = block.blockNumber();
     auto top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
@@ -47,7 +46,6 @@ void TextEditor::lineNumberAreaPaintEvent(QPaintEvent* event)
         if (block.isVisible() && bottom >= event->rect().top())
         {
             auto number = QString::number(block_number + 1);
-            painter.setPen(QColor(255, 255, 255, 30));
             painter.drawText(0, top, lineNumberArea->width(), fontMetrics().height(), Qt::AlignRight, number);
         }
         block = block.next();
@@ -111,6 +109,32 @@ int TextEditor::selectedLineCount()
     auto cursor = textCursor();
     if (!cursor.hasSelection()) return 1;
     return cursor.selectedText().count(Uni::regex(Uni::Re::ParagraphSeparator)) + 1;
+}
+
+void TextEditor::scrollNavClicked(Scroll direction)
+{
+    if (!askHasProject()) return;
+    auto early_return = false;
+    switch (direction) {
+    case Scroll::Next:
+        if (verticalScrollBar()->sliderPosition() != verticalScrollBar()->maximum())
+        {
+            verticalScrollBar()->triggerAction(QAbstractSlider::SliderToMaximum);
+            early_return = true;
+        }
+        break;
+    case Scroll::Previous:
+        if (verticalScrollBar()->sliderPosition() != verticalScrollBar()->minimum())
+        {
+            verticalScrollBar()->triggerAction(QAbstractSlider::SliderToMinimum);
+            early_return = true;
+        }
+        break;
+    }
+    if (early_return) return;
+    (direction == Scroll::Next)
+        ? askNavNext()
+        : askNavPrevious();
 }
 
 void TextEditor::toggleLineHighlight(bool checked)
@@ -197,11 +221,13 @@ void TextEditor::connections()
     connect(scrollPrevious, &QPushButton::clicked, this, [&]() { scrollNavClicked(Scroll::Previous); });
     connect(scrollUp, &QPushButton::clicked, this, [&]()
         {
-            verticalScrollBar()->triggerAction(QAbstractSlider::SliderSingleStepSub);
+            for (auto i = 2; i > 0; --i)
+                verticalScrollBar()->triggerAction(QAbstractSlider::SliderSingleStepSub);
         });
     connect(scrollDown, &QPushButton::clicked, this, [&]()
         {
-            verticalScrollBar()->triggerAction(QAbstractSlider::SliderSingleStepAdd);
+            for (auto i = 2; i > 0; --i)
+                verticalScrollBar()->triggerAction(QAbstractSlider::SliderSingleStepAdd);
         });
     connect(this, &TextEditor::blockCountChanged, this, &TextEditor::updateLineNumberAreaWidth);
     connect(this, &TextEditor::updateRequest, this, &TextEditor::updateLineNumberArea);
@@ -210,9 +236,18 @@ void TextEditor::connections()
 
 const QColor TextEditor::cursorColor()
 {
-    QColor cursor_color(cursorColorHex);
-    cursor_color.setAlpha(180);
-    return cursor_color;
+    QColor result(cursorColorHex);
+    result.setAlpha(180);
+    return result;
+}
+
+const QColor TextEditor::highlight()
+{
+    QColor result;
+    (hasLineHighlight)
+        ? result = QColor(255, 255, 255, 30)
+        : result = QColor(0, 0, 0, 0);
+    return result;
 }
 
 void TextEditor::storeCursors(QString key)
@@ -248,7 +283,7 @@ void TextEditor::recallCursors(QString key)
         }
 }
 
-void TextEditor::recallUndoStacks(QString key)
+void TextEditor::recallUndoStacks(QString key) // WIP
 {
     //
 }
@@ -260,20 +295,17 @@ void TextEditor::updateLineNumberAreaWidth(int newBlockCount)
 
 void TextEditor::highlightCurrentLine()
 {
-    QVector<QTextEdit::ExtraSelection> extraSelections;
+    QVector<QTextEdit::ExtraSelection> extra_selections;
     if (!isReadOnly())
     {
         QTextEdit::ExtraSelection selection;
-        QColor lineColor = QColor(0, 0, 0, 0);
-        if (hasLineHighlight)
-            lineColor = QColor(255, 255, 255, 30);
-        selection.format.setBackground(lineColor);
+        selection.format.setBackground(highlight());
         selection.format.setProperty(QTextFormat::FullWidthSelection, true);
         selection.cursor = textCursor();
         selection.cursor.clearSelection();
-        extraSelections.append(selection);
+        extra_selections.append(selection);
     }
-    setExtraSelections(extraSelections);
+    setExtraSelections(extra_selections);
 }
 
 void TextEditor::updateLineNumberArea(const QRect& rect, int dy)
@@ -283,32 +315,6 @@ void TextEditor::updateLineNumberArea(const QRect& rect, int dy)
         : lineNumberArea->update(0, rect.y(), lineNumberArea->width(), rect.height());
     if (rect.contains(viewport()->rect()))
         updateLineNumberAreaWidth(0);
-}
-
-void TextEditor::scrollNavClicked(Scroll direction)
-{
-    if (!askHasProject()) return;
-    auto early_return = false;
-    switch (direction) {
-        case Scroll::Next:
-            if (verticalScrollBar()->sliderPosition() != verticalScrollBar()->maximum())
-            {
-                verticalScrollBar()->triggerAction(QAbstractSlider::SliderToMaximum);
-                early_return = true;
-            }
-        break;
-        case Scroll::Previous:
-            if (verticalScrollBar()->sliderPosition() != verticalScrollBar()->minimum())
-            {
-                verticalScrollBar()->triggerAction(QAbstractSlider::SliderToMinimum);
-                early_return = true;
-            }
-        break;
-    }
-    if (early_return) return;
-    (direction == Scroll::Next)
-        ? askNavNext()
-        : askNavPrevious();
 }
 
 // editor.cpp, fernanda

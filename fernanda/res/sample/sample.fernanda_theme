@@ -2,4 +2,6 @@
 @fontColor; = #000;
 @selectionBgColor; = #000;
 @selectionColor; = #fff;
+@lnaBg; = rgba(66, 22, 255, 0.3);
+@lnaFont; = rgba(200, 255, 63, 1);
 @cursorColor; = #ff0000;

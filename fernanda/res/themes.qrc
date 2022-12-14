@@ -1,15 +1,25 @@
 <RCC>
     <qresource prefix="/">
         <file>themes/editor.qss</file>
+        <file>themes/editor_base.qss</file>
+        <file>themes/shadow.qss</file>
         <file>themes/window.qss</file>
-        <file>themes/editor/amber.fernanda_theme</file>
-        <file>themes/editor/blue.fernanda_theme</file>
-        <file>themes/editor/green.fernanda_theme</file>
-        <file>themes/editor/grey.fernanda_theme</file>
-        <file>themes/window/dark.fernanda_wintheme</file>
-        <file>themes/window/light.fernanda_wintheme</file>
+        <file>themes/window_base.qss</file>
+        <file>themes/editor/Amber.fernanda_theme</file>
+        <file>themes/editor/Blue.fernanda_theme</file>
+        <file>themes/editor/Green.fernanda_theme</file>
+        <file>themes/editor/Grey.fernanda_theme</file>
+        <file>themes/editor/Ink.fernanda_theme</file>
+        <file>themes/editor/Pocket.fernanda_theme</file>
+        <file>themes/editor/Pocket-Alt.fernanda_theme</file>
+        <file>themes/editor/Snooze.fernanda_theme</file>
+        <file>themes/editor/Snooze-Alt.fernanda_theme</file>
+        <file>themes/window/Dark.fernanda_wintheme</file>
+        <file>themes/window/Light.fernanda_wintheme</file>
+        <file>themes/window/Olivine.fernanda_wintheme</file>
+        <file>themes/window/Sandstone.fernanda_wintheme</file>
         <file>themes/bar/green.qss</file>
-        <file>themes/bar/red.qss</file>
         <file>themes/bar/pastels.qss</file>
+        <file>themes/bar/red.qss</file>
     </qresource>
 </RCC>
