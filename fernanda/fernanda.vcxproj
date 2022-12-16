@@ -74,7 +74,6 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Link>
       <AdditionalDependencies>include/bit7z/lib/64/r/bit7z.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalOptions>/NODEFAULTLIB:MSVCRT.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <ClCompile>
       <AdditionalIncludeDirectories>include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -211,7 +210,8 @@
     <QtRcc Include="res\themes.qrc" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="docs\dependency tree.txt" />
+    <Text Include="docs\dependency_tree.md" />
+    <Text Include="docs\todo.md" />
     <Text Include="res\themes\palette.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

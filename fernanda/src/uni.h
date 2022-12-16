@@ -23,6 +23,7 @@ namespace Uni
 		ParagraphSeparator,
 		Split,
 		ThemeSheetCursor,
+		ThemeSheetCursorUnder,
 		ThemeSheetLine,
 		ThemeSheetValue,
 		ThemeSheetVariable
@@ -74,7 +75,10 @@ namespace Uni
 			result = QRegularExpression("(\\s|\\n|\\r|\U00002029|^)+");
 			break;
 		case Re::ThemeSheetCursor:
-			result = QRegularExpression("(@cursorColor; = )(.*)(;$)");
+			result = QRegularExpression("(@cursorColor; = )(.*)(;)");
+			break;
+		case Re::ThemeSheetCursorUnder:
+			result = QRegularExpression("(@cursorUnderColor; = )(.*)(;)");
 			break;
 		case Re::ThemeSheetLine:
 			result = QRegularExpression("(@.*\\n?)");
@@ -89,9 +93,39 @@ namespace Uni
 		return result;
 	}
 
-	inline const QString hotkeys()
+	inline const QString close()
 	{
-		return "<b>Alt + F10:</b> Cycle fonts<br><b>F11:</b> Cycle editor themes (Amber, Green, Grey)<br><b>Alt + F11:</b> Cycle editor themes (all)<br><b>Alt + F12:</b> Cycle window themes<br><b>Alt + Insert:</b> Nav previous<br><b>Alt + Delete:</b> Nav Next<br><b>Alt + - (Ctrl + Mouse Wheel Down):</b> Decrease font size<br><b>Alt + + (Ctrl + Mouse Wheel Up):</b> Increase font size";
+		return "You have <b>unsaved changes</b>. Are you sure you want to quit?";
+	}
+
+	inline const QString samples()
+	{
+		return "You'll need to <b>restart</b> to see custom themes and fonts incorporated.";
+	}
+
+	inline const QString menuShortcuts()
+	{
+		return "<b>Menu:</b><p>Ctrl + S: Save story<br>Ctrl + Q: Quit";
+	}
+
+	inline const QString windowShortcuts()
+	{
+		return "<b>Window:</b><p>F11: Cycle editor themes (Amber, Green, Grey)<br>Alt + F10: Cycle fonts<br>Alt + F11: Cycle editor themes (all)<br>Alt + F12: Cycle window themes<br>Alt + Insert: Nav previous<br>Alt + Delete: Nav Next<br>Alt + Minus (-) /<br>Ctrl + Mouse Wheel Down: Decrease font size<br>Alt + Plus (+) /<br>Ctrl + Mouse Wheel Up: Increase font size";
+	}
+
+	inline const QString editorShortcuts()
+	{
+		return "<b>Editor:</b><p>Ctrl + Y: Redo<br>Ctrl + Z: Undo<br>Ctrl + Shift + C: Wrap selection or block in quotes";
+	}
+
+	inline const QString shortcuts()
+	{
+		return "<table><td>" + menuShortcuts() + "</td><td>\n</td><td>" + windowShortcuts() + "</td><td>\n</td><td>" + editorShortcuts() + "</td><table>";
+	}
+
+	inline const QString about()
+	{
+		return "<b>Fernanda</b> is a personal project and a work-in-progress.<p>Version: hella beta<p><a href='https://github.com/fairybow/fernanda'>github.com/fairybow/fernanda</a>";
 	}
 }
 

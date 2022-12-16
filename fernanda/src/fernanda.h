@@ -27,6 +27,7 @@
 #include <QStatusBar>
 #include <QStackedLayout>
 #include <QTextOption>
+#include <QTextTable>
 #include <QWidgetAction>
 
 class Fernanda : public QMainWindow
@@ -88,10 +89,10 @@ private:
     void addWidgets();
     QWidget* stackWidgets(QVector<QWidget*> widgets);
     void connections();
-    void hotkeys();
+    void shortcuts();
     void makeMenuBar();
     void makeFileMenu();
-    void makeViewMenu(); // clean me
+    void makeViewMenu(); // Clean Me
     void makeHelpMenu();
     QActionGroup* makeViewToggles(QVector<Res::DataPair>& dataLabelPairs, void (Fernanda::* slot)());
     void loadConfigs();
@@ -114,7 +115,7 @@ private slots:
     void setBarAlignment();
     void toggleGlobals(bool& globalBool, QString group, QString valueName, bool value, Toggle type = Toggle::None);
     void fileSave();
-    //void helpProjects();
+    //void helpProjects(); // WIP
     void helpMakeSampleProject();
     void helpMakeSampleRes();
     void helpShortcuts();

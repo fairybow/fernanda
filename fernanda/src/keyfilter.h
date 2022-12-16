@@ -6,6 +6,7 @@
 
 #include <QChar>
 #include <QKeyEvent>
+#include <QTextCursor>
 #include <QVector>
 
 class Keyfilter

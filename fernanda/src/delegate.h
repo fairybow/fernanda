@@ -57,6 +57,7 @@ private:
 
     void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override
     {
+        //QStyledItemDelegate::updateEditorGeometry(editor, option, index);
         auto geo = getRectSizes(option);
         editor->setGeometry(geo.text);
     }

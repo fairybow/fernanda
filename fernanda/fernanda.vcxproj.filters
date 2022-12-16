@@ -330,6 +330,7 @@
     <Text Include="res\themes\palette.txt">
       <Filter>Resource Files\Stylesheets</Filter>
     </Text>
-    <Text Include="docs\dependency tree.txt" />
+    <Text Include="docs\dependency_tree.md" />
+    <Text Include="docs\todo.md" />
   </ItemGroup>
 </Project>

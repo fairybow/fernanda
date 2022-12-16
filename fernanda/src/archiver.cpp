@@ -4,7 +4,7 @@
 
 using namespace bit7z;
 
-void Archiver::create(QString arcPath, QVector<Io::ArcWRPaths> wRPaths) // switch to stream
+void Archiver::create(QString arcPath, QVector<Io::ArcWRPaths> wRPaths)
 {
 	QTemporaryDir temp_dir;
 	auto temp_dir_path = temp_dir.path();
@@ -81,7 +81,7 @@ void Archiver::add(QString arcPath, QVector<Io::ArcWRPaths> wRPaths)
 	compressor.compress(in_map, arcPath.toStdString());
 }
 
-void Archiver::add(QString arcPath, Io::ArcWrite textAndWPath) // switch to stream
+void Archiver::add(QString arcPath, Io::ArcWrite textAndWPath)
 {
 	QTemporaryDir temp_dir;
 	auto& w_path = textAndWPath.writeRelPath;
@@ -164,7 +164,7 @@ void Archiver::blanks(QString arcPath, std::map<std::string, Path::Type> additio
 		else
 		{
 			Path::makeDirs(std::filesystem::path(temp_r_path).parent_path());
-			Io::writeFile(QString::fromStdString(temp_r_path.string()));
+			Io::writeFile(QString::fromStdString(temp_r_path.string()), nullptr);
 		}
 	}
 	compressor.compressDirectory((temp_dir_path / "story").toStdString(), arcPath.toStdString());

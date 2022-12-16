@@ -8,6 +8,7 @@
 #include <QAbstractSlider>
 #include <QColor>
 #include <QFont>
+#include <QFontMetrics>
 #include <QLatin1Char>
 #include <QObject>
 #include <QPainter>
@@ -20,9 +21,9 @@
 #include <QShortcut>
 #include <QSize>
 #include <QTextBlock>
-#include <QTextCursor>
 #include <QTextFormat>
 #include <QTextEdit>
+#include <QTimer>
 #include <QWheelEvent>
 #include <QWidget>
 
@@ -43,14 +44,15 @@ public:
     };
 
     QString cursorColorHex;
+    QString cursorUnderColorHex;
 
     void lineNumberAreaPaintEvent(QPaintEvent* event);
     int lineNumberAreaWidth();
-    void lineNumberAreaFont(int size, QString fontName);
     bool handleKeySwap(QString oldKey, QString newKey);
     void handleTextSwap(QString key, QString text);
     int selectedLineCount();
     void scrollNavClicked(Scroll direction);
+    void setFont(QString font, int size);
 
 public slots:
     void toggleLineHighlight(bool checked);
@@ -72,22 +74,29 @@ private:
     QPushButton* scrollPrevious = new QPushButton(this);
     QPushButton* scrollNext = new QPushButton(this);
     QPushButton* scrollDown = new QPushButton(this);
+    QTimer* cursorBlink = new QTimer(this);
 
-    struct MetaDocCursor {
+    struct CursorPositions {
         QString key;
         int position;
         int anchor;
-        bool operator==(const MetaDocCursor&) const = default;
-        bool operator!=(const MetaDocCursor&) const = default;
+        bool operator==(const CursorPositions&) const = default;
+        bool operator!=(const CursorPositions&) const = default;
     };
 
-    QVector<MetaDocCursor> cursors_metaDoc;
-
+    QVector<CursorPositions> cursorPositions;
     bool hasLineHighlight = true;
     bool hasKeyfilter = true;
+    bool cursorVisible = true;
 
+    void keyPresses(QVector<QKeyEvent*> events);
+    const QChar currentChar();
+    const Keyfilter::ProximalChars proximalChars();
+    bool shortcutFilter(QKeyEvent* event);
+    void quoteWrap(QKeyEvent* event);
     void connections();
-    const QColor cursorColor();
+    const QRect reshapeCursor();
+    const QColor recolorCursor(bool under = false);
     const QColor highlight();
     void storeCursors(QString key);
     void recallCursors(QString key);
@@ -103,6 +112,7 @@ signals:
     void askFontSliderZoom(Zoom direction);
     void askNavPrevious();
     void askNavNext();
+    void startBlinker();
 };
 
 class LineNumberArea : public QWidget

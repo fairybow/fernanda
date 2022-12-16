@@ -1,50 +1,55 @@
+Out of date!
 
-/* === Out of date! === */
+# Dependencies
 
-fernanda.h
-	colorbar.h
-		io.h
-			path.h
-	editor.h
-		keyfilter.h
-		uni.h
-	indicator.h
-		uni.h
-	pane.h
-		delegate.h
-			index.h
-			uni.h
-		io.h
-			path.h
-	project.h
-		archiver.h
-			userdata.h
-				path.h
-		dom.h
-			io.h
-				path.h
-		sample.h
-			io.h
-				path.h
-	res.h
-	splitter.h
-		userdata.h
-			path.h
+## Tree
 
-/* ==================== */
+- fernanda.h
+	- colorbar.h
+		- io.h
+		- path.h
+	- editor.h
+		- keyfilter.h
+		- uni.h
+	- indicator.h
+		- uni.h
+	- pane.h
+		- delegate.h
+			- index.h
+			- uni.h
+		- io.h
+			- path.h
+	- res.h
+	- splitter.h
+		- userdata.h
+			- path.h
+	- story.h
+		- archiver.h
+			- io.h
+				- path.h
+			- userdata.h
+				- path.h
+		- dom.h
+			- io.h
+				- path.h
+		- sample.h
+			- io.h
+				- path.h
 
-// archiver.h
-/*
+## List
+
+### archiver.h
+```
 #include "bit7z/include/bit7z.hpp"
 
 #include "userdata.h"
 
 #include <map>
 #include <type_traits>
-*/
+```
 
-// colorbar.h
-/*
+### colorbar.h
+```
 #include "io.h"
 
 #include <QProgressBar>
@@ -53,10 +58,10 @@ fernanda.h
 #include <QTimer>
 #include <QVBoxLayout>
 #include <QWidget>
-*/
+```
 
-// delegate.h
-/*
+### delegate.h
+```
 #include "index.h"
 #include "uni.h"
 
@@ -71,20 +76,20 @@ fernanda.h
 #include <QStyleOptionViewItem>
 #include <QVector>
 #include <QWidget>
-*/
+```
 
-// dom.h
-/*
+### dom.h
+```
 #include "io.h"
 
 #include <QDomDocument>
 #include <QDomElement>
 #include <QUuid>
 #include <QVector>
-*/
+```
 
-// editor.h
-/*
+### editor.h
+```
 #include "keyfilter.h"
 #include "uni.h"
 
@@ -108,10 +113,10 @@ fernanda.h
 #include <QTextEdit>
 #include <QWheelEvent>
 #include <QWidget>
-*/
+```
 
-// fernanda.h
-/*
+### fernanda.h
+```
 #include "colorbar.h"
 #include "editor.h"
 #include "indicator.h"
@@ -138,18 +143,18 @@ fernanda.h
 #include <QStackedLayout>
 #include <QTextOption>
 #include <QWidgetAction>
-*/
+```
 
-// index.h
-/*
+### index.h
+```
 #include <QModelIndex>
 #include <QString>
 #include <Qt>
 #include <QVariant>
-*/
+```
 
-// indicator.h
-/*
+### indicator.h
+```
 #include "uni.h"
 
 #include <QGraphicsOpacityEffect>
@@ -158,10 +163,10 @@ fernanda.h
 #include <QString>
 #include <QStringList>
 #include <QWidget>
-*/
+```
 
-// io.h
-/*
+### io.h
+```
 #include "path.h"
 
 #include <optional>
@@ -169,17 +174,17 @@ fernanda.h
 #include <QFile>
 #include <QIODevice>
 #include <QTextStream>
-*/
+```
 
-// keyfilter.h
-/*
+### keyfilter.h
+```
 #include <QChar>
 #include <QKeyEvent>
 #include <QVector>
-*/
+```
 
-// pane.h
-/*
+### pane.h
+```
 #include "delegate.h"
 #include "io.h"
 
@@ -195,33 +200,20 @@ fernanda.h
 #include <QStandardItem>
 #include <QStandardItemModel>
 #include <QTreeView>
-*/
+```
 
-// path.h
-/*
+### path.h
+```
 #include <filesystem>
 
 #include <QDir>
 #include <QFileInfo>
 #include <QRegularExpression>
 #include <QString>
-*/
+```
 
-// project.h
-/*
-#include "archiver.h"
-#include "dom.h"
-#include "sample.h"
-
-#include <QByteArray>
-#include <QStandardItem>
-#include <QTemporaryDir>
-#include <QXmlStreamReader>
-#include <QXmlStreamWriter>
-*/
-
-// res.h
-/*
+### res.h
+```
 #include <algorithm>
 #include <filesystem>
 #include <string>
@@ -236,10 +228,10 @@ fernanda.h
 #include <QString>
 #include <QStringList>
 #include <QVector>
-*/
+```
 
-// sample.h
-/*
+### sample.h
+```
 #include "io.h"
 
 #include <filesystem>
@@ -251,26 +243,39 @@ fernanda.h
 #include <QString>
 #include <QStringList>
 #include <QVector>
-*/
+```
 
-// splitter.h
-/*
+### splitter.h
+```
 #include "userdata.h"
 
 #include <QByteArray>
 #include <QSplitter>
 #include <QVector>
 #include <QWidget>
-*/
+```
 
-// uni.h
-/*
+### story.h
+```
+#include "archiver.h"
+#include "dom.h"
+#include "sample.h"
+
+#include <QByteArray>
+#include <QStandardItem>
+#include <QTemporaryDir>
+#include <QXmlStreamReader>
+#include <QXmlStreamWriter>
+```
+
+### uni.h
+```
 #include <QRegularExpression>
 #include <QString>
-*/
+```
 
-// userdata.h
-/*
+### userdata.h
+```
 #include <shlobj_core.h>
 
 #include <filesystem>
@@ -287,4 +292,8 @@ fernanda.h
 #include <QStandardPaths>
 #include <QString>
 #include <QVariant>
-*/
+```
+
+### version.h
+```
+```

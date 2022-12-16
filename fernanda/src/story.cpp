@@ -47,7 +47,7 @@ const QString Story::key()
 
 const QString Story::tempSaveOld_openNew(QString newKey, QString oldText)
 {
-	if (activeKey != nullptr && oldText != nullptr)
+	if (activeKey != nullptr)
 		tempSave(activeKey, oldText);
 	return tempOpen(newKey);
 }

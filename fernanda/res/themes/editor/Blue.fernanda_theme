@@ -5,3 +5,4 @@
 @lnaBg; = rgba(255, 255, 255, 0.15);
 @lnaFont; = rgba(255, 255, 255, 0.3);
 @cursorColor; = #cccccc;
+@cursorUnderColor; = #0005a4;

@@ -48,7 +48,7 @@ namespace Io
 		return text;
 	}
 
-	inline void writeFile(QString filePath, QString text = nullptr)
+	inline void writeFile(QString filePath, QString text)
 	{
 		Path::makeParent(filePath);
 		QFile file(filePath);

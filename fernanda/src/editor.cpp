@@ -6,6 +6,7 @@ TextEditor::TextEditor(QWidget* parent)
     : QPlainTextEdit(parent)
 {
     lineNumberArea = new LineNumberArea(this);
+    cursorBlink->setTimerType(Qt::VeryCoarseTimer);
     setReadOnly(true);
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -72,15 +73,6 @@ int TextEditor::lineNumberAreaWidth()
     return 0;
 }
 
-void TextEditor::lineNumberAreaFont(int size, QString fontName)
-{
-    QFont font(fontName);
-    font.setStyleStrategy(QFont::PreferAntialias);
-    font.setHintingPreference(QFont::HintingPreference::PreferNoHinting);
-    font.setPointSize(size);
-    lineNumberArea->setFont(font);
-}
-
 bool TextEditor::handleKeySwap(QString oldKey, QString newKey)
 {
     if (isReadOnly())
@@ -137,6 +129,16 @@ void TextEditor::scrollNavClicked(Scroll direction)
         : askNavPrevious();
 }
 
+void TextEditor::setFont(QString font, int size)
+{
+    QFont q_font(font);
+    q_font.setStyleStrategy(QFont::PreferAntialias);
+    q_font.setHintingPreference(QFont::HintingPreference::PreferNoHinting);
+    q_font.setPointSize(size);
+    QPlainTextEdit::setFont(q_font);
+    lineNumberArea->setFont(q_font);
+}
+
 void TextEditor::toggleLineHighlight(bool checked)
 {
     hasLineHighlight = checked;
@@ -176,9 +178,15 @@ void TextEditor::resizeEvent(QResizeEvent* event)
 void TextEditor::paintEvent(QPaintEvent* event)
 {
     QPlainTextEdit::paintEvent(event);
-    const QRect rect = cursorRect(textCursor());
     QPainter painter(viewport());
-    painter.fillRect(rect, cursorColor());
+    auto rect = reshapeCursor();
+    auto current_char = currentChar();
+    painter.fillRect(rect, recolorCursor());
+    if (!current_char.isNull())
+    {
+        painter.setPen(recolorCursor(true));
+        painter.drawText(rect, current_char);
+    }
 }
 
 void TextEditor::wheelEvent(QWheelEvent* event)
@@ -193,32 +201,126 @@ void TextEditor::wheelEvent(QWheelEvent* event)
 
 void TextEditor::keyPressEvent(QKeyEvent* event)
 {
+    QTextCursor cursor = textCursor();
+    if (shortcutFilter(event))
+    {
+        event->ignore();
+        return;
+    }
     if (!hasKeyfilter)
     {
         QPlainTextEdit::keyPressEvent(event);
         return;
     }
-    QTextCursor cursor = textCursor();
-    int cur_pos = cursor.position();
-    QString text = toPlainText();
-    auto chars = Keyfilter::ProximalChars{};
-    if (cur_pos < text.size())
-        chars.current = text.at(cur_pos);
-    if (cur_pos > 0)
-        chars.previous = text.at(static_cast<qsizetype>(cur_pos) - 1);
-    if (cur_pos > 1)
-        chars.beforeLast = text.at(static_cast<qsizetype>(cur_pos) - 2);
-    auto keys = keyfilter->filter(event, chars);
+    auto chars = proximalChars();
     cursor.beginEditBlock();
-    for (auto& key : keys)
-        QPlainTextEdit::keyPressEvent(key);
+    keyPresses(keyfilter->filter(event, chars));
+    cursor.endEditBlock();
+    if (cursor.atEnd() && verticalScrollBar()->sliderPosition() != verticalScrollBar()->maximum())
+        verticalScrollBar()->triggerAction(QAbstractSlider::SliderToMaximum);
+}
+
+void TextEditor::keyPresses(QVector<QKeyEvent*> events)
+{
+    for (auto& event : events)
+        QPlainTextEdit::keyPressEvent(event);
+}
+
+const QChar TextEditor::currentChar()
+{
+    auto text = textCursor().block().text();
+    auto cur_pos = textCursor().positionInBlock();
+    if (cur_pos < text.size())
+        return text.at(cur_pos);
+    return QChar();
+}
+
+const Keyfilter::ProximalChars TextEditor::proximalChars()
+{
+    auto text = textCursor().block().text();
+    auto cur_pos = textCursor().positionInBlock();
+    auto result = Keyfilter::ProximalChars{};
+    if (cur_pos < text.size())
+        result.current = text.at(cur_pos);
+    if (cur_pos > 0)
+        result.previous = text.at(static_cast<qsizetype>(cur_pos) - 1);
+    if (cur_pos > 1)
+        result.beforeLast = text.at(static_cast<qsizetype>(cur_pos) - 2);
+    return result;
+}
+
+bool TextEditor::shortcutFilter(QKeyEvent* event)
+{
+    if (event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier))
+    {
+        if (event->key() == Qt::Key_C)
+        {
+            quoteWrap(event);
+            return true;
+        }
+    }
+    return false;
+}
+
+void TextEditor::quoteWrap(QKeyEvent* event)
+{
+    QKeyEvent backspace{ QKeyEvent::KeyPress, Qt::Key_Backspace, Qt::NoModifier };
+    QKeyEvent quote{ QKeyEvent::KeyPress, Qt::Key_QuoteDbl, Qt::NoModifier, QString('"') };
+    QKeyEvent right{ QKeyEvent::KeyPress, Qt::Key_Right, Qt::NoModifier };
+    auto cursor = textCursor();
+    auto text = cursor.block().text();
+    cursor.beginEditBlock();
+    if (cursor.hasSelection())
+    {
+        auto selection = cursor.selectedText();
+        auto start_pos = cursor.selectionStart();
+        auto end_pos = cursor.selectionEnd();
+        cursor.setPosition(start_pos);
+        setTextCursor(cursor);
+        QPlainTextEdit::keyPressEvent(&quote);
+        cursor.setPosition(end_pos);
+        setTextCursor(cursor);
+        if (selection.endsWith(" "))
+            keyPresses({ &right, &backspace, &quote });
+        else if (selection.end()->isNull())
+            keyPresses({ &right, &quote });
+        else
+            QPlainTextEdit::keyPressEvent(&quote);
+    }
+    else
+    {
+        cursor.movePosition(QTextCursor::StartOfBlock);
+        setTextCursor(cursor);
+        QPlainTextEdit::keyPressEvent(&quote);
+        cursor.movePosition(QTextCursor::EndOfBlock);
+        setTextCursor(cursor);
+        if (text.endsWith(" "))
+            keyPresses({ &backspace, &quote });
+        else
+            QPlainTextEdit::keyPressEvent(&quote);
+    }
     cursor.endEditBlock();
 }
 
 void TextEditor::connections()
 {
+    connect(this, &TextEditor::blockCountChanged, this, &TextEditor::updateLineNumberAreaWidth);
+    connect(this, &TextEditor::updateRequest, this, &TextEditor::updateLineNumberArea);
+    connect(this, &TextEditor::cursorPositionChanged, this, &TextEditor::highlightCurrentLine);
+    connect(this, &TextEditor::startBlinker, this, [&]() { cursorBlink->start(300); });
     connect(scrollNext, &QPushButton::clicked, this, [&]() { scrollNavClicked(Scroll::Next); });
     connect(scrollPrevious, &QPushButton::clicked, this, [&]() { scrollNavClicked(Scroll::Previous); });
+    connect(this, &TextEditor::cursorPositionChanged, this, [&]()
+        {
+            if (textCursor().hasSelection()) return;
+            cursorVisible = true;
+            startBlinker();
+        });
+    connect(cursorBlink, &QTimer::timeout, this, [&]()
+        {
+            cursorVisible = !cursorVisible;
+            startBlinker();
+        });
     connect(scrollUp, &QPushButton::clicked, this, [&]()
         {
             for (auto i = 2; i > 0; --i)
@@ -229,15 +331,28 @@ void TextEditor::connections()
             for (auto i = 2; i > 0; --i)
                 verticalScrollBar()->triggerAction(QAbstractSlider::SliderSingleStepAdd);
         });
-    connect(this, &TextEditor::blockCountChanged, this, &TextEditor::updateLineNumberAreaWidth);
-    connect(this, &TextEditor::updateRequest, this, &TextEditor::updateLineNumberArea);
-    connect(this, &TextEditor::cursorPositionChanged, this, &TextEditor::highlightCurrentLine);
 }
 
-const QColor TextEditor::cursorColor()
+const QRect TextEditor::reshapeCursor()
 {
-    QColor result(cursorColorHex);
-    result.setAlpha(180);
+    QFontMetrics metrics(font());
+    setCursorWidth(metrics.averageCharWidth());
+    auto result = cursorRect(textCursor());
+    setCursorWidth(0);
+    return result;
+}
+
+const QColor TextEditor::recolorCursor(bool under)
+{
+    QColor result;
+    if (!cursorVisible)
+        result = QColor(0, 0, 0, 0);
+    else
+    {
+        (under)
+            ? result = QColor(cursorUnderColorHex)
+            : result = QColor(cursorColorHex);
+    }
     return result;
 }
 
@@ -252,10 +367,10 @@ const QColor TextEditor::highlight()
 
 void TextEditor::storeCursors(QString key)
 {
-    for (auto& item : cursors_metaDoc)
+    for (auto& item : cursorPositions)
         if (key == item.key)
-            cursors_metaDoc.removeAll(item);
-    cursors_metaDoc << MetaDocCursor{
+            cursorPositions.removeAll(item);
+    cursorPositions << CursorPositions{
         key,
         QTextCursor(textCursor()).position(),
         QTextCursor(textCursor()).anchor()
@@ -264,7 +379,7 @@ void TextEditor::storeCursors(QString key)
 
 void TextEditor::recallCursors(QString key)
 {
-    for (auto& item : cursors_metaDoc)
+    for (auto& item : cursorPositions)
         if (key == item.key)
         {
             auto cursor(textCursor());
@@ -278,7 +393,7 @@ void TextEditor::recallCursors(QString key)
                 cursor.setPosition(cursor_pos, QTextCursor::KeepAnchor);
             }
             setTextCursor(cursor);
-            cursors_metaDoc.removeAll(item);
+            cursorPositions.removeAll(item);
             break;
         }
 }
