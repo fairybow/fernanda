@@ -2,6 +2,8 @@
 
 #include "fernanda.h"
 
+#include <QDesktopServices>
+
 Fernanda::Fernanda(QWidget* parent)
     : QMainWindow(parent)
 {
@@ -64,7 +66,7 @@ void Fernanda::closeEvent(QCloseEvent* event)
 
 void Fernanda::openUd(QString path)
 {
-    QProcess::startDetached("C:\\Windows\\explorer.exe", { Path::sanitize(path) });
+	QDesktopServices::openUrl(QUrl::fromLocalFile(Path::sanitize(path)));
 }
 
 const QStringList Fernanda::devPrintRenames(QVector<Io::ArcRename> renames)
@@ -844,7 +846,7 @@ void Fernanda::helpMakeSampleRes()
     alert.setDefaultButton(ok);
     alert.exec();
     if (alert.clickedButton() == open)
-        QProcess::startDetached("C:\\Windows\\explorer.exe", { Path::sanitize(path) });
+		openUd(path);
 }
 
 void Fernanda::helpShortcuts()
