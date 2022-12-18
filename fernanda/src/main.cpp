@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
     QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
     QApplication::setDesktopSettingsAware(true);
     QApplication app(argc, argv);
-    Fernanda window;
+    Fernanda window(app.arguments().contains("-dev"));
     {
         QFont font;
         font.setPointSizeF(9);

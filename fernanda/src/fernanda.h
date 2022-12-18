@@ -36,7 +36,7 @@ class Fernanda : public QMainWindow
     Q_OBJECT
 
 public:
-    Fernanda(QWidget* parent = nullptr);
+    Fernanda(bool isDev, QWidget* parent = nullptr);
 
 protected:
     void showEvent(QShowEvent* event) override;
@@ -66,7 +66,6 @@ private:
     QTimer* autoTempSave = new QTimer(this);
 
     std::optional<Story> activeStory;
-    bool isDev = true;
     bool isInitialized = false;
     bool hasStartUpBar = true;
     bool hasWinTheme = true;
@@ -87,12 +86,12 @@ private:
 
     void openUd(QString path);
     const QStringList devPrintRenames(QVector<Io::ArcRename> renames);
-    void setName();
+    void setName(bool isDev);
     void addWidgets();
     QWidget* stackWidgets(QVector<QWidget*> widgets);
     void connections();
     void shortcuts();
-    void makeMenuBar();
+    void makeMenuBar(bool isDev);
     void makeFileMenu();
     void makeSetMenu();
     void makeToggleMenu();

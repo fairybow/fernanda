@@ -2,15 +2,15 @@
 
 #include "fernanda.h"
 
-Fernanda::Fernanda(QWidget* parent)
+Fernanda::Fernanda(bool isDev, QWidget* parent)
     : QMainWindow(parent)
 {
-    setName();
+    setName(isDev);
     //Ud::windowsReg();
     addWidgets();
     connections();
     Ud::userData();
-    makeMenuBar();
+    makeMenuBar(isDev);
     loadConfigs();
 }
 
@@ -83,7 +83,7 @@ const QStringList Fernanda::devPrintRenames(QVector<Io::ArcRename> renames)
     return result;
 }
 
-void Fernanda::setName()
+void Fernanda::setName(bool isDev)
 {
     QString name;
     (isDev)
@@ -204,12 +204,13 @@ void Fernanda::shortcuts()
         });
 }
 
-void Fernanda::makeMenuBar()
+void Fernanda::makeMenuBar(bool isDev)
 {
     makeFileMenu();
     makeSetMenu();
     makeToggleMenu();
     makeHelpMenu();
+    if (!isDev) return;
     makeDevMenu();
 }
 
@@ -516,7 +517,6 @@ void Fernanda::makeHelpMenu()
 
 void Fernanda::makeDevMenu()
 {
-    if (!isDev) return;
     auto* print_dom = new QAction(tr("&Print DOM"), this);
     auto* print_cuts = new QAction(tr("&Print cuts"), this);
     auto* print_renames = new QAction(tr("&Print renames"), this);

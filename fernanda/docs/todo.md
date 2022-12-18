@@ -1,6 +1,8 @@
 # To-Do
 
 ## General
+- [ ] Convert paths to `std::filesystem::path`
+- [x] ~~Activate dev menu via command arg~~
 - [ ] Redo Dependency Tree
 - [ ] Moveable documents folder
 - [ ] Popup if temps exist on start (but would need to reload last project first, and then check if temps exist?)
