@@ -52,7 +52,7 @@ namespace Path
 		}
 		else
 		{
-			tmp = QString(path + "\\").toStdString();
+			tmp = QString(path + "/").toStdString();
 			name = tmp.parent_path().stem();
 		}
 		return QString::fromStdString(name.string());
@@ -62,10 +62,7 @@ namespace Path
 	{
 		auto fs_path = std::filesystem::path(path.toStdString());
 		fs_path.make_preferred();
-		auto result = QString::fromStdString(fs_path.string());
-		result.replace(QRegularExpression(R"(/)"), R"(\)");
-		result.replace(QRegularExpression(R"(\\\\)"), R"(\)");
-		return result;
+		return QString::fromStdString(fs_path.string());
 	}
 
 	inline QString makePosix(QString path)
