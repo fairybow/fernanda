@@ -20,6 +20,7 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QMoveEvent>
+#include <QProcess>
 #include <QShowEvent>
 #include <QShortcut>
 #include <QSizePolicy>
@@ -65,7 +66,7 @@ private:
     QTimer* autoTempSave = new QTimer(this);
 
     std::optional<Story> activeStory;
-    bool isDev = false;
+    bool isDev = true;
     bool isInitialized = false;
     bool hasStartUpBar = true;
     bool hasWinTheme = true;
@@ -84,7 +85,8 @@ private:
         WithTheme
     };
 
-    void dev();
+    void openUd(QString path);
+    const QStringList devPrintRenames(QVector<Io::ArcRename> renames);
     void setName();
     void addWidgets();
     QWidget* stackWidgets(QVector<QWidget*> widgets);
@@ -92,8 +94,10 @@ private:
     void shortcuts();
     void makeMenuBar();
     void makeFileMenu();
-    void makeViewMenu(); // Clean Me
+    void makeSetMenu();
+    void makeToggleMenu();
     void makeHelpMenu();
+    void makeDevMenu();
     QActionGroup* makeViewToggles(QVector<Res::DataPair>& dataLabelPairs, void (Fernanda::* slot)());
     void loadConfigs();
     void loadWinConfigs();
@@ -102,24 +106,24 @@ private:
     void openStory(QString fileName, Story::Op opt = Story::Op::Normal);
     void actionCycle(QActionGroup* group);
     const QString windowStyle(WinStyle baseOnly = WinStyle::WithTheme);
+    void toggleGlobals(bool& globalBool, QString group, QString valueName, bool value, Toggle type = Toggle::None);
+    void toggleWidget(QWidget* widget, QString group, QString valueName, bool value);
 
 private slots:
     void setWindowStyle();
     void setEditorStyle();
     void setEditorFont();
     void handleEditorZoom(TextEditor::Zoom direction);
-    void toggleWidget(QWidget* widget, QString group, QString valueName, bool value);
     void aotToggled(bool checked);
     void setTabStop();
     void setWrapMode();
     void setBarAlignment();
-    void toggleGlobals(bool& globalBool, QString group, QString valueName, bool value, Toggle type = Toggle::None);
     void fileSave();
-    //void helpProjects(); // WIP
     void helpMakeSampleProject();
     void helpMakeSampleRes();
     void helpShortcuts();
     void helpAbout();
+    void devWrite(QString name, QString value);
     void handleEditorText(QString key);
     void sendEditedText();
     bool replyHasProject();
@@ -136,6 +140,8 @@ signals:
     void sendLineNumberAreaToggle(bool checked);
     void sendScrollsToggle(bool checked);
     void sendExtraScrollsToggle(bool checked);
+    void sendBlockCursorToggle(bool checked);
+    void sendCursorBlinkToggle(bool checked);
     void sendItems(QVector<QStandardItem*> items);
     void sendEditsList(QVector<QString> editedFiles);
     void startAutoTempSave();

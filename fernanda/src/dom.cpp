@@ -6,7 +6,7 @@ void Dom::set(QString xmlDoc)
 {
 	self.setContent(xmlDoc);
 	initialSelf.setContent(string());
-	cutElements.setContent(QString("<root/>"));
+	cutElements.setContent(QStringLiteral("<root/>"));
 }
 
 const QString Dom::string(Doc doc)
@@ -40,7 +40,7 @@ void Dom::move(QString pivotKey, QString fulcrumKey, Io::Move pos)
 	QString new_pivot_parent_path;
 	auto pivot_name = element<QString>(pivotKey, Element::Name);
 	if (isFile(pivot))
-		pivot_name = pivot_name + ".txt";
+		pivot_name = pivot_name + Io::ext;
 	switch (pos) {
 	case Io::Move::Above:
 		fulcrum.parentNode().insertBefore(pivot, fulcrum);
@@ -63,7 +63,7 @@ void Dom::move(QString pivotKey, QString fulcrumKey, Io::Move pos)
 		break;
 	case Io::Move::Viewport:
 		self.documentElement().appendChild(pivot);
-		new_pivot_parent_path = "story";
+		new_pivot_parent_path = Io::storyRoot;
 		new_pivot_path = new_pivot_parent_path / pivot_name;
 		break;
 	}
@@ -83,7 +83,7 @@ void Dom::rename(QString newName, QString key)
 	if (newName == nullptr) return;
 	auto elem = element<QDomElement>(key);
 	if (isFile(elem))
-		newName = newName + ".txt";
+		newName = newName + Io::ext;
 	auto parent_path = element<QString>(key, Element::ParentDirPath);
 	auto new_path = parent_path / newName;
 	QVector<Io::ArcRename> renames = { Io::ArcRename{ key, new_path } };
@@ -100,18 +100,18 @@ void Dom::add(QString newName, Path::Type type, QString parentKey)
 	QString name;
 	switch (type) {
 	case Path::Type::Dir:
-		tag_name = "dir";
+		tag_name = tagDir;
 		name = newName;
 		break;
 	case Path::Type::File:
-		tag_name = "file";
-		name = newName + ".txt";
+		tag_name = tagFile;
+		name = newName + Io::ext;
 		break;
 	}
 	auto elem = self.createElement(tag_name);
 	auto key = QUuid::createUuid().toString(QUuid::WithoutBraces);
-	elem.setAttribute("key", key);
-	elem.setAttribute("expanded", "false");
+	elem.setAttribute(attrKey, key);
+	elem.setAttribute(attrExpanded, "false");
 	QDomElement parent_element;
 	QString nearest_dir = nullptr;
 	if (parentKey != nullptr)
@@ -129,7 +129,7 @@ void Dom::add(QString newName, Path::Type type, QString parentKey)
 	else
 		parent_element = self.documentElement();
 	if (nearest_dir == nullptr)
-		nearest_dir = "story";
+		nearest_dir = Io::storyRoot;
 	auto path = nearest_dir / name;
 	parent_element.appendChild(elem);
 	write(key, path, Write::Rename);
@@ -148,9 +148,9 @@ QVector<Io::ArcRename> Dom::cuts()
 	auto cut_elements = elements(cutElements);
 	for (auto& cut_element : cut_elements)
 	{
-		auto key = cut_element.attribute("key");
-		auto rename = cut_element.attribute("rename");
-		auto rel_path = cut_element.attribute("rel_path");
+		auto key = cut_element.attribute(attrKey);
+		auto rename = cut_element.attribute(attrRename);
+		auto rel_path = cut_element.attribute(attrRelPath);
 		Path::Type type{};
 		(isDir(cut_element))
 			? type = Path::Type::Dir
@@ -165,13 +165,13 @@ QVector<Io::ArcRename> Dom::cuts()
 QVector<Io::ArcRename> Dom::renames(Finalize finalize)
 {
 	QVector<Io::ArcRename> result;
-	for (auto& renamed_element : elementsByAttribute("rename"))
+	for (auto& renamed_element : elementsByAttribute(attrRename))
 	{
-		auto key = renamed_element.attribute("key");
-		auto rename = renamed_element.attribute("rename");
-		auto rel_path = renamed_element.attribute("rel_path");
+		auto key = renamed_element.attribute(attrKey);
+		auto rename = renamed_element.attribute(attrRename);
+		auto rel_path = renamed_element.attribute(attrRelPath);
 		if (rel_path == rename)
-			renamed_element.removeAttribute("rename");
+			renamed_element.removeAttribute(attrRename);
 		else
 		{
 			if (rel_path.isEmpty())
@@ -186,8 +186,8 @@ QVector<Io::ArcRename> Dom::renames(Finalize finalize)
 				result << Io::ArcRename{ key, rename, rel_path };
 			if (finalize == Finalize::Yes)
 			{
-				renamed_element.setAttribute("rel_path", rename);
-				renamed_element.removeAttribute("rename");
+				renamed_element.setAttribute(attrRelPath, rename);
+				renamed_element.removeAttribute(attrRename);
 			}
 		}
 	}
@@ -196,7 +196,7 @@ QVector<Io::ArcRename> Dom::renames(Finalize finalize)
 
 QDomElement Dom::element_recursor(QDomElement node, QString key, QDomElement result)
 {
-	if (node.attribute("key") == key)
+	if (node.attribute(attrKey) == key)
 		result = node;
 	auto child_node = node.firstChildElement();
 	while (!child_node.isNull())
@@ -273,7 +273,7 @@ void Dom::movePaths(QString& newPivotPath, QString& newPivotParentPath, QString 
 {
 	auto fulcrum_parent_key = element<QString>(fulcrumKey, Element::ParentDirKey);
 	(fulcrum_parent_key == nullptr)
-		? newPivotParentPath = "story"
+		? newPivotParentPath = Io::storyRoot
 		: newPivotParentPath = element<QString>(fulcrum_parent_key, Element::Path);
 	newPivotPath = newPivotParentPath / pivotName;
 }
@@ -283,12 +283,12 @@ QVector<Io::ArcRename> Dom::prepareChildRenames_recursor(QDomElement node, QStri
 	auto child = node.firstChildElement();
 	while (!child.isNull())
 	{
-		auto child_key = child.attribute("key");
+		auto child_key = child.attribute(attrKey);
 		QString child_name;
 		if (isDir(child))
 			child_name = element<QString>(child_key, Element::Name);
 		else if (isFile(child))
-			child_name = element<QString>(child_key, Element::Name) + ".txt";
+			child_name = element<QString>(child_key, Element::Name) + Io::ext;
 		auto nearest_dir_key = element<QString>(child_key, Element::ParentDirKey);
 		auto nearest_dir_name = element<QString>(nearest_dir_key, Element::Name);
 		auto stem_path_name = Path::getName(stemPathParent);
@@ -310,13 +310,13 @@ QString Dom::filterPath(QDomElement elem, Filter filter)
 	QString result = nullptr;
 	switch (filter) {
 	case Filter::OrigToNullptr:
-		if (elem.hasAttribute("rel_path"))
-			result = elem.attribute("rel_path");
+		if (elem.hasAttribute(attrRelPath))
+			result = elem.attribute(attrRelPath);
 		break;
 	case Filter::RenameToOrig:
-		(elem.hasAttribute("rename"))
-			? result = elem.attribute("rename")
-			: result = elem.attribute("rel_path");
+		(elem.hasAttribute(attrRename))
+			? result = elem.attribute(attrRename)
+			: result = elem.attribute(attrRelPath);
 		break;
 	}
 	return result;

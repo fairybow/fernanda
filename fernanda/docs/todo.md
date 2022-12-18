@@ -8,7 +8,7 @@
 - [ ] Move the startup `ColorBar` singleshot to a different window event? `showEvent` doesn't seem to be working for this
 - [ ] Move the `nullptr` checks closer to the functions that create the `nullptr`, if possible (viz., don't wait till the info is sent to `Story` to cancel a nullptr from `Pane renameItem()`)
 - [ ] Bombine all the messagebox functions into something that generates most of it as a default config
-- [ ] Change/remove all "`metaDoc`" names
+- [x] ~~Change/remove all "`metaDoc`" names~~
 - [ ] Replace certain bool args with enums for descriptive actions taken (like "finalize" in `dom->renames()`)
 - [ ] Alphabetize enums and generally clean up headers
 - [ ] Custom highlight colors for line highlight and `Delegate` highlight (like with cursor)?
@@ -17,6 +17,9 @@
 - [ ] Hold current story file from being edited while Fernanda is open? (Not sure this is possible. Plus, will need a way to temporarily request access for `Archiver` for editing)
 - [ ] Export selected / all
 - [ ] Total word count (export-marked or all)
+- [x] ~~Make Pallete.txt an .md~~
+- [ ] Is there a way to link swatches?
+- [ ] Implement QStringLiterals where possible
 
 ## Classes
 
@@ -31,13 +34,26 @@
 
 ### Fernanda (MainWindow)
 
-- [ ] View menu function is gross and bad
+- [x] ~~View menu function is gross and bad~~
+- [x] ~~Combine two cursor toggles into one submenu~~
+- [x] ~~Toggle-specific menu~~
+- [ ] Separate menu into its own class?
+- [ ] Auto-hide menu option
+- [x] ~~Order the items in menus Window and Editor (and General, if applicable)~~
+- [ ] Rename menu locals to reflect the alphabetical order of the items
+- [ ] Rename `viewToggles()` to match
+- [x] ~~Add path to user data folder to the sample themes popup~~
+- [x] ~~^ Or a button to open UD folder?~~
+- [x] ~~Open UD folders from Help menu~~
+- [x] ~~Make Dev menu instead of Status Bar items~~
+- [x] ~~I don't think `toggleWidget()` or `toggleGlobals()` are slots~~
 
 ### Editor / LineNumberArea
 - [x] ~~Remove annoying white block under cursor -_-~~
 - [ ] It is not clear to me that `updateLineNumberAreaWidth(int newBlockCount)` actually uses `newBlockCount` arg
 - [ ] Save undo/redo stacks
-- [ ] Toggle chonky cursor vs regular
+- [x] ~~Toggle chonky cursor vs regular~~
+- [x] ~~Toggle cursor blink~~
 - [ ] Editor spacing and kerning sliders
 - [ ] Arrow keys follow block strangely
 - [ ] `LineNumberArea` is not showing up initially on blank documents
@@ -45,6 +61,9 @@
 - [x] ~~Avoid passing entire document for cursor underpaint lol~~
 - [ ] Wrap for parentheses and other closables
 - [ ] If a filter was just applied, backspace should function as undo
+- [ ] Style horizontal scrollbar
+- [ ] Make thin cursor change color when there's a selection?
+- [x] ~~Block cursor should default to char width, then to average char width~~
 
 ### Indicator
 - [ ] Deactivate for extremely large strings / convert to non-automatic counting (refresh symbol)
@@ -58,8 +77,9 @@
 - [x] ~~Avoid passing entire document lol~~
 
 ### Pane
-- [ ] Persis selected-item highlight between saves/moves
+- [ ] Persist selected-item highlight between saves/moves
 - [ ] `persistentEditor` or an input dialog for `rename()`? (`openPersistentEditor(itemModel->indexFromItem(temp_item));`)
+- [ ] Style scrollbars
 
 ### PaneDelegate
 - [ ] For `paint()` and `updateEditorGeometry()` - these override public functions, and idk if that matters

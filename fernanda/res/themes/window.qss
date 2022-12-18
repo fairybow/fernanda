@@ -1,4 +1,4 @@
-#aot, #devPrint
+#aot
 {
 	background: @statusBarButton;
 	border: transparent;

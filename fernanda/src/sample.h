@@ -32,8 +32,8 @@ namespace Sample
 			auto read_path = it.filePath();
 			auto rel_path = Path::relPath(rootPath, read_path);
 			(it.fileInfo().isDir())
-				? result << Io::ArcWRPaths{ "story" / rel_path }
-				: result << Io::ArcWRPaths{ "story" / rel_path, read_path };
+				? result << Io::ArcWRPaths{ Io::storyRoot / rel_path }
+				: result << Io::ArcWRPaths{ Io::storyRoot / rel_path, read_path };
 		}
 		return result;
 	}

@@ -168,6 +168,18 @@ void TextEditor::toggleExtraScrolls(bool checked)
     scrollNext->setVisible(checked);
 }
 
+void TextEditor::toggleBlockCursor(bool checked)
+{
+    hasBlockCursor = checked;
+    cursorPositionChanged();
+}
+
+void TextEditor::toggleCursorBlink(bool checked)
+{
+    hasCursorBlink = checked;
+    startBlinker();
+}
+
 void TextEditor::resizeEvent(QResizeEvent* event)
 {
     QPlainTextEdit::resizeEvent(event);
@@ -179,13 +191,13 @@ void TextEditor::paintEvent(QPaintEvent* event)
 {
     QPlainTextEdit::paintEvent(event);
     QPainter painter(viewport());
-    auto rect = reshapeCursor();
-    auto current_char = currentChar();
+    auto cur_char = currentChar();
+    auto rect = reshapeCursor(cur_char);
     painter.fillRect(rect, recolorCursor());
-    if (!current_char.isNull())
+    if (!cur_char.isNull() && hasBlockCursor)
     {
         painter.setPen(recolorCursor(true));
-        painter.drawText(rect, current_char);
+        painter.drawText(rect, cur_char);
     }
 }
 
@@ -307,12 +319,16 @@ void TextEditor::connections()
     connect(this, &TextEditor::blockCountChanged, this, &TextEditor::updateLineNumberAreaWidth);
     connect(this, &TextEditor::updateRequest, this, &TextEditor::updateLineNumberArea);
     connect(this, &TextEditor::cursorPositionChanged, this, &TextEditor::highlightCurrentLine);
-    connect(this, &TextEditor::startBlinker, this, [&]() { cursorBlink->start(300); });
     connect(scrollNext, &QPushButton::clicked, this, [&]() { scrollNavClicked(Scroll::Next); });
     connect(scrollPrevious, &QPushButton::clicked, this, [&]() { scrollNavClicked(Scroll::Previous); });
+    connect(this, &TextEditor::startBlinker, this, [&]()
+        {
+            if (!hasCursorBlink) return;
+            cursorBlink->start(200);
+        });
     connect(this, &TextEditor::cursorPositionChanged, this, [&]()
         {
-            if (textCursor().hasSelection()) return;
+            if (textCursor().hasSelection() || !hasCursorBlink) return;
             cursorVisible = true;
             startBlinker();
         });
@@ -333,10 +349,17 @@ void TextEditor::connections()
         });
 }
 
-const QRect TextEditor::reshapeCursor()
+const QRect TextEditor::reshapeCursor(QChar currentChar)
 {
-    QFontMetrics metrics(font());
-    setCursorWidth(metrics.averageCharWidth());
+    if (hasBlockCursor)
+    {
+        QFontMetrics metrics(font());
+        (currentChar.isNull())
+            ? setCursorWidth(metrics.averageCharWidth())
+            : setCursorWidth(metrics.horizontalAdvance(currentChar));
+    }
+    else
+        setCursorWidth(2);
     auto result = cursorRect(textCursor());
     setCursorWidth(0);
     return result;
@@ -345,7 +368,7 @@ const QRect TextEditor::reshapeCursor()
 const QColor TextEditor::recolorCursor(bool under)
 {
     QColor result;
-    if (!cursorVisible)
+    if (!cursorVisible && hasCursorBlink)
         result = QColor(0, 0, 0, 0);
     else
     {

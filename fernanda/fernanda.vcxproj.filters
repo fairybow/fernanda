@@ -327,7 +327,7 @@
     </QtRcc>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="res\themes\palette.txt">
+    <Text Include="res\themes\palette.md">
       <Filter>Resource Files\Stylesheets</Filter>
     </Text>
     <Text Include="docs\dependency_tree.md" />

@@ -212,7 +212,7 @@
   <ItemGroup>
     <Text Include="docs\dependency_tree.md" />
     <Text Include="docs\todo.md" />
-    <Text Include="res\themes\palette.txt" />
+    <Text Include="res\themes\palette.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

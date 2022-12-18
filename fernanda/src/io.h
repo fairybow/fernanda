@@ -35,6 +35,10 @@ namespace Io
 		std::optional<Path::Type> typeIfNewOrCut;
 	};
 
+	const QString storyRoot = QStringLiteral("story");
+	const QString ext = QStringLiteral(".txt");
+	const QString tempExt = QStringLiteral(".txt~");
+
 	inline const QString readFile(QString filePath)
 	{
 		QString text;

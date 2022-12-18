@@ -1,4 +1,8 @@
-Fernanda gradient:
+# Palette
+
+[^1] [^2]
+
+## Gradient
 
 	White
 	rbg(255, 255, 255) / #fff
@@ -15,7 +19,7 @@ Fernanda gradient:
 	Very soft magenta
 	rbg(249, 179, 249) / #f9b3f9
 
-Editor themes:
+## Editor themes
 
 	Amber:
 
@@ -91,16 +95,10 @@ Editor themes:
 		Very dark (mostly black) red
 		rbg(29, 2, 2) / #1d0202
 
-Window themes:
+## Window themes
 
 	Pending, they need a rewrite
 
-	@borderColor & @bgColorHover (viz., Menubar & AOT hovers);
-	@bgColor (viz., Statusbar, Menubar);
-	@bgColor2 (viz., Pane background);
-	@fontColor (viz., only Menu font?);
-	@fontColor2 (viz., Scroll Nav, Indicator [which is dimmed], & Pane fonts);
-	@fontColor2Hover (viz., Menubar & Scroll Nav font hovers);
+[^1]: [ColorHexa](https://www.colorhexa.com/)
 
-// https://www.colorhexa.com/
-// https://colorkit.co/
+[^2]: [ColorKit](https://colorkit.co/)

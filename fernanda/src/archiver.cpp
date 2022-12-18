@@ -24,7 +24,7 @@ void Archiver::create(QString arcPath, QVector<Io::ArcWRPaths> wRPaths)
 	Bit7zLibrary lib{ Ud::dll() };
 	BitFileCompressor compressor{ lib, format };
 	compressor.setCompressionLevel(level);
-	compressor.compressDirectory((temp_dir_path / "story").toStdString(), arcPath.toStdString());
+	compressor.compressDirectory((temp_dir_path / Io::storyRoot).toStdString(), arcPath.toStdString());
 }
 
 const QString Archiver::read(QString arcPath, QString rPath)
@@ -121,7 +121,7 @@ void Archiver::cut(QString arcPath, QVector<Io::ArcRename> cuts)
 	{
 		if (!cut.origRelPath.has_value()) continue;
 		if (cut.typeIfNewOrCut != Path::Type::Dir)
-			in_map[QString(".cut" / Path::getName(cut.relPath) + ".txt~").toStdString()] = cut.relPath.toStdString();
+			in_map[QString(".cut" / Path::getName(cut.relPath) + Io::tempExt).toStdString()] = cut.relPath.toStdString();
 		else
 			cut_folders << cut.origRelPath.value().toStdString();
 	}
@@ -167,7 +167,7 @@ void Archiver::blanks(QString arcPath, std::map<std::string, Path::Type> additio
 			Io::writeFile(QString::fromStdString(temp_r_path.string()), nullptr);
 		}
 	}
-	compressor.compressDirectory((temp_dir_path / "story").toStdString(), arcPath.toStdString());
+	compressor.compressDirectory((temp_dir_path / Io::storyRoot).toStdString(), arcPath.toStdString());
 }
 
 // archiver.cpp, fernanda

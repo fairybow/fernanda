@@ -43,6 +43,10 @@ namespace Ud
         QString appName;
     } dataVars;
 
+    const QString editor = QStringLiteral("editor");
+    const QString data = QStringLiteral("data");
+    const QString window = QStringLiteral("window");
+
     void windowsReg(); // WIP
     void linuxReg(); // WIP
     void setName(QString name);

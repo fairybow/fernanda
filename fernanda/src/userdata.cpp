@@ -4,12 +4,7 @@
 
 void Ud::windowsReg() // WIP
 {
-    //QCoreApplication::setOrganizationName("@fairybow");
-    //QCoreApplication::setApplicationName("fernanda");
-    //QSettings reg("HKEY_CURRENT_USER\\SOFTWARE\\Classes\\.story\\DefaultIcon", QSettings::NativeFormat);
-    //reg.setValue("DefaultIcon", "C:\\Dev\\fernanda-dev\\fernanda\\res\\icons\\fernanda.ico");
-    //reg.setValue("DefaultIcon", ":\\icons\\fernanda.ico");
-    //SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
+    //
 }
 
 void Ud::linuxReg() // WIP

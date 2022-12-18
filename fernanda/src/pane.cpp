@@ -230,7 +230,7 @@ QStandardItem* Pane::tempItem(Path::Type type)
 const QString Pane::rename()
 {
     bool has_input = false;
-    QString text = QInputDialog::getText(this, tr(""), tr(""), QLineEdit::Normal, nullptr, &has_input);
+    QString text = QInputDialog::getText(this, tr(nullptr), tr(nullptr), QLineEdit::Normal, nullptr, &has_input);
     if (has_input && !text.isEmpty())
         return text.replace(Uni::regex(Uni::Re::Forbidden), "_");
     return nullptr;

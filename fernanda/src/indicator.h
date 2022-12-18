@@ -16,20 +16,21 @@ class Indicator : public QWidget
     Q_OBJECT
 
 public:
+    const QString objectName = QStringLiteral("indicator");
+
     Indicator(QWidget* parent = nullptr)
     {
         separator->setText("/");
         positions->setGraphicsEffect(opacity(0.8));
         separator->setGraphicsEffect(opacity(0.3));
         counts->setGraphicsEffect(opacity(0.8));
-        layout->addWidget(positions);
-        layout->addWidget(separator);
-        layout->addWidget(counts);
         layout->setContentsMargins(0, 0, 0, 0);
         setLayout(layout);
-        positions->setObjectName("indicator");
-        separator->setObjectName("indicator");
-        counts->setObjectName("indicator");
+        for (auto& widget : { positions, separator, counts })
+        {
+            widget->setObjectName(objectName);
+            layout->addWidget(widget);
+        }
         connect(this, &Indicator::toggled, this, [&]()
             {
                 if (positions->isHidden() || counts->isHidden())

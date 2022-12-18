@@ -20,7 +20,9 @@ namespace Uni
 
 	enum class Re {
 		Forbidden,
+		NewLine,
 		ParagraphSeparator,
+		Space,
 		Split,
 		ThemeSheetCursor,
 		ThemeSheetCursorUnder,
@@ -34,28 +36,28 @@ namespace Uni
 		QString result;
 		switch (name) {
 		case Ico::Balloon:
-			result = "\U0001F388";
+			result = QStringLiteral("\U0001F388");
 			break;
 		case Ico::File:
-			result = "\U0001F4C4";
+			result = QStringLiteral("\U0001F4C4");
 			break;
 		case Ico::FolderClosed:
-			result = "\U0001F4C1";
+			result = QStringLiteral("\U0001F4C1");
 			break;
 		case Ico::FolderOpen:
-			result = "\U0001F4C2";
+			result = QStringLiteral("\U0001F4C2");
 			break;
 		case Ico::Pushpin:
-			result = "\U0001F4CC";
+			result = QStringLiteral("\U0001F4CC");
 			break;
 		case Ico::QuestionMark:
-			result = "\U00002754";
+			result = QStringLiteral("\U00002754");
 			break;
 		case Ico::TriangleDown:
-			result = "\U000025BC";
+			result = QStringLiteral("\U000025BC");
 			break;
 		case Ico::TriangleUp:
-			result = "\U000025B2";
+			result = QStringLiteral("\U000025B2");
 			break;
 		}
 		return result;
@@ -66,28 +68,34 @@ namespace Uni
 		QRegularExpression result;
 		switch (operation) {
 		case Re::Forbidden:
-			result = QRegularExpression(R"((<|>|:|\/|\\|\||\?|\*|\"))");
+			result = QRegularExpression(QStringLiteral(R"((<|>|:|\/|\\|\||\?|\*|\"))"));
+			break;
+		case Re::NewLine:
+			result = QRegularExpression(QStringLiteral("(\\n)"));
 			break;
 		case Re::ParagraphSeparator:
-			result = QRegularExpression("\U00002029");
+			result = QRegularExpression(QStringLiteral("(\U00002029)"));
+			break;
+		case Re::Space:
+			result = QRegularExpression(QStringLiteral("(\\s)"));
 			break;
 		case Re::Split:
-			result = QRegularExpression("(\\s|\\n|\\r|\U00002029|^)+");
+			result = QRegularExpression(QStringLiteral("(\\s|\\n|\\r|\U00002029|^)+"));
 			break;
 		case Re::ThemeSheetCursor:
-			result = QRegularExpression("(@cursorColor; = )(.*)(;)");
+			result = QRegularExpression(QStringLiteral("(@cursorColor; = )(.*)(;)"));
 			break;
 		case Re::ThemeSheetCursorUnder:
-			result = QRegularExpression("(@cursorUnderColor; = )(.*)(;)");
+			result = QRegularExpression(QStringLiteral("(@cursorUnderColor; = )(.*)(;)"));
 			break;
 		case Re::ThemeSheetLine:
-			result = QRegularExpression("(@.*\\n?)");
+			result = QRegularExpression(QStringLiteral("(@.*\\n?)"));
 			break;
 		case Re::ThemeSheetValue:
-			result = QRegularExpression("(\\s=.*;)");
+			result = QRegularExpression(QStringLiteral("(\\s=.*;)"));
 			break;
 		case Re::ThemeSheetVariable:
-			result = QRegularExpression("(@.*=\\s)");
+			result = QRegularExpression(QStringLiteral("(@.*=\\s)"));
 			break;
 		}
 		return result;
@@ -95,37 +103,37 @@ namespace Uni
 
 	inline const QString close()
 	{
-		return "You have <b>unsaved changes</b>. Are you sure you want to quit?";
+		return QStringLiteral("You have <b>unsaved changes</b>. Are you sure you want to quit?");
 	}
 
 	inline const QString samples()
 	{
-		return "You'll need to <b>restart</b> to see custom themes and fonts incorporated.";
+		return QStringLiteral("A sample font, window theme, and editor theme have been added to your user data folder.<p>You'll need to <b>restart</b> to see custom themes and fonts incorporated.");
 	}
 
 	inline const QString menuShortcuts()
 	{
-		return "<b>Menu:</b><p>Ctrl + S: Save story<br>Ctrl + Q: Quit";
+		return QStringLiteral("<b>Menu:</b><p>Ctrl + S: Save story<br>Ctrl + Q: Quit");
 	}
 
 	inline const QString windowShortcuts()
 	{
-		return "<b>Window:</b><p>F11: Cycle editor themes (Amber, Green, Grey)<br>Alt + F10: Cycle fonts<br>Alt + F11: Cycle editor themes (all)<br>Alt + F12: Cycle window themes<br>Alt + Insert: Nav previous<br>Alt + Delete: Nav Next<br>Alt + Minus (-) /<br>Ctrl + Mouse Wheel Down: Decrease font size<br>Alt + Plus (+) /<br>Ctrl + Mouse Wheel Up: Increase font size";
+		return QStringLiteral("<b>Window:</b><p>F11: Cycle editor themes (Amber, Green, Grey)<br>Alt + F10: Cycle fonts<br>Alt + F11: Cycle editor themes (all)<br>Alt + F12: Cycle window themes<br>Alt + Insert: Nav previous<br>Alt + Delete: Nav Next<br>Alt + Minus (-) /<br>Ctrl + Mouse Wheel Down: Decrease font size<br>Alt + Plus (+) /<br>Ctrl + Mouse Wheel Up: Increase font size");
 	}
 
 	inline const QString editorShortcuts()
 	{
-		return "<b>Editor:</b><p>Ctrl + Y: Redo<br>Ctrl + Z: Undo<br>Ctrl + Shift + C: Wrap selection or block in quotes";
+		return QStringLiteral("<b>Editor:</b><p>Ctrl + Y: Redo<br>Ctrl + Z: Undo<br>Ctrl + Shift + C: Wrap selection or block in quotes");
 	}
 
 	inline const QString shortcuts()
 	{
-		return "<table><td>" + menuShortcuts() + "</td><td>\n</td><td>" + windowShortcuts() + "</td><td>\n</td><td>" + editorShortcuts() + "</td><table>";
+		return QStringLiteral("<table><td>") + menuShortcuts() + QStringLiteral("</td><td>\n</td><td>") + windowShortcuts() + QStringLiteral("</td><td>\n</td><td>") + editorShortcuts() + QStringLiteral("</td><table>");
 	}
 
 	inline const QString about()
 	{
-		return "<b>Fernanda</b> is a personal project and a work-in-progress.<p>Version: hella beta<p><a href='https://github.com/fairybow/fernanda'>github.com/fairybow/fernanda</a>";
+		return QStringLiteral("<b>Fernanda</b> is a personal project and a work-in-progress.<p><b>Version:</b> hella beta<p><a href='https://github.com/fairybow/fernanda'>github.com/fairybow/fernanda</a>");
 	}
 }
 

@@ -60,6 +60,8 @@ public slots:
     void toggleLineNumberArea(bool checked);
     void toggleScrolls(bool checked);
     void toggleExtraScrolls(bool checked);
+    void toggleBlockCursor(bool checked);
+    void toggleCursorBlink(bool checked);
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
@@ -87,6 +89,8 @@ private:
     QVector<CursorPositions> cursorPositions;
     bool hasLineHighlight = true;
     bool hasKeyfilter = true;
+    bool hasCursorBlink = true;
+    bool hasBlockCursor = true;
     bool cursorVisible = true;
 
     void keyPresses(QVector<QKeyEvent*> events);
@@ -95,7 +99,7 @@ private:
     bool shortcutFilter(QKeyEvent* event);
     void quoteWrap(QKeyEvent* event);
     void connections();
-    const QRect reshapeCursor();
+    const QRect reshapeCursor(QChar currentChar);
     const QColor recolorCursor(bool under = false);
     const QColor highlight();
     void storeCursors(QString key);
@@ -120,16 +124,10 @@ class LineNumberArea : public QWidget
 public:
     LineNumberArea(TextEditor* editor) : QWidget(editor), textEditor(editor) {}
 
-    QSize sizeHint() const override
-    {
-        return QSize(textEditor->lineNumberAreaWidth(), 0);
-    }
+    QSize sizeHint() const override { return QSize(textEditor->lineNumberAreaWidth(), 0); }
 
 protected:
-    void paintEvent(QPaintEvent* event) override
-    {
-        textEditor->lineNumberAreaPaintEvent(event);
-    }
+    void paintEvent(QPaintEvent* event) override { textEditor->lineNumberAreaPaintEvent(event); }
 
 private:
     TextEditor* textEditor;

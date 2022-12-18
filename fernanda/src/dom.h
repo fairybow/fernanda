@@ -45,6 +45,13 @@ public:
         Rename
     };
 
+    const QString attrKey = QStringLiteral("key");
+    const QString attrRelPath = QStringLiteral("rel_path");
+    const QString attrExpanded = QStringLiteral("expanded");
+    const QString tagDir = QStringLiteral("dir");
+    const QString tagFile = QStringLiteral("file");
+    const QString tagRoot = QStringLiteral("root");
+
     void set(QString xmlDoc);
     const QString string(Doc doc = Doc::Current);
     bool hasChanges();
@@ -83,11 +90,11 @@ public:
             {
                 auto parent = found_element.parentNode();
                 if (isDir(parent))
-                    result = parent.toElement().attribute("key");
+                    result = parent.toElement().attribute(attrKey);
                 else if (isRoot(parent))
                     result = nullptr;
                 else
-                    result = element<QString>(parent.toElement().attribute("key"), Element::ParentDirKey);
+                    result = element<QString>(parent.toElement().attribute(attrKey), Element::ParentDirKey);
             }
             break;
         case Element::ParentDirPath:
@@ -97,7 +104,7 @@ public:
                 if (isDir(parent) || isRoot(parent))
                     result = filterPath(parent.toElement());
                 else
-                    result = element<QString>(parent.toElement().attribute("key"), Element::ParentDirPath);
+                    result = element<QString>(parent.toElement().attribute(attrKey), Element::ParentDirPath);
             }
             break;
         case Element::OrigPath:
@@ -119,11 +126,11 @@ public:
         switch (property) {
         case Write::Expanded:
             if constexpr (std::is_same<T, bool>::value)
-                target.setAttribute("expanded", QString(value ? "true" : "false"));
+                target.setAttribute(attrExpanded, QString(value ? "true" : "false"));
             break;
         case Write::Rename:
             if constexpr (std::is_same<T, QString>::value)
-                target.setAttribute("rename", value);
+                target.setAttribute(attrRename, value);
             break;
         }
     }
@@ -132,6 +139,8 @@ private:
     QDomDocument self;
     QDomDocument initialSelf;
     QDomDocument cutElements;
+
+    const QString attrRename = QStringLiteral("rename");
 
     QDomElement element_recursor(QDomElement node, QString key, QDomElement result = QDomElement());
     QVector<QDomElement> elements(QDomDocument doc);
@@ -162,19 +171,19 @@ private:
     template<typename T>
     inline bool isDir(T nodeOrElement)
     {
-        return isThis(nodeOrElement, "dir");
+        return isThis(nodeOrElement, tagDir);
     }
 
     template<typename T>
     inline bool isFile(T nodeOrElement)
     {
-        return isThis(nodeOrElement, "file");
+        return isThis(nodeOrElement, tagFile);
     }
 
     template<typename T>
     inline bool isRoot(T nodeOrElement)
     {
-        return isThis(nodeOrElement, "root");
+        return isThis(nodeOrElement, tagRoot);
     }
 };
 

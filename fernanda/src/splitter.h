@@ -14,12 +14,14 @@ class Splitter : public QSplitter
     Q_OBJECT
 
 public:
+    const QString objectName = QStringLiteral("splitter");
+
     Splitter(QWidget* parent = nullptr)
     {
-        setObjectName("splitter");
+        setObjectName(objectName);
         connect(this, &QSplitter::splitterMoved, this, [&]()
             {
-                Ud::saveConfig("window", "splitter", saveState());
+                Ud::saveConfig(Ud::window, objectName, saveState());
             });
     }
 
@@ -28,13 +30,14 @@ public:
         for (auto& widget : widgets)
             addWidget(widget);
         setCollapsible(0, true);
-        setCollapsible(1, false);
-        setStretchFactor(1, 100);
+        auto editor = 1;
+        setCollapsible(editor, false);
+        setStretchFactor(editor, 100);
     }
 
     void loadConfig(QRect geo)
     {
-        auto state = Ud::loadConfig("window", "splitter", QVariant()).toByteArray();
+        auto state = Ud::loadConfig(Ud::window, objectName, QVariant()).toByteArray();
         if (state.isEmpty() || state.isNull())
             setSizes(QVector<int>{ static_cast<int>(geo.width() * 0.2), static_cast<int>(geo.width() * 0.8) });
         else
