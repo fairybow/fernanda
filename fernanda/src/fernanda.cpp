@@ -249,11 +249,11 @@ void Fernanda::makeSetMenu()
         Res::DataPair{ "Top", "Top" },
         Res::DataPair{ "Bottom", "Bottom" }
     };
-    auto win_theme_list = Res::iterateResources(":\\themes\\window\\", "*.fernanda_wintheme", user_data, Res::Type::WindowTheme);
+    auto win_theme_list = Res::iterateResources(":/themes/window/", "*.fernanda_wintheme", user_data, Res::Type::WindowTheme);
     QVector<Res::DataPair> font_list;
-    auto ttfs = Res::iterateResources(":\\fonts\\", "*.ttf", user_data, Res::Type::Font);
-    font_list << Res::iterateResources(":\\fonts\\", "*.otf", user_data, Res::Type::Font, ttfs);
-    auto editor_theme_list = Res::iterateResources(":\\themes\\editor\\", "*.fernanda_theme", user_data, Res::Type::EditorTheme);
+    auto ttfs = Res::iterateResources(":/fonts/", "*.ttf", user_data, Res::Type::Font);
+    font_list << Res::iterateResources(":/fonts/", "*.otf", user_data, Res::Type::Font, ttfs);
+    auto editor_theme_list = Res::iterateResources(":/themes/editor/", "*.fernanda_theme", user_data, Res::Type::EditorTheme);
     QVector<Res::DataPair> tab_list = {
         Res::DataPair{ "20", "20 px" },
         Res::DataPair{ "40", "40 px" },
@@ -322,9 +322,9 @@ void Fernanda::makeSetMenu()
     loadMenuToggle(toggle_char_count, Ud::window, "count_characters", false);
     loadMenuToggle(toggle_line_count, Ud::window, "count_lines", true);
     loadMenuToggle(toggle_word_count, Ud::window, "count_words", true);
-    loadViewConfig(windowThemes->actions(), Ud::window, "wintheme", ":\\themes\\window\\Light.fernanda_wintheme");
+    loadViewConfig(windowThemes->actions(), Ud::window, "wintheme", ":/themes/window/Light.fernanda_wintheme");
     loadViewConfig(editorFonts->actions(), Ud::editor, "font", "Cascadia Mono");
-    loadViewConfig(editorThemes->actions(), Ud::editor, "theme", ":\\themes\\editor\\Amber.fernanda_theme");
+    loadViewConfig(editorThemes->actions(), Ud::editor, "theme", ":/themes/editor/Amber.fernanda_theme");
     loadViewConfig(tabStops->actions(), Ud::editor, "tab", "40");
     loadViewConfig(wrapModes->actions(), Ud::editor, "wrap", "WrapAt");
     auto* set = menuBar->addMenu(tr("&Set"));
@@ -660,11 +660,11 @@ const QString Fernanda::windowStyle(WinStyle baseOnly)
     if (auto selection = windowThemes->checkedAction(); selection != nullptr)
     {
         auto theme_path = selection->data().toString();
-        auto style_sheet = Io::readFile(":\\themes\\window_base.qss");
+        auto style_sheet = Io::readFile(":/themes/window_base.qss");
         if (hasWinTheme && baseOnly != WinStyle::BaseOnly)
         {
             auto theme_sheet = Io::readFile(theme_path);
-            style_sheet = style_sheet + "\n\n" + Res::createStyleSheetFromTheme(Io::readFile(":\\themes\\window.qss"), theme_sheet);
+            style_sheet = style_sheet + "\n\n" + Res::createStyleSheetFromTheme(Io::readFile(":/themes/window.qss"), theme_sheet);
         }
         sendScrollsToggle(hasWinTheme);
         Ud::saveConfig(Ud::window, "wintheme", Path::sanitize(theme_path));
@@ -711,20 +711,20 @@ void Fernanda::setEditorStyle()
     if (auto selection = editorThemes->checkedAction(); selection != nullptr)
     {
         auto theme_path = selection->data().toString();
-        auto style_sheet = Io::readFile(":\\themes\\editor_base.qss");
+        auto style_sheet = Io::readFile(":/themes/editor_base.qss");
         QString cursor_color = nullptr;
         QString under_cursor_color = nullptr;
         if (hasTheme)
         {
             auto theme_sheet = Io::readFile(theme_path);
-            style_sheet = style_sheet + "\n\n" + Res::createStyleSheetFromTheme(Io::readFile(":\\themes\\editor.qss"), theme_sheet);
+            style_sheet = style_sheet + "\n\n" + Res::createStyleSheetFromTheme(Io::readFile(":/themes/editor.qss"), theme_sheet);
             QRegularExpressionMatch match_cursor = Uni::regex(Uni::Re::ThemeSheetCursor).match(theme_sheet);
             QRegularExpressionMatch match_under_cursor = Uni::regex(Uni::Re::ThemeSheetCursorUnder).match(theme_sheet);
             cursor_color = match_cursor.captured(2);
             under_cursor_color = match_under_cursor.captured(2);
         }
         if (hasShadow)
-            style_sheet = style_sheet + "\n\n" + Io::readFile(":\\themes\\shadow.qss");
+            style_sheet = style_sheet + "\n\n" + Io::readFile(":/themes/shadow.qss");
         overlay->setStyleSheet(style_sheet);
         underlay->setStyleSheet(style_sheet);
         textEditor->setStyleSheet(style_sheet);

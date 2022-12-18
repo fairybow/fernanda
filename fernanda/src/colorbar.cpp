@@ -70,13 +70,13 @@ void ColorBar::style(Color theme)
     QString style_sheet;
     switch (theme) {
     case Color::Red:
-        style_sheet = Io::readFile(":\\themes\\bar\\red.qss");
+        style_sheet = Io::readFile(":/themes/bar/red.qss");
         break;
     case Color::Green:
-        style_sheet = Io::readFile(":\\themes\\bar\\green.qss");
+        style_sheet = Io::readFile(":/themes/bar/green.qss");
         break;
     case Color::Pastels:
-        style_sheet = Io::readFile(":\\themes\\bar\\pastels.qss");
+        style_sheet = Io::readFile(":/themes/bar/pastels.qss");
         break;
     }
     bar->setStyleSheet(style_sheet);

@@ -11,7 +11,7 @@
 
 inline QString operator/(const QString& lhs, const QString& rhs)
 {
-	return lhs + "\\" + rhs;
+	return lhs + "/" + rhs;
 }
 
 inline void operator<<(std::vector<std::string>& lhs, const std::string& rhs)
@@ -70,7 +70,7 @@ namespace Path
 
 	inline QString makePosix(QString path)
 	{
-		return path.replace(QRegularExpression(R"(\)"), "/");
+		return path.replace(QRegularExpression(R"(\\)"), "/");
 	}
 
 	inline QString relPath(QString rootPath, QString currentPath)

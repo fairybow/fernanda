@@ -18,7 +18,6 @@ void Archiver::create(QString arcPath, QVector<Io::ArcWRPaths> wRPaths)
 			Path::makeDirs(std::filesystem::path(temp_w_path).parent_path());
 			auto q_path = QString::fromStdString(temp_w_path);
 			QFile::copy(entry.readFullPath.value(), q_path);
-			QFile(q_path).setPermissions(QFile::WriteUser);
 		}
 	}
 	Bit7zLibrary lib{ Ud::dll() };
