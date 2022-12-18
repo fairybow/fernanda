@@ -2,6 +2,9 @@
 
 #include "userdata.h"
 
+#include <filesystem>
+#include <stdexcept>
+
 void Ud::windowsReg() // WIP
 {
     //
@@ -115,10 +118,18 @@ QString Ud::timestamp()
 
 std::string Ud::dll()
 {
-    auto dll_path = userData(Op::GetDLL) / "7z.dll";
-    if (!QFile(dll_path).exists())
-        QFile::copy(":\\lib\\7zip\\7z64.dll", dll_path);
-    return dll_path.toStdString();
+	const auto paths = QStringList{"/lib", "/usr/lib", "/usr/local/lib" }<<qEnvironmentVariable("LD_LIBRARY_PATH").split(',');
+
+	for(const auto& search_path: paths)
+	{
+		for(const auto& libname: {"7z.so", "p7zip/7z.so"})
+		{
+			const auto candidate = std::filesystem::path{search_path.toStdString()}/libname;
+			if(std::filesystem::exists(candidate))
+				return candidate;
+		}
+	}
+	throw std::runtime_error("Unable to locate shared 7z library, did you install all dependencies?");
 }
 
 // userdata.cpp, fernanda
