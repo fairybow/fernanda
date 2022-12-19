@@ -133,6 +133,7 @@
     <None Include="res\themes\window\Olivine.fernanda_wintheme" />
     <None Include="res\themes\window\Sandstone.fernanda_wintheme" />
     <None Include="res\themes\window_base.qss" />
+    <None Include="util\win_pack.bat" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\archiver.cpp" />

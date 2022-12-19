@@ -111,6 +111,7 @@
     <None Include="res\themes\editor\Pocket-Alt.fernanda_theme">
       <Filter>Resource Files\Stylesheets\Editor Themes</Filter>
     </None>
+    <None Include="util\win_pack.bat" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

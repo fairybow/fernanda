@@ -13,6 +13,7 @@
 
 class Dom
 {
+    using FsPath = std::filesystem::path;
 
 public:
     enum class ChildRenames {
@@ -98,21 +99,21 @@ public:
             }
             break;
         case Element::ParentDirPath:
-            if constexpr (std::is_same<T, QString>::value)
+            if constexpr (std::is_same<T, FsPath>::value)
             {
                 auto parent = found_element.parentNode();
                 if (isDir(parent) || isRoot(parent))
                     result = filterPath(parent.toElement());
                 else
-                    result = element<QString>(parent.toElement().attribute(attrKey), Element::ParentDirPath);
+                    result = element<FsPath>(parent.toElement().attribute(attrKey), Element::ParentDirPath);
             }
             break;
         case Element::OrigPath:
-            if constexpr (std::is_same<T, QString>::value)
+            if constexpr (std::is_same<T, FsPath>::value)
                 result = filterPath(found_element, Filter::OrigToNullptr);
             break;
         case Element::Path:
-            if constexpr (std::is_same<T, QString>::value)
+            if constexpr (std::is_same<T, FsPath>::value)
                 result = filterPath(found_element);
             break;
         }
@@ -147,9 +148,9 @@ private:
     QVector<QDomElement> elements_recursor(QDomElement node, QVector<QDomElement> result = QVector<QDomElement>());
     QVector<QDomElement> elementsByAttribute(QString attribute, QString value = nullptr);
     QVector<QDomElement> elementsByAttribute_recursor(QDomElement node, QString attribute, QString value = nullptr, QVector<QDomElement> result = QVector<QDomElement>());
-    void movePaths(QString& newPivotPath, QString& newPivotParentPath, QString pivotName, QString fulcrumKey);
-    QVector<Io::ArcRename> prepareChildRenames_recursor(QDomElement node, QString stemPathParent, ChildRenames renameType = ChildRenames::Move, QVector<Io::ArcRename> result = QVector<Io::ArcRename>());
-    QString filterPath(QDomElement elem, Filter filter = Filter::RenameToOrig);
+    void movePaths(FsPath& newPivotPath, FsPath& newPivotParentPath, QString pivotName, QString fulcrumKey);
+    QVector<Io::ArcRename> prepareChildRenames_recursor(QDomElement node, FsPath stemPathParent, ChildRenames renameType = ChildRenames::Move, QVector<Io::ArcRename> result = QVector<Io::ArcRename>());
+    FsPath filterPath(QDomElement elem, Filter filter = Filter::RenameToOrig);
 
     template<typename T>
     inline bool isThis(T nodeOrElement, QString nodeOrTagName)

@@ -2,23 +2,22 @@
 
 #pragma once
 
+#include "path.h"
 #include "uni.h"
 
 #include <algorithm>
-#include <filesystem>
-#include <string>
 
-#include <QDir>
 #include <QDirIterator>
 #include <QFontDatabase>
 #include <QRegularExpressionMatch>
 #include <QRegularExpressionMatchIterator>
-#include <QString>
 #include <QStringList>
 #include <QVector>
 
 namespace Res
 {
+    namespace Fs = std::filesystem;
+
     enum class Type {
         EditorTheme,
         Font,
@@ -26,38 +25,34 @@ namespace Res
     };
 
     struct DataPair {
-        QString path;
+        Fs::path path;
         QString label;
     };
-
-    inline const QString name(QString path)
-    {
-        std::filesystem::path file_path = path.toStdString();
-        auto stem = file_path.stem();
-        return QString::fromStdString(stem.string());
-    }
 
     inline void collectResources(QDirIterator& iterator, Type resourceType, QVector<DataPair>& listOfPathPairs)
     {
         while (iterator.hasNext())
         {
             iterator.next();
-            auto label = name(iterator.filePath());
+            auto q_path = iterator.filePath();
+            Fs::path path;
             (resourceType == Type::Font)
-                ? listOfPathPairs << DataPair{ QFontDatabase::applicationFontFamilies(QFontDatabase::addApplicationFont(iterator.filePath())).at(0), label }
-                : listOfPathPairs << DataPair{ iterator.filePath(), label };
+                ? path = Path::toFs(QFontDatabase::applicationFontFamilies(QFontDatabase::addApplicationFont(q_path)).at(0))
+                : path = Path::toFs(q_path);
+            auto label = Path::getName(path);
+            listOfPathPairs << DataPair{ path, label };
         }
     }
 
-    inline const QVector<DataPair> iterateResources(QString path, QString ext, QString dataPath, Type resourceType, QVector<DataPair> existingList = QVector<DataPair>())
+    inline const QVector<DataPair> iterateResources(Fs::path path, QString ext, Fs::path dataPath, Type resourceType, QVector<DataPair> existingList = QVector<DataPair>())
     {
         QVector<DataPair> dataAndLabels;
         if (!existingList.isEmpty())
             dataAndLabels << existingList;
-        QDirIterator assets(path, QStringList() << ext, QDir::Files, QDirIterator::Subdirectories);
+        QDirIterator assets(Path::toQString(path), QStringList() << ext, QDir::Files, QDirIterator::Subdirectories);
         if (QDir(dataPath).exists())
         {
-            QDirIterator user_assets(dataPath, QStringList() << ext, QDir::Files, QDirIterator::Subdirectories);
+            QDirIterator user_assets(Path::toQString(dataPath), QStringList() << ext, QDir::Files, QDirIterator::Subdirectories);
             collectResources(user_assets, resourceType, dataAndLabels);
         }
         collectResources(assets, resourceType, dataAndLabels);

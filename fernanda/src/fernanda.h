@@ -15,12 +15,12 @@
 #include <QApplication>
 #include <QCloseEvent>
 #include <QCoreApplication>
+#include <QDesktopServices>
 #include <QFileDialog>
 #include <QMainWindow>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QMoveEvent>
-#include <QProcess>
 #include <QShowEvent>
 #include <QShortcut>
 #include <QSizePolicy>
@@ -33,6 +33,8 @@
 
 class Fernanda : public QMainWindow
 {
+    using FsPath = std::filesystem::path;
+
     Q_OBJECT
 
 public:
@@ -84,7 +86,7 @@ private:
         WithTheme
     };
 
-    void openUd(QString path);
+    void openUd(FsPath path);
     const QStringList devPrintRenames(QVector<Io::ArcRename> renames);
     void setName(bool isDev);
     void addWidgets();
@@ -100,13 +102,13 @@ private:
     QActionGroup* makeViewToggles(QVector<Res::DataPair>& dataLabelPairs, void (Fernanda::* slot)());
     void loadConfigs();
     void loadWinConfigs();
-    void loadViewConfig(QVector<QAction*> actions, QString group, QString valueName, QVariant fallback);
-    void loadMenuToggle(QAction* action, QString group, QString valueName, QVariant fallback);
-    void openStory(QString fileName, Story::Op opt = Story::Op::Normal);
+    void loadViewConfig(QVector<QAction*> actions, Ud::ConfigGroup group, Ud::ConfigVal valueType, QVariant fallback);
+    void loadMenuToggle(QAction* action, Ud::ConfigGroup group, Ud::ConfigVal valueType, QVariant fallback);
+    void openStory(FsPath fileName, Story::Op opt = Story::Op::Normal);
     void actionCycle(QActionGroup* group);
     const QString windowStyle(WinStyle baseOnly = WinStyle::WithTheme);
-    void toggleGlobals(bool& globalBool, QString group, QString valueName, bool value, Toggle type = Toggle::None);
-    void toggleWidget(QWidget* widget, QString group, QString valueName, bool value);
+    void toggleGlobals(bool& globalBool, Ud::ConfigGroup group, Ud::ConfigVal valueType, bool value, Toggle type = Toggle::None);
+    void toggleWidget(QWidget* widget, Ud::ConfigGroup group, Ud::ConfigVal valueType, bool value);
 
 private slots:
     void setWindowStyle();

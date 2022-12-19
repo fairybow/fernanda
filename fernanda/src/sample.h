@@ -16,21 +16,23 @@
 
 namespace Sample
 {
+	namespace Fs = std::filesystem;
+
 	struct SampleRCPair {
-		std::filesystem::path rcPath;
-		std::filesystem::path udPath;
+		Fs::path resourcePath;
+		Fs::path userDataPath;
 	};
 
 	inline QVector<Io::ArcWRPaths> make()
 	{
 		QVector<Io::ArcWRPaths> result;
-		auto rootPath = ":\\sample\\Candide\\";
+		auto rootPath = ":/sample/Candide/";
 		QDirIterator it(rootPath, QVector<QString>() << "*.*", QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files, QDirIterator::Subdirectories);
 		while (it.hasNext())
 		{
 			it.next();
-			auto read_path = it.filePath();
-			auto rel_path = Path::relPath(rootPath, read_path);
+			auto read_path = Path::toFs(it.filePath());
+			auto rel_path = Fs::relative(read_path, rootPath);
 			(it.fileInfo().isDir())
 				? result << Io::ArcWRPaths{ Io::storyRoot / rel_path }
 				: result << Io::ArcWRPaths{ Io::storyRoot / rel_path, read_path };
@@ -38,22 +40,22 @@ namespace Sample
 		return result;
 	}
 
-	inline void makeRc(std::filesystem::path path)
+	inline void makeRc(Fs::path path)
 	{
 		QVector<SampleRCPair> pairs{
-			SampleRCPair{ ":\\sample\\Kaushan Script.otf", std::filesystem::path(path / "Kaushan Script.otf") },
-			SampleRCPair{ ":\\sample\\Sample.fernanda_theme", std::filesystem::path(path / "Sample.fernanda_theme") },
-			SampleRCPair{ ":\\sample\\Sample.fernanda_wintheme", std::filesystem::path(path / "Sample.fernanda_wintheme") }
+			SampleRCPair{ ":/sample/Kaushan Script.otf", Fs::path(path / "Kaushan Script.otf") },
+			SampleRCPair{ ":/sample/Sample.fernanda_theme", Fs::path(path / "Sample.fernanda_theme") },
+			SampleRCPair{ ":/sample/Sample.fernanda_wintheme", Fs::path(path / "Sample.fernanda_wintheme") }
 		};
 		for (auto& pair : pairs)
 		{
-			auto lhs = QString::fromStdString(pair.rcPath.string());
-			auto rhs = QString::fromStdString(pair.udPath.string());
-			auto qf_rhs = QFile(rhs);
-			if (qf_rhs.exists())
-				qf_rhs.moveToTrash();
-			QFile::copy(lhs, rhs);
-			QFile(rhs).setPermissions(QFile::WriteUser);
+			auto& source = pair.resourcePath;
+			auto& target = pair.userDataPath;
+			auto qf_target = QFile(target);
+			if (qf_target.exists())
+				qf_target.moveToTrash();
+			QFile::copy(source, target);
+			qf_target.setPermissions(QFile::WriteUser);
 		}
 	}
 }

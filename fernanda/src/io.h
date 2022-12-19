@@ -13,6 +13,8 @@
 
 namespace Io
 {
+	namespace Fs = std::filesystem;
+
 	enum class Move {
 		Above,
 		Below,
@@ -21,25 +23,25 @@ namespace Io
 	};
 
 	struct ArcWRPaths {
-		QString writeRelPath;
-		std::optional<QString> readFullPath;
+		Fs::path writeRelPath;
+		std::optional<Fs::path> readFullPath;
 	};
 	struct ArcWrite {
 		QString text;
-		QString writeRelPath;
+		Fs::path writeRelPath;
 	};
 	struct ArcRename {
 		QString key;
-		QString relPath;
-		std::optional<QString> origRelPath;
+		Fs::path relPath;
+		std::optional<Fs::path> origRelPath;
 		std::optional<Path::Type> typeIfNewOrCut;
 	};
 
-	const QString storyRoot = QStringLiteral("story");
+	const Fs::path storyRoot = QStringLiteral("story").toStdString();
 	const QString ext = QStringLiteral(".txt");
 	const QString tempExt = QStringLiteral(".txt~");
 
-	inline const QString readFile(QString filePath)
+	inline const QString readFile(Fs::path filePath)
 	{
 		QString text;
 		QFile file(filePath);
@@ -52,7 +54,7 @@ namespace Io
 		return text;
 	}
 
-	inline void writeFile(QString filePath, QString text)
+	inline void writeFile(Fs::path filePath, QString text)
 	{
 		Path::makeParent(filePath);
 		QFile file(filePath);

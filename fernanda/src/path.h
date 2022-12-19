@@ -3,16 +3,12 @@
 #pragma once
 
 #include <filesystem>
+#include <string>
 
 #include <QDir>
 #include <QFileInfo>
 #include <QRegularExpression>
 #include <QString>
-
-inline QString operator/(const QString& lhs, const QString& rhs)
-{
-	return lhs + "\\" + rhs;
-}
 
 inline void operator<<(std::vector<std::string>& lhs, const std::string& rhs)
 {
@@ -21,75 +17,54 @@ inline void operator<<(std::vector<std::string>& lhs, const std::string& rhs)
 
 namespace Path
 {
+	namespace Fs = std::filesystem;
+
 	enum class Type {
 		Dir,
 		File
 	};
 
-	inline void makeParent(QString path)
+	inline Fs::path toFs(QString qStringPath)
 	{
-		std::filesystem::path tmp = path.toStdString();
-		auto parent = tmp.parent_path();
-		if (QDir(parent).exists()) return;
-		std::filesystem::create_directories(parent);
+		return Fs::path(qStringPath.toStdString());
 	}
 
-	inline void makeParent(std::filesystem::path path)
+	inline Fs::path toFs(QVariant qVariantPath)
 	{
-		auto parent = path.parent_path();
-		if (QDir(parent).exists()) return;
-		std::filesystem::create_directories(parent);
+		return Fs::path(qVariantPath.toString().toStdString());
 	}
 
-	inline QString getName(QString path)
+	inline QString toQString(Fs::path path, bool sanitize = false)
 	{
-		std::filesystem::path name;
-		std::filesystem::path tmp;
-		if (QFileInfo(path).isFile())
-		{
-			tmp = path.toStdString();
-			name = tmp.stem();
-		}
-		else
-		{
-			tmp = QString(path + "\\").toStdString();
-			name = tmp.parent_path().stem();
-		}
-		return QString::fromStdString(name.string());
-	}
-
-	inline QString sanitize(QString path)
-	{
-		auto fs_path = std::filesystem::path(path.toStdString());
-		fs_path.make_preferred();
-		auto result = QString::fromStdString(fs_path.string());
-		result.replace(QRegularExpression(R"(/)"), R"(\)");
-		result.replace(QRegularExpression(R"(\\\\)"), R"(\)");
+		auto result = QString::fromStdString(path.make_preferred().string());
+		if (sanitize)
+			result.replace(R"(\)", R"(/)");
 		return result;
 	}
 
-	inline QString makePosix(QString path)
+	inline std::string toB7z(Fs::path path)
 	{
-		return path.replace(QRegularExpression(R"(\)"), "/");
+		auto result = toQString(path);
+		result.replace(R"(/)", R"(\)");
+		return result.toStdString();
 	}
 
-	inline QString relPath(QString rootPath, QString currentPath)
+	inline void makeParent(Fs::path path)
 	{
-		auto rel = relative(std::filesystem::path(currentPath.toStdString()), std::filesystem::path(rootPath.toStdString()));
-		return sanitize(QString::fromStdString(rel.string()));
+		auto parent = path.parent_path();
+		if (QDir(parent).exists()) return;
+		Fs::create_directories(parent);
 	}
 
-	inline void makeDirs(QString dirPath)
+	inline const QString getName(Fs::path path)
+	{
+		return QString::fromStdString(path.stem().string());
+	}
+
+	inline void makeDirs(Fs::path dirPath)
 	{
 		if (QDir(dirPath).exists()) return;
-		std::filesystem::path new_path = dirPath.toStdString();
-		std::filesystem::create_directories(new_path);
-	}
-
-	inline void makeDirs(std::filesystem::path dirPath)
-	{
-		if (QDir(dirPath).exists()) return;
-		std::filesystem::create_directories(dirPath);
+		Fs::create_directories(dirPath);
 	}
 }
 

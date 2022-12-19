@@ -21,6 +21,49 @@
 
 namespace Ud
 {
+    namespace Fs = std::filesystem;
+
+    enum class ConfigGroup {
+        Data,
+        Editor,
+        Window
+    };
+
+    enum class ConfigVal {
+        Aot,
+        BarAlign,
+        CountChar,
+        CountLine,
+        CountWord,
+        EditorTheme,
+        Font,
+        FontSize,
+        PosCol,
+        PosLine,
+        Position,
+        Project,
+        Splitter,
+        State,
+        T_AotBtn,
+        T_ColorBar,
+        T_CursorBlink,
+        T_Cursor,
+        T_EditorTheme,
+        T_Indicator,
+        T_Keyfilter,
+        T_Lmr,
+        T_Lna,
+        T_LineHighlight,
+        T_Nav,
+        T_Pane,
+        T_Shadow,
+        T_StatusBar,
+        T_WinTheme,
+        TabStop,
+        WinTheme,
+        Wrap
+    };
+
     enum class Op {
         Config,
         Create,
@@ -50,10 +93,12 @@ namespace Ud
     void windowsReg(); // WIP
     void linuxReg(); // WIP
     void setName(QString name);
-    const QString userData(Op operation = Op::Create);
-    void saveConfig(QString group, QString valueName, QVariant value);
-    QVariant loadConfig(QString group, QString valueName, QVariant fallback = "", Ud::Type type = Ud::Type::QVariant);
-    void clear(QString dirPath, bool clearSelf = false);
+    const Fs::path userData(Op operation = Op::Create);
+    void saveConfig(ConfigGroup group, ConfigVal valueType, QVariant value);
+    QVariant loadConfig(ConfigGroup group, ConfigVal valueType, QVariant fallback = "", Ud::Type type = Ud::Type::QVariant);
+    const QString groupName(ConfigGroup group);
+    const QString valueName(ConfigVal valueType);
+    void clear(Fs::path dirPath, bool clearSelf = false);
     QString timestamp();
     std::string dll();
 }

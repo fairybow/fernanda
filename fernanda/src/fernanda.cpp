@@ -26,19 +26,19 @@ void Fernanda::showEvent(QShowEvent* event)
 void Fernanda::resizeEvent(QResizeEvent* event)
 {
     QMainWindow::resizeEvent(event);
-    Ud::saveConfig(Ud::window, "position", geometry());
+    Ud::saveConfig(Ud::ConfigGroup::Window, Ud::ConfigVal::Position, geometry());
 }
 
 void Fernanda::moveEvent(QMoveEvent* event)
 {
     QMainWindow::moveEvent(event);
-    Ud::saveConfig(Ud::window, "position", geometry());
+    Ud::saveConfig(Ud::ConfigGroup::Window, Ud::ConfigVal::Position, geometry());
 }
 
 void Fernanda::closeEvent(QCloseEvent* event)
 {
     auto state = windowState();
-    Ud::saveConfig(Ud::window, "state", state.toInt());
+    Ud::saveConfig(Ud::ConfigGroup::Window, Ud::ConfigVal::State, state.toInt());
     setWindowState(Qt::WindowState::WindowActive);
     if (activeStory.has_value() && activeStory.value().hasChanges())
     {
@@ -62,9 +62,9 @@ void Fernanda::closeEvent(QCloseEvent* event)
     event->accept();
 }
 
-void Fernanda::openUd(QString path)
+void Fernanda::openUd(FsPath path)
 {
-    QProcess::startDetached("C:\\Windows\\explorer.exe", { Path::sanitize(path) });
+    QDesktopServices::openUrl(QUrl::fromLocalFile(Path::toQString(path)));
 }
 
 const QStringList Fernanda::devPrintRenames(QVector<Io::ArcRename> renames)
@@ -74,9 +74,9 @@ const QStringList Fernanda::devPrintRenames(QVector<Io::ArcRename> renames)
     for (auto& rename : renames)
     {
         ++i;
-        QString entry = QString::number(i) + "\nKey: " + rename.key + "\nRel Path: " + rename.relPath;
+        QString entry = QString::number(i) + "\nKey: " + rename.key + "\nRel Path: " + Path::toQString(rename.relPath);
         (rename.origRelPath.has_value())
-            ? entry = entry + "\nOrig Path: " + rename.origRelPath.value()
+            ? entry = entry + "\nOrig Path: " + Path::toQString(rename.origRelPath.value())
             : entry = entry + "\nNew: " + QString((rename.typeIfNewOrCut.value() == Path::Type::Dir) ? "dir" : "file");
         result << entry;
     }
@@ -224,13 +224,13 @@ void Fernanda::makeFileMenu()
     quit->setShortcut(Qt::CTRL | Qt::Key_Q);
     connect(new_story, &QAction::triggered, this, [&]()
         {
-            auto file_name = QFileDialog::getSaveFileName(this, tr("Create a new story..."), Ud::userData(Ud::Op::GetDocs), tr("Fernanda story file (*.story)"));
-            openStory(file_name);
+            auto file_name = QFileDialog::getSaveFileName(this, tr("Create a new story..."), Path::toQString(Ud::userData(Ud::Op::GetDocs)), tr("Fernanda story file (*.story)"));
+            openStory(Path::toFs(file_name));
         });
     connect(open_story, &QAction::triggered, this, [&]()
         {
-            auto file_name = QFileDialog::getOpenFileName(this, tr("Open an existing story..."), Ud::userData(Ud::Op::GetDocs), tr("Fernanda story file (*.story)"));
-            openStory(file_name);
+            auto file_name = QFileDialog::getOpenFileName(this, tr("Open an existing story..."), Path::toQString(Ud::userData(Ud::Op::GetDocs)), tr("Fernanda story file (*.story)"));
+            openStory(Path::toFs(file_name));
         });
     connect(save, &QAction::triggered, this, &Fernanda::fileSave);
     connect(quit, &QAction::triggered, this, &QCoreApplication::quit, Qt::QueuedConnection);
@@ -250,11 +250,11 @@ void Fernanda::makeSetMenu()
         Res::DataPair{ "Top", "Top" },
         Res::DataPair{ "Bottom", "Bottom" }
     };
-    auto win_theme_list = Res::iterateResources(":\\themes\\window\\", "*.fernanda_wintheme", user_data, Res::Type::WindowTheme);
+    auto win_theme_list = Res::iterateResources(":/themes/window/", "*.fernanda_wintheme", user_data, Res::Type::WindowTheme);
     QVector<Res::DataPair> font_list;
-    auto ttfs = Res::iterateResources(":\\fonts\\", "*.ttf", user_data, Res::Type::Font);
-    font_list << Res::iterateResources(":\\fonts\\", "*.otf", user_data, Res::Type::Font, ttfs);
-    auto editor_theme_list = Res::iterateResources(":\\themes\\editor\\", "*.fernanda_theme", user_data, Res::Type::EditorTheme);
+    auto ttfs = Res::iterateResources(":/fonts/", "*.ttf", user_data, Res::Type::Font);
+    font_list << Res::iterateResources(":/fonts/", "*.otf", user_data, Res::Type::Font, ttfs);
+    auto editor_theme_list = Res::iterateResources(":/themes/editor/", "*.fernanda_theme", user_data, Res::Type::EditorTheme);
     QVector<Res::DataPair> tab_list = {
         Res::DataPair{ "20", "20 px" },
         Res::DataPair{ "40", "40 px" },
@@ -285,28 +285,28 @@ void Fernanda::makeSetMenu()
     wrapModes = makeViewToggles(wrap_list, &Fernanda::setWrapMode);
     connect(toggle_col_pos, &QAction::toggled, this, [&](bool checked)
         {
-            toggleGlobals(indicator->has.colPos, Ud::window, "position_column", checked, Toggle::Pos);
+            toggleGlobals(indicator->has.colPos, Ud::ConfigGroup::Window, Ud::ConfigVal::PosCol, checked, Toggle::Pos);
         });
     connect(toggle_line_pos, &QAction::toggled, this, [&](bool checked)
         {
-            toggleGlobals(indicator->has.linePos, Ud::window, "position_line", checked, Toggle::Pos);
+            toggleGlobals(indicator->has.linePos, Ud::ConfigGroup::Window, Ud::ConfigVal::PosLine, checked, Toggle::Pos);
         });
     connect(toggle_char_count, &QAction::toggled, this, [&](bool checked)
         {
-            toggleGlobals(indicator->has.charCount, Ud::window, "count_characters", checked, Toggle::Count);
+            toggleGlobals(indicator->has.charCount, Ud::ConfigGroup::Window, Ud::ConfigVal::CountChar, checked, Toggle::Count);
         });
     connect(toggle_line_count, &QAction::toggled, this, [&](bool checked)
         {
-            toggleGlobals(indicator->has.lineCount, Ud::window, "count_lines", checked, Toggle::Count);
+            toggleGlobals(indicator->has.lineCount, Ud::ConfigGroup::Window, Ud::ConfigVal::CountLine, checked, Toggle::Count);
         });
     connect(toggle_word_count, &QAction::toggled, this, [&](bool checked)
         {
-            toggleGlobals(indicator->has.wordCount, Ud::window, "count_words", checked, Toggle::Count);
+            toggleGlobals(indicator->has.wordCount, Ud::ConfigGroup::Window, Ud::ConfigVal::CountWord, checked, Toggle::Count);
         });
     connect(fontSlider, &QSlider::valueChanged, this, [&](int value)
         {
             setEditorFont();
-    Ud::saveConfig(Ud::editor, "font_size", value);
+            Ud::saveConfig(Ud::ConfigGroup::Editor, Ud::ConfigVal::FontSize, value);
         });
     for (auto& action : {
         toggle_col_pos,
@@ -317,17 +317,17 @@ void Fernanda::makeSetMenu()
         })
         action->setCheckable(true);
     font_size_label->setEnabled(false);
-    loadViewConfig(barAlignments->actions(), Ud::window, "bar_alignment", "Top");
-    loadMenuToggle(toggle_col_pos, Ud::window, "position_column", true);
-    loadMenuToggle(toggle_line_pos, Ud::window, "position_line", true);
-    loadMenuToggle(toggle_char_count, Ud::window, "count_characters", false);
-    loadMenuToggle(toggle_line_count, Ud::window, "count_lines", true);
-    loadMenuToggle(toggle_word_count, Ud::window, "count_words", true);
-    loadViewConfig(windowThemes->actions(), Ud::window, "wintheme", ":\\themes\\window\\Light.fernanda_wintheme");
-    loadViewConfig(editorFonts->actions(), Ud::editor, "font", "Cascadia Mono");
-    loadViewConfig(editorThemes->actions(), Ud::editor, "theme", ":\\themes\\editor\\Amber.fernanda_theme");
-    loadViewConfig(tabStops->actions(), Ud::editor, "tab", "40");
-    loadViewConfig(wrapModes->actions(), Ud::editor, "wrap", "WrapAt");
+    loadViewConfig(barAlignments->actions(), Ud::ConfigGroup::Window, Ud::ConfigVal::BarAlign, "Top");
+    loadMenuToggle(toggle_col_pos, Ud::ConfigGroup::Window, Ud::ConfigVal::PosCol, true);
+    loadMenuToggle(toggle_line_pos, Ud::ConfigGroup::Window, Ud::ConfigVal::PosLine, true);
+    loadMenuToggle(toggle_char_count, Ud::ConfigGroup::Window, Ud::ConfigVal::CountChar, false);
+    loadMenuToggle(toggle_line_count, Ud::ConfigGroup::Window, Ud::ConfigVal::CountLine, true);
+    loadMenuToggle(toggle_word_count, Ud::ConfigGroup::Window, Ud::ConfigVal::CountWord, true);
+    loadViewConfig(windowThemes->actions(), Ud::ConfigGroup::Window, Ud::ConfigVal::WinTheme, ":/themes/window/Light.fernanda_wintheme");
+    loadViewConfig(editorFonts->actions(), Ud::ConfigGroup::Editor, Ud::ConfigVal::Font, "Cascadia Mono");
+    loadViewConfig(editorThemes->actions(), Ud::ConfigGroup::Editor, Ud::ConfigVal::EditorTheme, ":/themes/editor/Amber.fernanda_theme");
+    loadViewConfig(tabStops->actions(), Ud::ConfigGroup::Editor, Ud::ConfigVal::TabStop, "40");
+    loadViewConfig(wrapModes->actions(), Ud::ConfigGroup::Editor, Ud::ConfigVal::Wrap, "WrapAt");
     auto* set = menuBar->addMenu(tr("&Set"));
     auto* bar_alignment = set->addMenu(tr("&Color bar alignment"));
     bar_alignment->addActions(barAlignments->actions());
@@ -372,70 +372,70 @@ void Fernanda::makeToggleMenu()
     auto* load_recent = new QAction(tr("&Load most recent project on open"), this);
     connect(toggle_aot, &QAction::toggled, this, [&](bool checked)
         {
-            toggleWidget(aot, Ud::window, "aot_button", checked);
+            toggleWidget(aot, Ud::ConfigGroup::Window, Ud::ConfigVal::T_AotBtn, checked);
         });
     connect(toggle_bar, &QAction::toggled, this, [&](bool checked)
         {
             sendColorBarToggle(checked);
-            Ud::saveConfig(Ud::window, "color_bar", checked);
+            Ud::saveConfig(Ud::ConfigGroup::Window, Ud::ConfigVal::T_ColorBar, checked);
         });
     connect(toggle_indicator, &QAction::toggled, this, [&](bool checked)
         {
-            toggleWidget(indicator, Ud::window, "indicator", checked);
+            toggleWidget(indicator, Ud::ConfigGroup::Window, Ud::ConfigVal::T_Indicator, checked);
         });
     connect(toggle_pane, &QAction::toggled, this, [&](bool checked)
         {
-            toggleWidget(pane, Ud::window, "pane", checked);
+            toggleWidget(pane, Ud::ConfigGroup::Window, Ud::ConfigVal::T_Pane, checked);
         });
     connect(toggle_statusbar, &QAction::toggled, this, [&](bool checked)
         {
-            toggleWidget(statusBar, Ud::window, "statusbar", checked);
+            toggleWidget(statusBar, Ud::ConfigGroup::Window, Ud::ConfigVal::T_StatusBar, checked);
         });
     connect(toggle_win_theme, &QAction::toggled, this, [&](bool checked)
         {
-            toggleGlobals(hasWinTheme, Ud::window, "wintheme_on", checked, Toggle::WinTheme);
+            toggleGlobals(hasWinTheme, Ud::ConfigGroup::Window, Ud::ConfigVal::T_WinTheme, checked, Toggle::WinTheme);
         });
     connect(toggle_cursor_blink, &QAction::toggled, this, [&](bool checked)
         {
             sendCursorBlinkToggle(checked);
-            Ud::saveConfig(Ud::editor, "cursor_blink", checked);
+            Ud::saveConfig(Ud::ConfigGroup::Editor, Ud::ConfigVal::T_CursorBlink, checked);
         });
     connect(toggle_block_cursor, &QAction::toggled, this, [&](bool checked)
         {
             sendBlockCursorToggle(checked);
-            Ud::saveConfig(Ud::editor, "block_cursor", checked);
+            Ud::saveConfig(Ud::ConfigGroup::Editor, Ud::ConfigVal::T_Cursor, checked);
         });
     connect(toggle_line_highlight, &QAction::toggled, this, [&](bool checked)
         {
             sendLineHighlightToggle(checked);
-            Ud::saveConfig(Ud::editor, "line_highlight", checked);
+            Ud::saveConfig(Ud::ConfigGroup::Editor, Ud::ConfigVal::T_LineHighlight, checked);
         });
     connect(toggle_shadow, &QAction::toggled, this, [&](bool checked)
         {
-            toggleGlobals(hasShadow, Ud::editor, "shadow", checked, Toggle::Theme);
+            toggleGlobals(hasShadow, Ud::ConfigGroup::Editor, Ud::ConfigVal::T_Shadow, checked, Toggle::Theme);
         });
     connect(toggle_theme, &QAction::toggled, this, [&](bool checked)
         {
-            toggleGlobals(hasTheme, Ud::editor, "theme_on", checked, Toggle::Theme);
+            toggleGlobals(hasTheme, Ud::ConfigGroup::Editor, Ud::ConfigVal::T_EditorTheme, checked, Toggle::Theme);
         });
     connect(toggle_keyfilter, &QAction::toggled, this, [&](bool checked)
         {
             sendKeyfilterToggle(checked);
-            Ud::saveConfig(Ud::editor, "key_filter", checked);
+            Ud::saveConfig(Ud::ConfigGroup::Editor, Ud::ConfigVal::T_Keyfilter, checked);
         });
     connect(toggle_line_numbers, &QAction::toggled, this, [&](bool checked)
         {
             sendLineNumberAreaToggle(checked);
-            Ud::saveConfig(Ud::editor, "line_number_area", checked);
+            Ud::saveConfig(Ud::ConfigGroup::Editor, Ud::ConfigVal::T_Lna, checked);
         });
     connect(toggle_scrolls, &QAction::toggled, this, [&](bool checked)
         {
             sendExtraScrollsToggle(checked);
-            Ud::saveConfig(Ud::editor, "nav_scrolls", checked);
+            Ud::saveConfig(Ud::ConfigGroup::Editor, Ud::ConfigVal::T_Nav, checked);
         });
     connect(load_recent, &QAction::toggled, this, [&](bool checked)
         {
-            Ud::saveConfig(Ud::data, "load_most_recent", checked);
+            Ud::saveConfig(Ud::ConfigGroup::Data, Ud::ConfigVal::T_Lmr, checked);
         });
     for (auto& action : {
         toggle_aot,
@@ -455,21 +455,21 @@ void Fernanda::makeToggleMenu()
         load_recent
         })
         action->setCheckable(true);
-    loadMenuToggle(toggle_aot, Ud::window, "aot_button", false);
-    loadMenuToggle(toggle_bar, Ud::window, "color_bar", true);
-    loadMenuToggle(toggle_indicator, Ud::window, "indicator", false);
-    loadMenuToggle(toggle_pane, Ud::window, "pane", true);
-    loadMenuToggle(toggle_statusbar, Ud::window, "statusbar", true);
-    loadMenuToggle(toggle_win_theme, Ud::window, "wintheme_on", true);
-    loadMenuToggle(toggle_cursor_blink, Ud::editor, "cursor_blink", true);
-    loadMenuToggle(toggle_block_cursor, Ud::editor, "block_cursor", true);
-    loadMenuToggle(toggle_line_highlight, Ud::editor, "line_highlight", true);
-    loadMenuToggle(toggle_shadow, Ud::editor, "shadow", false);
-    loadMenuToggle(toggle_theme, Ud::editor, "theme_on", true);
-    loadMenuToggle(toggle_keyfilter, Ud::editor, "key_filter", true);
-    loadMenuToggle(toggle_line_numbers, Ud::editor, "line_number_area", false);
-    loadMenuToggle(toggle_scrolls, Ud::editor, "nav_scrolls", true);
-    loadMenuToggle(load_recent, Ud::data, "load_most_recent", false);
+    loadMenuToggle(toggle_aot, Ud::ConfigGroup::Window, Ud::ConfigVal::T_AotBtn, false);
+    loadMenuToggle(toggle_bar, Ud::ConfigGroup::Window, Ud::ConfigVal::T_ColorBar, true);
+    loadMenuToggle(toggle_indicator, Ud::ConfigGroup::Window, Ud::ConfigVal::T_Indicator, false);
+    loadMenuToggle(toggle_pane, Ud::ConfigGroup::Window, Ud::ConfigVal::T_Pane, true);
+    loadMenuToggle(toggle_statusbar, Ud::ConfigGroup::Window, Ud::ConfigVal::T_StatusBar, true);
+    loadMenuToggle(toggle_win_theme, Ud::ConfigGroup::Window, Ud::ConfigVal::T_WinTheme, true);
+    loadMenuToggle(toggle_cursor_blink, Ud::ConfigGroup::Editor, Ud::ConfigVal::T_CursorBlink, true);
+    loadMenuToggle(toggle_block_cursor, Ud::ConfigGroup::Editor, Ud::ConfigVal::T_Cursor, true);
+    loadMenuToggle(toggle_line_highlight, Ud::ConfigGroup::Editor, Ud::ConfigVal::T_LineHighlight, true);
+    loadMenuToggle(toggle_shadow, Ud::ConfigGroup::Editor, Ud::ConfigVal::T_Shadow, false);
+    loadMenuToggle(toggle_theme, Ud::ConfigGroup::Editor, Ud::ConfigVal::T_EditorTheme, true);
+    loadMenuToggle(toggle_keyfilter, Ud::ConfigGroup::Editor, Ud::ConfigVal::T_Keyfilter, true);
+    loadMenuToggle(toggle_line_numbers, Ud::ConfigGroup::Editor, Ud::ConfigVal::T_Lna, false);
+    loadMenuToggle(toggle_scrolls, Ud::ConfigGroup::Editor, Ud::ConfigVal::T_Nav, true);
+    loadMenuToggle(load_recent, Ud::ConfigGroup::Data, Ud::ConfigVal::T_Lmr, false);
     auto* toggle = menuBar->addMenu(tr("&Toggle"));
     toggle->addAction(toggle_aot);
     toggle->addAction(toggle_bar);
@@ -557,7 +557,7 @@ QActionGroup* Fernanda::makeViewToggles(QVector<Res::DataPair>& dataLabelPairs, 
         auto& data = pair.path;
         auto label = pair.label.toUtf8();
         auto* action = new QAction(tr(label), this);
-        action->setData(data);
+        action->setData(Path::toQString(data));
         connect(action, &QAction::toggled, this, slot);
         action->setCheckable(true);
         group->addAction(action);
@@ -569,14 +569,14 @@ QActionGroup* Fernanda::makeViewToggles(QVector<Res::DataPair>& dataLabelPairs, 
 void Fernanda::loadConfigs()
 {
     loadWinConfigs();
-    auto value = Ud::loadConfig(Ud::editor, "font_size", 14, Ud::Type::Int).toInt();
+    auto value = Ud::loadConfig(Ud::ConfigGroup::Editor, Ud::ConfigVal::FontSize, 14, Ud::Type::Int).toInt();
     fontSlider->setValue(value);
     splitter->loadConfig(geometry());
-    auto has_project = Ud::loadConfig(Ud::data, "load_most_recent", false, Ud::Type::Bool).toBool();
+    auto has_project = Ud::loadConfig(Ud::ConfigGroup::Data, Ud::ConfigVal::T_Lmr, false, Ud::Type::Bool).toBool();
     if (has_project)
     {
-        auto project = Ud::loadConfig(Ud::data, "project").toString();
-        if (!QFile(project).exists() || project.isEmpty()) return;
+        auto project = Path::toFs(Ud::loadConfig(Ud::ConfigGroup::Data, Ud::ConfigVal::Project));
+        if (!QFile(project).exists() || project.empty()) return;
         openStory(project);
         hasStartUpBar = false;
     }
@@ -584,27 +584,27 @@ void Fernanda::loadConfigs()
 
 void Fernanda::loadWinConfigs()
 {
-    auto geometry = Ud::loadConfig(Ud::window, "position", QRect(0, 0, 1000, 666), Ud::Type::QRect).toRect();
+    auto geometry = Ud::loadConfig(Ud::ConfigGroup::Window, Ud::ConfigVal::Position, QRect(0, 0, 1000, 666), Ud::Type::QRect).toRect();
     setGeometry(geometry);
-    auto win_state = Ud::loadConfig(Ud::window, "state").toInt();
+    auto win_state = Ud::loadConfig(Ud::ConfigGroup::Window, Ud::ConfigVal::State).toInt();
     if (win_state == 1) setWindowState(Qt::WindowState::WindowMinimized);
     else if (win_state == 2) setWindowState(Qt::WindowState::WindowMaximized);
     else if (win_state == 4) setWindowState(Qt::WindowState::WindowFullScreen);
-    auto checked = Ud::loadConfig(Ud::window, "always_on_top", false).toBool();
+    auto checked = Ud::loadConfig(Ud::ConfigGroup::Window, Ud::ConfigVal::Aot, false).toBool();
     aot->setChecked(checked);
 }
 
-void Fernanda::loadViewConfig(QVector<QAction*> actions, QString group, QString valueName, QVariant fallback)
+void Fernanda::loadViewConfig(QVector<QAction*> actions, Ud::ConfigGroup group, Ud::ConfigVal valueType, QVariant fallback)
 {
-    auto resource = Ud::loadConfig(group, valueName, fallback);
+    auto resource = Ud::loadConfig(group, valueType, fallback);
     for (auto action : actions)
-        if (Path::sanitize(action->data().toString()) == resource)
+        if (Path::toFs(action->data()) == Path::toFs(resource))
         {
             action->setChecked(true);
             return;
         }
     for (auto action : actions)
-        if (Path::sanitize(action->data().toString()) == fallback)
+        if (Path::toFs(action->data()) == Path::toFs(fallback))
         {
             action->setChecked(true);
             return;
@@ -612,16 +612,16 @@ void Fernanda::loadViewConfig(QVector<QAction*> actions, QString group, QString 
     actions.first()->setChecked(true);
 }
 
-void Fernanda::loadMenuToggle(QAction* action, QString group, QString valueName, QVariant fallback)
+void Fernanda::loadMenuToggle(QAction* action, Ud::ConfigGroup group, Ud::ConfigVal valueType, QVariant fallback)
 {
-    auto toggle_state = Ud::loadConfig(group, valueName, fallback, Ud::Type::Bool).toBool();
+    auto toggle_state = Ud::loadConfig(group, valueType, fallback, Ud::Type::Bool).toBool();
     action->setChecked(!toggle_state); // whyyyyyyyyy
     action->setChecked(toggle_state);
 }
 
-void Fernanda::openStory(QString fileName, Story::Op opt)
+void Fernanda::openStory(FsPath fileName, Story::Op opt)
 {
-    if (fileName.isEmpty())
+    if (fileName.empty())
     {
         colorBar->red();
         return;
@@ -629,7 +629,7 @@ void Fernanda::openStory(QString fileName, Story::Op opt)
     activeStory = Story(fileName, opt);
     auto& story = activeStory.value();
     sendItems(story.items());
-    Ud::saveConfig(Ud::data, "project", Path::sanitize(fileName));
+    Ud::saveConfig(Ud::ConfigGroup::Data, Ud::ConfigVal::Project, Path::toQString(fileName));
     colorBar->green();
 }
 
@@ -659,24 +659,24 @@ const QString Fernanda::windowStyle(WinStyle baseOnly)
 {
     if (auto selection = windowThemes->checkedAction(); selection != nullptr)
     {
-        auto theme_path = selection->data().toString();
-        auto style_sheet = Io::readFile(":\\themes\\window_base.qss");
+        auto theme_path = Path::toFs(selection->data());
+        auto style_sheet = Io::readFile(":/themes/window_base.qss");
         if (hasWinTheme && baseOnly != WinStyle::BaseOnly)
         {
             auto theme_sheet = Io::readFile(theme_path);
-            style_sheet = style_sheet + "\n\n" + Res::createStyleSheetFromTheme(Io::readFile(":\\themes\\window.qss"), theme_sheet);
+            style_sheet = style_sheet + "\n\n" + Res::createStyleSheetFromTheme(Io::readFile(":/themes/window.qss"), theme_sheet);
         }
         sendScrollsToggle(hasWinTheme);
-        Ud::saveConfig(Ud::window, "wintheme", Path::sanitize(theme_path));
+        Ud::saveConfig(Ud::ConfigGroup::Window, Ud::ConfigVal::WinTheme, Path::toQString(theme_path));
         return style_sheet;
     }
     return nullptr;
 }
 
-void Fernanda::toggleGlobals(bool& globalBool, QString group, QString valueName, bool value, Toggle type)
+void Fernanda::toggleGlobals(bool& globalBool, Ud::ConfigGroup group, Ud::ConfigVal valueType, bool value, Toggle type)
 {
     globalBool = value;
-    Ud::saveConfig(group, valueName, value);
+    Ud::saveConfig(group, valueType, value);
     switch (type) {
     case Toggle::None:
         break;
@@ -695,10 +695,10 @@ void Fernanda::toggleGlobals(bool& globalBool, QString group, QString valueName,
     }
 }
 
-void Fernanda::toggleWidget(QWidget* widget, QString group, QString valueName, bool value)
+void Fernanda::toggleWidget(QWidget* widget, Ud::ConfigGroup group, Ud::ConfigVal valueType, bool value)
 {
     widget->setVisible(value);
-    Ud::saveConfig(group, valueName, value);
+    Ud::saveConfig(group, valueType, value);
 }
 
 void Fernanda::setWindowStyle()
@@ -710,27 +710,27 @@ void Fernanda::setEditorStyle()
 {
     if (auto selection = editorThemes->checkedAction(); selection != nullptr)
     {
-        auto theme_path = selection->data().toString();
-        auto style_sheet = Io::readFile(":\\themes\\editor_base.qss");
+        auto theme_path = Path::toFs(selection->data());
+        auto style_sheet = Io::readFile(":/themes/editor_base.qss");
         QString cursor_color = nullptr;
         QString under_cursor_color = nullptr;
         if (hasTheme)
         {
             auto theme_sheet = Io::readFile(theme_path);
-            style_sheet = style_sheet + "\n\n" + Res::createStyleSheetFromTheme(Io::readFile(":\\themes\\editor.qss"), theme_sheet);
+            style_sheet = style_sheet + "\n\n" + Res::createStyleSheetFromTheme(Io::readFile(":/themes/editor.qss"), theme_sheet);
             QRegularExpressionMatch match_cursor = Uni::regex(Uni::Re::ThemeSheetCursor).match(theme_sheet);
             QRegularExpressionMatch match_under_cursor = Uni::regex(Uni::Re::ThemeSheetCursorUnder).match(theme_sheet);
             cursor_color = match_cursor.captured(2);
             under_cursor_color = match_under_cursor.captured(2);
         }
         if (hasShadow)
-            style_sheet = style_sheet + "\n\n" + Io::readFile(":\\themes\\shadow.qss");
+            style_sheet = style_sheet + "\n\n" + Io::readFile(":/themes/shadow.qss");
         overlay->setStyleSheet(style_sheet);
         underlay->setStyleSheet(style_sheet);
         textEditor->setStyleSheet(style_sheet);
         textEditor->cursorColorHex = cursor_color;
         textEditor->cursorUnderColorHex = under_cursor_color;
-        Ud::saveConfig(Ud::editor, "theme", Path::sanitize(theme_path));
+        Ud::saveConfig(Ud::ConfigGroup::Editor, Ud::ConfigVal::EditorTheme, Path::toQString(theme_path));
     }
 }
 
@@ -740,7 +740,7 @@ void Fernanda::setEditorFont()
     {
         auto font = selection->data().toString();
         textEditor->setFont(font, fontSlider->value());
-        Ud::saveConfig(Ud::editor, "font", font);
+        Ud::saveConfig(Ud::ConfigGroup::Editor, Ud::ConfigVal::Font, font);
     }
 }
 
@@ -769,7 +769,7 @@ void Fernanda::aotToggled(bool checked)
         aot->setText(Uni::ico(Uni::Ico::Pushpin));
     }
     show();
-    Ud::saveConfig(Ud::window, "always_on_top", checked);
+    Ud::saveConfig(Ud::ConfigGroup::Window, Ud::ConfigVal::Aot, checked);
 }
 
 void Fernanda::setTabStop()
@@ -778,7 +778,7 @@ void Fernanda::setTabStop()
     {
         auto distance = selection->data().toInt();
         textEditor->setTabStopDistance(distance);
-        Ud::saveConfig(Ud::editor, "tab", distance);
+        Ud::saveConfig(Ud::ConfigGroup::Editor, Ud::ConfigVal::TabStop, distance);
     }
 }
 
@@ -795,7 +795,7 @@ void Fernanda::setWrapMode()
             textEditor->setWordWrapMode(QTextOption::WrapAnywhere);
         else if (mode == "WrapAt")
             textEditor->setWordWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
-        Ud::saveConfig(Ud::editor, "wrap", mode);
+        Ud::saveConfig(Ud::ConfigGroup::Editor, Ud::ConfigVal::Wrap, mode);
     }
 }
 
@@ -807,7 +807,7 @@ void Fernanda::setBarAlignment()
         (alignment == "Bottom")
             ? colorBar->align(Qt::AlignBottom)
             : colorBar->align(Qt::AlignTop);
-        Ud::saveConfig(Ud::window, "bar_alignment", alignment);
+        Ud::saveConfig(Ud::ConfigGroup::Window, Ud::ConfigVal::BarAlign, alignment);
     }
 }
 
@@ -833,7 +833,7 @@ void Fernanda::helpMakeSampleProject()
 void Fernanda::helpMakeSampleRes()
 {
     auto path = Ud::userData(Ud::Op::GetUserData);
-    Sample::makeRc(path.toStdString());
+    Sample::makeRc(path);
     colorBar->pastels();
     QMessageBox alert;
     alert.setStyleSheet(windowStyle(WinStyle::BaseOnly));
@@ -844,7 +844,7 @@ void Fernanda::helpMakeSampleRes()
     alert.setDefaultButton(ok);
     alert.exec();
     if (alert.clickedButton() == open)
-        QProcess::startDetached("C:\\Windows\\explorer.exe", { Path::sanitize(path) });
+        openUd(path);
 }
 
 void Fernanda::helpShortcuts()
@@ -874,7 +874,7 @@ void Fernanda::helpAbout()
 void Fernanda::devWrite(QString name, QString value)
 {
     auto docs = Ud::userData(Ud::Op::GetDocs);
-    Io::writeFile(docs / name, value);
+    Io::writeFile(docs / name.toStdString(), value);
 }
 
 void Fernanda::handleEditorText(QString key)

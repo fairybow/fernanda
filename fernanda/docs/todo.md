@@ -1,7 +1,7 @@
 # To-Do
 
 ## General
-- [ ] Convert paths to `std::filesystem::path`
+- [x] ~~Convert paths to `std::filesystem::path`~~
 - [x] ~~Activate dev menu via command arg~~
 - [ ] Redo Dependency Tree
 - [ ] Moveable documents folder
@@ -9,7 +9,7 @@
 - [ ] Add dialogs to free functions?
 - [ ] Move the startup `ColorBar` singleshot to a different window event? `showEvent` doesn't seem to be working for this
 - [ ] Move the `nullptr` checks closer to the functions that create the `nullptr`, if possible (viz., don't wait till the info is sent to `Story` to cancel a nullptr from `Pane renameItem()`)
-- [ ] Bombine all the messagebox functions into something that generates most of it as a default config
+- [ ] Combine all the messagebox functions into something that generates most of it as a default config
 - [x] ~~Change/remove all "`metaDoc`" names~~
 - [ ] Replace certain bool args with enums for descriptive actions taken (like "finalize" in `dom->renames()`)
 - [ ] Alphabetize enums and generally clean up headers
@@ -22,6 +22,7 @@
 - [x] ~~Make Pallete.txt an .md~~
 - [ ] Is there a way to link swatches?
 - [ ] Implement QStringLiterals where possible
+- [x] ~~Fonts and credits to Readme~~
 
 ## Classes
 
@@ -80,7 +81,7 @@
 
 ### Pane
 - [ ] Persist selected-item highlight between saves/moves
-- [ ] `persistentEditor` or an input dialog for `rename()`? (`openPersistentEditor(itemModel->indexFromItem(temp_item));`)
+- [ ] `persistentEditor()` or an input dialog for `rename()`? (`openPersistentEditor(itemModel->indexFromItem(temp_item));`)
 - [ ] Style scrollbars
 
 ### PaneDelegate
@@ -101,14 +102,17 @@
 
 ### Path
 
-- [ ] May not need `makePosix()`; Bit7z only accepts `\\` paths for searching
+- [x] ~~May not need `makePosix()`; Bit7z only accepts `\\` paths for searching~~
 
 ### Res
 
 - [ ] There surely must be a smarter way to incorporate `.otf` into the fonts RC list (applies to MainWindow, too)
+- [x] ~~Convert to `std::filesystem::path`~~
 
 ### Sample
 
 ### Uni
 
 ### Ud
+
+- [x] ~~Enums for group (and possibly value)~~

@@ -13,6 +13,7 @@
 
 class Story
 {
+    using FsPath = std::filesystem::path;
 
 public:
     enum class Op {
@@ -20,7 +21,7 @@ public:
         Sample
     };
 
-    Story(QString filePath, Op opt = Op::Normal);
+    Story(FsPath filePath, Op opt = Op::Normal);
 
     const QString devGetDom(Dom::Doc doc = Dom::Doc::Current);
     QVector<Io::ArcRename> devGetRenames();
@@ -41,7 +42,7 @@ private:
     Archiver* archiver = new Archiver;
     Dom* dom = new Dom;
 
-    QString activeArcPath = nullptr;
+    FsPath activeArcPath;
     QString activeKey = nullptr;
     QString cleanText = nullptr;
     QVector<QString> editedKeys;
@@ -54,11 +55,11 @@ private:
     void make(Op opt);
     const QString xml();
     void newXml();
-    void newXml_recursor(QXmlStreamWriter& writer, QString rPath, QString rootPath = nullptr);
+    void newXml_recursor(QXmlStreamWriter& writer, FsPath rPath, FsPath rootPath = FsPath());
     QStandardItem* items_recursor(QXmlStreamReader& reader);
     void tempSave(QString key, QString text);
     const QString tempOpen(QString newKey);
-    const QString tempPath(QString key);
+    const FsPath tempPath(QString key);
     void amendEditsList(AmendEdits op);
     bool isEdited(QString key);
     void bak();
