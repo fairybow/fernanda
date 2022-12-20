@@ -23,6 +23,10 @@
 - [ ] Is there a way to link swatches?
 - [ ] Implement QStringLiterals where possible
 - [x] ~~Fonts and credits to Readme~~
+- [x] ~~File path as opening arg~~
+- [x] ~~Prompt to save or abandon changes (and then clear temp folder either way) on switching projects (opening if a project already exists)~~
+- [x] ~~Show open `.story` in window title?~~
+- [x] ~~Move closing popup to an `unsavedChanges()`, which should also do the temp clearing, with clearing self dependent on a bool that will also toggle the message (are you sure you want to close, vs. are you sure you want to switch stories)~~
 
 ## Classes
 
@@ -93,6 +97,7 @@
 ### Story
 
 - [ ] Only hold X amount of backups per file
+- [x] ~~Probably don't need to keep full file path for root~~
 
 ## Namespaces
 
@@ -116,3 +121,4 @@
 ### Ud
 
 - [x] ~~Enums for group (and possibly value)~~
+- [ ] Split up the enums with namespaces for editor, data, and window (removing arg requirement for a ConfigGroup) (Unclear on how to do this at the moment)

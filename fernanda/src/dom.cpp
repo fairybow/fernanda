@@ -75,7 +75,7 @@ void Dom::move(QString pivotKey, QString fulcrumKey, Io::Move pos)
 	auto renames = prepareChildRenames_recursor(pivot, children_base_path);
 	renames << Io::ArcRename{ pivotKey, new_pivot_path };
 	for (auto& rename : renames)
-		write(rename.key, Path::toQString(rename.relPath), Write::Rename);
+		write(rename.key, Path::toQString(rename.relPath, true), Write::Rename);
 }
 
 void Dom::rename(QString newName, QString key)
@@ -90,7 +90,7 @@ void Dom::rename(QString newName, QString key)
 	if (isDir(elem))
 		renames << prepareChildRenames_recursor(elem, new_path, ChildRenames::InPlace);
 	for (auto& rename : renames)
-		write(rename.key, rename.relPath, Write::Rename);
+		write(rename.key, Path::toQString(rename.relPath, true), Write::Rename);
 }
 
 void Dom::add(QString newName, Path::Type type, QString parentKey)
@@ -132,7 +132,7 @@ void Dom::add(QString newName, Path::Type type, QString parentKey)
 		nearest_dir = Io::storyRoot;
 	auto path = nearest_dir / Path::toFs(name);
 	parent_element.appendChild(elem);
-	write(key, path, Write::Rename);
+	write(key, Path::toQString(path, true), Write::Rename);
 }
 
 void Dom::cut(QString key)

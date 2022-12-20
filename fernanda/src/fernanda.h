@@ -38,7 +38,7 @@ class Fernanda : public QMainWindow
     Q_OBJECT
 
 public:
-    Fernanda(bool isDev, QWidget* parent = nullptr);
+    Fernanda(bool dev, FsPath story, QWidget* parent = nullptr);
 
 protected:
     void showEvent(QShowEvent* event) override;
@@ -68,6 +68,7 @@ private:
     QTimer* autoTempSave = new QTimer(this);
 
     std::optional<Story> activeStory;
+    bool isDev = false;
     bool isInitialized = false;
     bool hasStartUpBar = true;
     bool hasWinTheme = true;
@@ -86,21 +87,22 @@ private:
         WithTheme
     };
 
+    bool confirmStoryClose(bool isQuit = false);
     void openUd(FsPath path);
     const QStringList devPrintRenames(QVector<Io::ArcRename> renames);
-    void setName(bool isDev);
+    const QString ferName(bool dev = false);
     void addWidgets();
     QWidget* stackWidgets(QVector<QWidget*> widgets);
     void connections();
     void shortcuts();
-    void makeMenuBar(bool isDev);
+    void makeMenuBar();
     void makeFileMenu();
     void makeSetMenu();
     void makeToggleMenu();
     void makeHelpMenu();
     void makeDevMenu();
     QActionGroup* makeViewToggles(QVector<Res::DataPair>& dataLabelPairs, void (Fernanda::* slot)());
-    void loadConfigs();
+    void loadConfigs(FsPath story);
     void loadWinConfigs();
     void loadViewConfig(QVector<QAction*> actions, Ud::ConfigGroup group, Ud::ConfigVal valueType, QVariant fallback);
     void loadMenuToggle(QAction* action, Ud::ConfigGroup group, Ud::ConfigVal valueType, QVariant fallback);
@@ -125,7 +127,7 @@ private slots:
     void helpShortcuts();
     void helpAbout();
     void devWrite(QString name, QString value);
-    void handleEditorText(QString key);
+    void handleEditorText(QString key = nullptr);
     void sendEditedText();
     bool replyHasProject();
     void domMove(QString pivotKey, QString fulcrumKey, Io::Move pos);
@@ -149,6 +151,7 @@ signals:
     void updatePositions(const int cursorBlockNumber, const int cursorPosInBlock);
     void updateCounts(const QString text, const int blockCount);
     void updateSelection(const QString selectedText, const int lineCount);
+    void addStoryToTitle(FsPath path);
 };
 
 // fernanda.h, fernanda

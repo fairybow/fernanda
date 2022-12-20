@@ -7,7 +7,6 @@ TextEditor::TextEditor(QWidget* parent)
 {
     lineNumberArea = new LineNumberArea(this);
     cursorBlink->setTimerType(Qt::VeryCoarseTimer);
-    setReadOnly(true);
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     addScrollBarWidget(scrollUp, Qt::AlignTop);
@@ -73,18 +72,25 @@ int TextEditor::lineNumberAreaWidth()
     return 0;
 }
 
-bool TextEditor::handleKeySwap(QString oldKey, QString newKey)
+TextEditor::Action TextEditor::handleKeySwap(QString oldKey, QString newKey)
 {
-    if (isReadOnly())
-        setReadOnly(false);
+    if (newKey == nullptr)
+    {
+        clear();
+        setReadOnly(true);
+        cursorPositions.clear();
+        return Action::Cleared;
+    }
     if (oldKey == newKey)
     {
         setFocus();
-        return false;
+        return Action::None;
     }
+    if (isReadOnly())
+        setReadOnly(false);
     if (oldKey != nullptr)
         storeCursors(oldKey);
-    return true;
+    return Action::AcceptNew;
 }
 
 void TextEditor::handleTextSwap(QString key, QString text)

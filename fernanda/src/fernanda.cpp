@@ -2,16 +2,18 @@
 
 #include "fernanda.h"
 
-Fernanda::Fernanda(bool isDev, QWidget* parent)
+Fernanda::Fernanda(bool dev, FsPath story, QWidget* parent)
     : QMainWindow(parent)
 {
-    setName(isDev);
+    auto name = ferName(dev);
+    setWindowTitle(name);
+    Ud::setName(name);
     //Ud::windowsReg();
     addWidgets();
     connections();
     Ud::userData();
-    makeMenuBar(isDev);
-    loadConfigs();
+    makeMenuBar();
+    loadConfigs(story);
 }
 
 void Fernanda::showEvent(QShowEvent* event)
@@ -40,26 +42,35 @@ void Fernanda::closeEvent(QCloseEvent* event)
     auto state = windowState();
     Ud::saveConfig(Ud::ConfigGroup::Window, Ud::ConfigVal::State, state.toInt());
     setWindowState(Qt::WindowState::WindowActive);
-    if (activeStory.has_value() && activeStory.value().hasChanges())
+    auto quit = confirmStoryClose(true);
+    if (!quit)
     {
-        QMessageBox alert;
-        alert.setStyleSheet(windowStyle(WinStyle::BaseOnly));
-        alert.setWindowTitle("Hey!");
-        alert.setText(Uni::close());
-        alert.addButton(QMessageBox::Yes);
-        auto no = alert.addButton(QMessageBox::No);
-        alert.setDefaultButton(no);
-        alert.exec();
-        if (alert.clickedButton() == no)
-        {
-            setWindowState(state);
-            event->ignore();
-            colorBar->green();
-            return;
-        }
+        setWindowState(state);
+        event->ignore();
+        colorBar->green();
+        return;
     }
     Ud::clear(Ud::userData(Ud::Op::GetTemp), true);
     event->accept();
+}
+
+bool Fernanda::confirmStoryClose(bool isQuit)
+{
+    if (!activeStory.has_value() || !activeStory.value().hasChanges()) return true;
+    QMessageBox alert;
+    alert.setStyleSheet(windowStyle(WinStyle::BaseOnly));
+    alert.setWindowTitle("Hey!");
+    alert.setText(Uni::change(isQuit));
+    alert.addButton(QMessageBox::Yes);
+    auto no = alert.addButton(QMessageBox::No);
+    auto save_and = alert.addButton(tr(Uni::saveAnd(isQuit)), QMessageBox::ActionRole);
+    alert.setDefaultButton(no);
+    alert.exec();
+    if (alert.clickedButton() == no)
+        return false;
+    else if (alert.clickedButton() == save_and)
+        fileSave();
+    return true;
 }
 
 void Fernanda::openUd(FsPath path)
@@ -83,14 +94,15 @@ const QStringList Fernanda::devPrintRenames(QVector<Io::ArcRename> renames)
     return result;
 }
 
-void Fernanda::setName(bool isDev)
+const QString Fernanda::ferName(bool dev)
 {
-    QString name;
+    QString result;
+    if (dev)
+        isDev = dev;
     (isDev)
-        ? name = "fernanda-dev"
-        : name = "fernanda";
-    setWindowTitle(name);
-    Ud::setName(name);
+        ? result = "fernanda (dev)"
+        : result = "fernanda";
+    return result;
 }
 
 void Fernanda::addWidgets()
@@ -164,6 +176,10 @@ void Fernanda::connections()
     connect(pane, &Pane::askSetExpansion, this, [&](QString key, bool isExpanded) { activeStory.value().setItemExpansion(key, isExpanded); });
     connect(textEditor, &TextEditor::askNavNext, pane, [&]() { pane->nav(Pane::Nav::Next); });
     connect(textEditor, &TextEditor::askNavPrevious, pane, [&]() { pane->nav(Pane::Nav::Previous); });
+    connect(this, &Fernanda::addStoryToTitle, this, [&](FsPath path)
+        {
+            setWindowTitle(Path::getName(path) + " - " + ferName());
+        });
     connect(textEditor, &TextEditor::cursorPositionChanged, this, [&]()
         {
             updatePositions(textEditor->textCursor().blockNumber(), textEditor->textCursor().positionInBlock());
@@ -204,7 +220,7 @@ void Fernanda::shortcuts()
         });
 }
 
-void Fernanda::makeMenuBar(bool isDev)
+void Fernanda::makeMenuBar()
 {
     makeFileMenu();
     makeSetMenu();
@@ -566,19 +582,26 @@ QActionGroup* Fernanda::makeViewToggles(QVector<Res::DataPair>& dataLabelPairs, 
     return group;
 }
 
-void Fernanda::loadConfigs()
+void Fernanda::loadConfigs(FsPath story)
 {
     loadWinConfigs();
     auto value = Ud::loadConfig(Ud::ConfigGroup::Editor, Ud::ConfigVal::FontSize, 14, Ud::Type::Int).toInt();
     fontSlider->setValue(value);
     splitter->loadConfig(geometry());
-    auto has_project = Ud::loadConfig(Ud::ConfigGroup::Data, Ud::ConfigVal::T_Lmr, false, Ud::Type::Bool).toBool();
-    if (has_project)
+    auto is_empty = story.empty();
+    auto load_most_recent = Ud::loadConfig(Ud::ConfigGroup::Data, Ud::ConfigVal::T_Lmr, false, Ud::Type::Bool).toBool();
+    if (load_most_recent || !is_empty)
+        hasStartUpBar = false;
+    if (!is_empty)
+    {
+        openStory(story);
+        return;
+    }
+    if (load_most_recent)
     {
         auto project = Path::toFs(Ud::loadConfig(Ud::ConfigGroup::Data, Ud::ConfigVal::Project));
         if (!QFile(project).exists() || project.empty()) return;
         openStory(project);
-        hasStartUpBar = false;
     }
 }
 
@@ -626,11 +649,16 @@ void Fernanda::openStory(FsPath fileName, Story::Op opt)
         colorBar->red();
         return;
     }
+    auto change = confirmStoryClose();
+    if (!change) return;
+    Ud::clear(Ud::userData(Ud::Op::GetTemp));
     activeStory = Story(fileName, opt);
     auto& story = activeStory.value();
+    addStoryToTitle(fileName);
+    handleEditorText();
     sendItems(story.items());
-    Ud::saveConfig(Ud::ConfigGroup::Data, Ud::ConfigVal::Project, Path::toQString(fileName));
     colorBar->green();
+    Ud::saveConfig(Ud::ConfigGroup::Data, Ud::ConfigVal::Project, Path::toQString(fileName));
 }
 
 void Fernanda::actionCycle(QActionGroup* group)
@@ -825,7 +853,6 @@ void Fernanda::fileSave()
 
 void Fernanda::helpMakeSampleProject()
 {
-    // ask to save if another project is open
     auto path = Ud::userData(Ud::Op::GetDocs) / "Candide.story";
     openStory(path, Story::Op::Sample);
 }
@@ -839,7 +866,7 @@ void Fernanda::helpMakeSampleRes()
     alert.setStyleSheet(windowStyle(WinStyle::BaseOnly));
     alert.setWindowTitle("Hey!");
     alert.setText(Uni::samples());
-    auto ok = alert.addButton(tr("Okay"), QMessageBox::AcceptRole);
+    auto ok = alert.addButton(QMessageBox::Ok);
     auto open = alert.addButton(tr("Open the user data folder"), QMessageBox::AcceptRole);
     alert.setDefaultButton(ok);
     alert.exec();
@@ -853,7 +880,7 @@ void Fernanda::helpShortcuts()
     shortcuts.setStyleSheet(windowStyle(WinStyle::BaseOnly));
     shortcuts.setWindowTitle("Shortcuts");
     shortcuts.setText(Uni::shortcuts());
-    auto ok = shortcuts.addButton(tr("Okay"), QMessageBox::AcceptRole);
+    auto ok = shortcuts.addButton(QMessageBox::Ok);
     shortcuts.setDefaultButton(ok);
     shortcuts.exec();
 }
@@ -864,7 +891,7 @@ void Fernanda::helpAbout()
     about.setStyleSheet(windowStyle(WinStyle::BaseOnly));
     about.setWindowTitle("About");
     about.setText(Uni::about());
-    auto ok = about.addButton(tr("Okay"), QMessageBox::AcceptRole);
+    auto ok = about.addButton(QMessageBox::Ok);
     auto qt = about.addButton(tr("About Qt"), QMessageBox::AcceptRole);
     connect(qt, &QPushButton::clicked, this, QApplication::aboutQt);
     about.setDefaultButton(ok);
@@ -879,13 +906,25 @@ void Fernanda::devWrite(QString name, QString value)
 
 void Fernanda::handleEditorText(QString key)
 {
-    if (overlay->isVisible())
-        overlay->hide();
-    auto& story = activeStory.value();
-    if (!textEditor->handleKeySwap(story.key(), key)) return;
-    auto text = story.tempSaveOld_openNew(key, textEditor->toPlainText());
-    textEditor->handleTextSwap(key, text);
-    startAutoTempSave();
+    QString old_key = nullptr;
+    if (activeStory.has_value())
+        old_key = activeStory.value().key();
+    auto action = textEditor->handleKeySwap(old_key, key);
+    switch (action) {
+    case TextEditor::Action::None: break;
+    case TextEditor::Action::AcceptNew:
+        if (overlay->isVisible())
+            overlay->hide();
+        {
+            auto text = activeStory.value().tempSaveOld_openNew(key, textEditor->toPlainText());
+            textEditor->handleTextSwap(key, text);
+            startAutoTempSave();
+        }
+        break;
+    case TextEditor::Action::Cleared:
+        overlay->show();
+        break;
+    }
 }
 
 void Fernanda::sendEditedText()
@@ -926,6 +965,8 @@ void Fernanda::domCut(QString key)
     auto& story = activeStory.value();
     story.cut(key);
     sendItems(story.items());
+    handleEditorText();
+    overlay->show();
 }
 
 void Fernanda::cycleCoreEditorThemes()

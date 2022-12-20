@@ -86,16 +86,12 @@ namespace Ud
         QString appName;
     } dataVars;
 
-    const QString editor = QStringLiteral("editor");
-    const QString data = QStringLiteral("data");
-    const QString window = QStringLiteral("window");
-
     void windowsReg(); // WIP
     void linuxReg(); // WIP
     void setName(QString name);
     const Fs::path userData(Op operation = Op::Create);
     void saveConfig(ConfigGroup group, ConfigVal valueType, QVariant value);
-    QVariant loadConfig(ConfigGroup group, ConfigVal valueType, QVariant fallback = "", Ud::Type type = Ud::Type::QVariant);
+    QVariant loadConfig(ConfigGroup group, ConfigVal valueType, QVariant fallback = QVariant(), Ud::Type type = Ud::Type::QVariant);
     const QString groupName(ConfigGroup group);
     const QString valueName(ConfigVal valueType);
     void clear(Fs::path dirPath, bool clearSelf = false);

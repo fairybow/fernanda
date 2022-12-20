@@ -34,6 +34,11 @@ class TextEditor : public QPlainTextEdit
 public:
     TextEditor(QWidget* parent = nullptr);
 
+    enum class Action {
+        None = 0,
+        AcceptNew,
+        Cleared
+    };
     enum class Scroll {
         Next,
         Previous
@@ -48,7 +53,7 @@ public:
 
     void lineNumberAreaPaintEvent(QPaintEvent* event);
     int lineNumberAreaWidth();
-    bool handleKeySwap(QString oldKey, QString newKey);
+    Action handleKeySwap(QString oldKey, QString newKey);
     void handleTextSwap(QString key, QString text);
     int selectedLineCount();
     void scrollNavClicked(Scroll direction);

@@ -101,9 +101,20 @@ namespace Uni
 		return result;
 	}
 
-	inline const QString close()
+	inline const QString change(bool isQuit = false)
 	{
-		return QStringLiteral("You have <b>unsaved changes</b>. Are you sure you want to quit?");
+		QString result;
+		auto base = QStringLiteral("You have <b>unsaved changes</b>. Are you sure you want to ");
+		(isQuit)
+			? result = base + "quit?"
+			: result = base + "change stories?";
+		return result;
+	}
+
+	inline const char* saveAnd(bool isQuit = false)
+	{
+		if (isQuit) return "Save and quit";
+		return "Save and change";
 	}
 
 	inline const QString samples()

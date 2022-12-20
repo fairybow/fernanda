@@ -157,8 +157,6 @@ void Story::newXml()
 	writer.writeStartDocument();
 	writer.writeStartElement(dom->tagRoot);
 	writer.writeAttribute(dom->attrRelPath, Path::toQString(Io::storyRoot));
-	writer.writeAttribute("project", Path::getName(activeArcPath));
-	writer.writeAttribute("file_path", Path::toQString(activeArcPath, true));
 	newXml_recursor(writer, temp_dir_path / Io::storyRoot);
 	writer.writeEndDocument();
 	QTemporaryDir temp_dir_2;
