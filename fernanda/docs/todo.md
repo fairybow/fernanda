@@ -27,12 +27,16 @@
 - [x] ~~Prompt to save or abandon changes (and then clear temp folder either way) on switching projects (opening if a project already exists)~~
 - [x] ~~Show open `.story` in window title?~~
 - [x] ~~Move closing popup to an `unsavedChanges()`, which should also do the temp clearing, with clearing self dependent on a bool that will also toggle the message (are you sure you want to close, vs. are you sure you want to switch stories)~~
+- [x] ~~Handle cutting of multiple items (deleting folder or parent file), activeKey of cut file isn't being nullptred when parent dir is cut, for example, and then all contained cut file keys remain in edits list~~
+- [ ] Temp save before cut?
+- [ ] Delete trailing spaces on save
 
 ## Classes
 
 ### Archiver
 - [ ] Switch to streams (i.e., for `add()` and `create()`)
 - [ ] Rename/refactor functions to better reflect their roles / be more descriptive
+- [x] ~~Saving after deleting an item that has children causes a crash in `rename()` (It might be just deleting things that have moved. They may be receiving the non-existant rename path instead of rel_path?)~~
 
 ### ColorBar
 
@@ -98,6 +102,9 @@
 
 - [ ] Only hold X amount of backups per file
 - [x] ~~Probably don't need to keep full file path for root~~
+- [x] ~~Cutting a file can result in a temp save of cut file appearing in root of `.story` on save (possibly fixed by clearing activeKey in Story on file cut)~~
+- [x] ~~Cutting a file can result in error in edited keys list~~
+- [x] ~~`devGetEditedKeys()` deleted keys currently remain.~~
 
 ## Namespaces
 

@@ -59,7 +59,7 @@ public:
     void move(QString pivotKey, QString fulcrumKey, Io::Move pos);
     void rename(QString newName, QString key);
     void add(QString newName, Path::Type type, QString parentKey);
-    void cut(QString key);
+    QVector<QString> cut(QString key);
     QVector<Io::ArcRename> cuts();
     QVector<Io::ArcRename> renames(Finalize finalize = Finalize::No);
 
@@ -149,6 +149,7 @@ private:
     QVector<QDomElement> elementsByAttribute(QString attribute, QString value = nullptr);
     QVector<QDomElement> elementsByAttribute_recursor(QDomElement node, QString attribute, QString value = nullptr, QVector<QDomElement> result = QVector<QDomElement>());
     void movePaths(FsPath& newPivotPath, FsPath& newPivotParentPath, QString pivotName, QString fulcrumKey);
+    QVector<QString> childKeys_recursor(QDomElement node, QVector<QString> result = QVector<QString>());
     QVector<Io::ArcRename> prepareChildRenames_recursor(QDomElement node, FsPath stemPathParent, ChildRenames renameType = ChildRenames::Move, QVector<Io::ArcRename> result = QVector<Io::ArcRename>());
     FsPath filterPath(QDomElement elem, Filter filter = Filter::RenameToOrig);
 

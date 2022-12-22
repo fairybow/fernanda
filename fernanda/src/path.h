@@ -10,11 +10,6 @@
 #include <QRegularExpression>
 #include <QString>
 
-inline void operator<<(std::vector<std::string>& lhs, const std::string& rhs)
-{
-	return lhs.push_back(rhs);
-}
-
 namespace Path
 {
 	namespace Fs = std::filesystem;

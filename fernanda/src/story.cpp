@@ -20,6 +20,16 @@ QVector<Io::ArcRename> Story::devGetRenames()
 	return dom->renames();
 }
 
+const QVector<QString> Story::devGetEditedKeys()
+{
+	return editedKeys;
+}
+
+const Story::FsPath Story::devGetActiveTemp()
+{
+	return Ud::userData(Ud::Op::GetTemp) / activeArcPath.stem();
+}
+
 QVector<QStandardItem*> Story::items()
 {
 	QVector<QStandardItem*> result;
@@ -60,13 +70,10 @@ void Story::autoTempSave(QString text)
 
 QVector<QString> Story::edits(QString currentText)
 {
-	QVector<QString> result;
-	if (activeKey == nullptr) return result;
 	(cleanText != currentText)
 		? amendEditsList(AmendEdits::Add)
 		: amendEditsList(AmendEdits::Remove);
-	result = editedKeys;
-	return result;
+	return editedKeys;
 }
 
 bool Story::hasChanges()
@@ -95,9 +102,20 @@ void Story::add(QString newName, Path::Type type, QString parentKey)
 	dom->add(newName, type, parentKey);
 }
 
-void Story::cut(QString key)
+bool Story::cut(QString key)
 {
-	dom->cut(key);
+	auto result = false;
+	auto keys = dom->cut(key);
+	for (auto& _key : keys)
+	{
+		if (_key == activeKey)
+		{
+			activeKey = nullptr;
+			result = true;
+		}
+		amendEditsList(AmendEdits::Remove, _key);
+	}
+	return result;
 }
 
 void Story::save(QString text)
@@ -252,16 +270,19 @@ const Story::FsPath Story::tempPath(QString key)
 	return proj_temp / rel_path;
 }
 
-void Story::amendEditsList(AmendEdits op)
+void Story::amendEditsList(AmendEdits op, QString key)
 {
+	if (key == nullptr && activeKey == nullptr) return;
+	if (key == nullptr)
+		key = activeKey;
 	switch (op) {
 	case AmendEdits::Add:
-		if (!editedKeys.contains(activeKey))
-			editedKeys << activeKey;
+		if (!editedKeys.contains(key))
+			editedKeys << key;
 		break;
 	case AmendEdits::Remove:
-		if (editedKeys.contains(activeKey))
-			editedKeys.removeAll(activeKey);
+		if (editedKeys.contains(key))
+			editedKeys.removeAll(key);
 		break;
 	}
 }

@@ -25,6 +25,8 @@ public:
 
     const QString devGetDom(Dom::Doc doc = Dom::Doc::Current);
     QVector<Io::ArcRename> devGetRenames();
+    const QVector<QString> devGetEditedKeys();
+    const FsPath devGetActiveTemp();
     QVector<QStandardItem*> items();
     const QString key();
     const QString tempSaveOld_openNew(QString newKey, QString oldText = nullptr);
@@ -35,7 +37,7 @@ public:
     void move(QString pivotKey, QString fulcrumKey, Io::Move pos);
     void rename(QString newName, QString key);
     void add(QString newName, Path::Type type, QString parentKey);
-    void cut(QString key);
+    bool cut(QString key);
     void save(QString text = nullptr);
 
 private:
@@ -60,7 +62,7 @@ private:
     void tempSave(QString key, QString text);
     const QString tempOpen(QString newKey);
     const FsPath tempPath(QString key);
-    void amendEditsList(AmendEdits op);
+    void amendEditsList(AmendEdits op, QString key = nullptr);
     bool isEdited(QString key);
     void bak();
 };

@@ -34,6 +34,19 @@ TextEditor::TextEditor(QWidget* parent)
     highlightCurrentLine();
 }
 
+const QVector<QString> TextEditor::devGetCursorPositions()
+{
+    QVector<QString> result;
+    result << "Current document will not be present!";
+    int i = 0;
+    for (auto& set : cursorPositions)
+    {
+        ++i;
+        result << QString::number(i) + "\nKey: " + set.key + "\nPosition: " + QString::number(set.position) + "\nAnchor: " + QString::number(set.anchor);
+    }
+    return result;
+}
+
 void TextEditor::lineNumberAreaPaintEvent(QPaintEvent* event)
 {
     QPainter painter(lineNumberArea);
@@ -74,21 +87,17 @@ int TextEditor::lineNumberAreaWidth()
 
 TextEditor::Action TextEditor::handleKeySwap(QString oldKey, QString newKey)
 {
-    if (newKey == nullptr)
-    {
-        clear();
-        setReadOnly(true);
-        cursorPositions.clear();
-        return Action::Cleared;
-    }
     if (oldKey == newKey)
     {
         setFocus();
         return Action::None;
     }
-    if (isReadOnly())
+    if (oldKey == nullptr)
+    {
         setReadOnly(false);
-    if (oldKey != nullptr)
+        askOverlay(Overlay::Hide);
+    }
+    else
         storeCursors(oldKey);
     return Action::AcceptNew;
 }
@@ -184,6 +193,15 @@ void TextEditor::toggleCursorBlink(bool checked)
 {
     hasCursorBlink = checked;
     startBlinker();
+}
+
+void TextEditor::close(bool isFinal)
+{
+    clear();
+    setReadOnly(true);
+    askOverlay(Overlay::Show);
+    if (isFinal)
+        cursorPositions.clear();
 }
 
 void TextEditor::resizeEvent(QResizeEvent* event)

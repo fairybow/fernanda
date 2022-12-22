@@ -135,11 +135,15 @@ void Dom::add(QString newName, Path::Type type, QString parentKey)
 	write(key, Path::toQString(path, true), Write::Rename);
 }
 
-void Dom::cut(QString key)
+QVector<QString> Dom::cut(QString key)
 {
+	QVector<QString> result;
+	result << key;
 	auto elem = element<QDomElement>(key);
+	result << childKeys_recursor(elem);
 	cutElements.documentElement().appendChild(cutElements.importNode(elem, true));
 	elem.parentNode().removeChild(elem);
+	return result;
 }
 
 QVector<Io::ArcRename> Dom::cuts()
@@ -276,6 +280,19 @@ void Dom::movePaths(FsPath& newPivotPath, FsPath& newPivotParentPath, QString pi
 		? newPivotParentPath = Io::storyRoot
 		: newPivotParentPath = element<FsPath>(fulcrum_parent_key, Element::Path);
 	newPivotPath = newPivotParentPath / Path::toFs(pivotName);
+}
+
+QVector<QString> Dom::childKeys_recursor(QDomElement node, QVector<QString> result)
+{
+	auto child_node = node.firstChildElement();
+	while (!child_node.isNull())
+	{
+		if (isFile(child_node))
+			result << child_node.attribute(attrKey);
+		result << childKeys_recursor(child_node);
+		child_node = child_node.nextSiblingElement();
+	}
+	return result;
 }
 
 QVector<Io::ArcRename> Dom::prepareChildRenames_recursor(QDomElement node, FsPath stemPathParent, ChildRenames renameType, QVector<Io::ArcRename> result)

@@ -127,7 +127,7 @@ private slots:
     void helpShortcuts();
     void helpAbout();
     void devWrite(QString name, QString value);
-    void handleEditorText(QString key = nullptr);
+    void handleEditorOpen(QString key = nullptr);
     void sendEditedText();
     bool replyHasProject();
     void domMove(QString pivotKey, QString fulcrumKey, Io::Move pos);
@@ -135,6 +135,7 @@ private slots:
     void domRename(QString newName, QString key);
     void domCut(QString key);
     void cycleCoreEditorThemes();
+    void triggerOverlay(TextEditor::Overlay state);
 
 signals:
     void sendColorBarToggle(bool checked);
@@ -152,6 +153,7 @@ signals:
     void updateCounts(const QString text, const int blockCount);
     void updateSelection(const QString selectedText, const int lineCount);
     void addStoryToTitle(FsPath path);
+    void askEditorClose(bool isFinal = false);
 };
 
 // fernanda.h, fernanda

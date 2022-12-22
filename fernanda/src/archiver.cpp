@@ -119,13 +119,15 @@ void Archiver::cut(FsPath arcPath, QVector<Io::ArcRename> cuts)
 	for (auto& cut : cuts)
 	{
 		if (!cut.origRelPath.has_value()) continue;
+		auto& rel_path = cut.origRelPath.value();
+		auto rel_path_str = rel_path.string();
 		if (cut.typeIfNewOrCut != Path::Type::Dir)
 		{
-			auto cut_path = Path::toFs((Path::getName(cut.relPath) + Io::tempExt));
-			in_map[FsPath(".cut" / cut_path).string() ] = cut.relPath.string();
+			auto cut_path = Path::toFs((Path::getName(rel_path) + Io::tempExt));
+			in_map[FsPath(".cut" / cut_path).string() ] = rel_path_str;
 		}
 		else
-			cut_folders << cut.origRelPath.value().string();
+			cut_folders << rel_path_str;
 	}
 	rename(arcPath, in_map);
 	if (!cut_folders.empty())

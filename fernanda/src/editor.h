@@ -36,8 +36,11 @@ public:
 
     enum class Action {
         None = 0,
-        AcceptNew,
-        Cleared
+        AcceptNew
+    };
+    enum class Overlay {
+        Hide,
+        Show
     };
     enum class Scroll {
         Next,
@@ -51,6 +54,7 @@ public:
     QString cursorColorHex;
     QString cursorUnderColorHex;
 
+    const QVector<QString> devGetCursorPositions();
     void lineNumberAreaPaintEvent(QPaintEvent* event);
     int lineNumberAreaWidth();
     Action handleKeySwap(QString oldKey, QString newKey);
@@ -67,6 +71,7 @@ public slots:
     void toggleExtraScrolls(bool checked);
     void toggleBlockCursor(bool checked);
     void toggleCursorBlink(bool checked);
+    void close(bool isFinal);
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
@@ -122,6 +127,7 @@ signals:
     void askNavPrevious();
     void askNavNext();
     void startBlinker();
+    void askOverlay(Overlay state);
 };
 
 class LineNumberArea : public QWidget

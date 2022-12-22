@@ -13,6 +13,11 @@
 
 #include <QTemporaryDir>
 
+inline void operator<<(std::vector<std::string>& lhs, const std::string& rhs)
+{
+    return lhs.push_back(rhs);
+}
+
 class Archiver
 {
     using FsPath = std::filesystem::path;

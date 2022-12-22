@@ -31,6 +31,7 @@ public:
         Previous
     };
 
+    const QVector<QString> devGetEditedKeys();
     void nav(Nav direction);
 
 public slots:

@@ -159,6 +159,7 @@ void Fernanda::connections()
     connect(this, &Fernanda::sendExtraScrollsToggle, textEditor, &TextEditor::toggleExtraScrolls);
     connect(this, &Fernanda::sendBlockCursorToggle, textEditor, &TextEditor::toggleBlockCursor);
     connect(this, &Fernanda::sendCursorBlinkToggle, textEditor, &TextEditor::toggleCursorBlink);
+    connect(this, &Fernanda::askEditorClose, textEditor, &TextEditor::close);
     connect(this, &Fernanda::sendItems, pane, &Pane::receiveItems);
     connect(this, &Fernanda::sendEditsList, pane, &Pane::receiveEditsList);
     connect(aot, &QPushButton::toggled, this, &Fernanda::aotToggled);
@@ -167,10 +168,11 @@ void Fernanda::connections()
     connect(pane, &Pane::askRenameElement, this, &Fernanda::domRename);
     connect(pane, &Pane::askCutElement, this, &Fernanda::domCut);
     connect(pane, &Pane::askHasProject, this, &Fernanda::replyHasProject);
-    connect(pane, &Pane::askSendToEditor, this, &Fernanda::handleEditorText);
+    connect(pane, &Pane::askSendToEditor, this, &Fernanda::handleEditorOpen);
     connect(textEditor, &TextEditor::askFontSliderZoom, this, &Fernanda::handleEditorZoom);
     connect(textEditor, &TextEditor::askHasProject, this, &Fernanda::replyHasProject);
     connect(textEditor, &TextEditor::textChanged, this, &Fernanda::sendEditedText);
+    connect(textEditor, &TextEditor::askOverlay, this, &Fernanda::triggerOverlay);
     connect(this, &Fernanda::startAutoTempSave, this, [&]() { autoTempSave->start(30000); });
     connect(autoTempSave, &QTimer::timeout, this, [&]() { activeStory.value().autoTempSave(textEditor->toPlainText()); });
     connect(pane, &Pane::askSetExpansion, this, [&](QString key, bool isExpanded) { activeStory.value().setItemExpansion(key, isExpanded); });
@@ -533,20 +535,37 @@ void Fernanda::makeHelpMenu()
 
 void Fernanda::makeDevMenu()
 {
-    auto* print_dom = new QAction(tr("&Print DOM"), this);
+    auto* print_cursors = new QAction(tr("&Print cursor positions"), this);
     auto* print_cuts = new QAction(tr("&Print cuts"), this);
+    auto* print_dom = new QAction(tr("&Print DOM"), this);
+    auto* print_edited_delegate = new QAction(tr("&Print edited keys (Delegate)"), this);
+    auto* print_edited_story = new QAction(tr("&Print edited keys (Story)"), this);
     auto* print_renames = new QAction(tr("&Print renames"), this);
     auto* open_docs = new QAction(tr("&Open documents..."), this);
+    auto* open_temps = new QAction(tr("&Open temps..."), this);
     auto* open_ud = new QAction(tr("&Open user data..."), this);
-    connect(print_dom, &QAction::triggered, this, [&]()
+    connect(print_cursors, &QAction::triggered, this, [&]()
         {
-            if (!activeStory.has_value()) return;
-            devWrite("__DOM.xml", activeStory.value().devGetDom());
+            devWrite("__Cursor positions.txt", textEditor->devGetCursorPositions().join("\n\n"));
         });
     connect(print_cuts, &QAction::triggered, this, [&]()
         {
             if (!activeStory.has_value()) return;
             devWrite("__Cuts.xml", activeStory.value().devGetDom(Dom::Doc::Cuts));
+        });
+    connect(print_dom, &QAction::triggered, this, [&]()
+        {
+            if (!activeStory.has_value()) return;
+            devWrite("__DOM.xml", activeStory.value().devGetDom());
+        });
+    connect(print_edited_delegate, &QAction::triggered, this, [&]()
+        {
+            devWrite("__Edited keys (Delegate).txt", pane->devGetEditedKeys().join("\n\n"));
+        });
+    connect(print_edited_story, &QAction::triggered, this, [&]()
+        {
+            if (!activeStory.has_value()) return;
+            devWrite("__Edited keys (Story).txt", activeStory.value().devGetEditedKeys().join("\n\n"));
         });
     connect(print_renames, &QAction::triggered, this, [&]()
         {
@@ -555,13 +574,22 @@ void Fernanda::makeDevMenu()
             devWrite("__Renames.txt", renames.join("\n\n"));
         });
     connect(open_docs, &QAction::triggered, this, [&]() { openUd(Ud::userData(Ud::Op::GetDocs)); });
+    connect(open_temps, &QAction::triggered, this, [&]()
+        {
+            if (!activeStory.has_value()) return;
+            openUd(activeStory.value().devGetActiveTemp());
+        });
     connect(open_ud, &QAction::triggered, this, [&]() { openUd(Ud::userData(Ud::Op::GetUserData)); });
     auto* dev = menuBar->addMenu(tr("&Dev"));
-    dev->addAction(print_dom);
+    dev->addAction(print_cursors);
     dev->addAction(print_cuts);
+    dev->addAction(print_dom);
+    dev->addAction(print_edited_delegate);
+    dev->addAction(print_edited_story);
     dev->addAction(print_renames);
     dev->addSeparator();
     dev->addAction(open_docs);
+    dev->addAction(open_temps);
     dev->addAction(open_ud);
 }
 
@@ -655,7 +683,7 @@ void Fernanda::openStory(FsPath fileName, Story::Op opt)
     activeStory = Story(fileName, opt);
     auto& story = activeStory.value();
     addStoryToTitle(fileName);
-    handleEditorText();
+    askEditorClose(true);
     sendItems(story.items());
     colorBar->green();
     Ud::saveConfig(Ud::ConfigGroup::Data, Ud::ConfigVal::Project, Path::toQString(fileName));
@@ -904,7 +932,7 @@ void Fernanda::devWrite(QString name, QString value)
     Io::writeFile(docs / name.toStdString(), value);
 }
 
-void Fernanda::handleEditorText(QString key)
+void Fernanda::handleEditorOpen(QString key)
 {
     QString old_key = nullptr;
     if (activeStory.has_value())
@@ -913,16 +941,11 @@ void Fernanda::handleEditorText(QString key)
     switch (action) {
     case TextEditor::Action::None: break;
     case TextEditor::Action::AcceptNew:
-        if (overlay->isVisible())
-            overlay->hide();
         {
             auto text = activeStory.value().tempSaveOld_openNew(key, textEditor->toPlainText());
             textEditor->handleTextSwap(key, text);
             startAutoTempSave();
         }
-        break;
-    case TextEditor::Action::Cleared:
-        overlay->show();
         break;
     }
 }
@@ -963,10 +986,14 @@ void Fernanda::domRename(QString newName, QString key)
 void Fernanda::domCut(QString key)
 {
     auto& story = activeStory.value();
-    story.cut(key);
+    auto active_key_cut = story.cut(key);
     sendItems(story.items());
-    handleEditorText();
-    overlay->show();
+    if (!active_key_cut)
+    {
+        textEditor->setFocus();
+        return;
+    }
+    askEditorClose();
 }
 
 void Fernanda::cycleCoreEditorThemes()
@@ -992,6 +1019,20 @@ void Fernanda::cycleCoreEditorThemes()
             action->setChecked(true);
             break;
         }
+    }
+}
+
+void Fernanda::triggerOverlay(TextEditor::Overlay state)
+{
+    switch (state) {
+    case TextEditor::Overlay::Hide:
+        if (overlay->isVisible())
+            overlay->hide();
+        break;
+    case TextEditor::Overlay::Show:
+        if (!overlay->isVisible())
+            overlay->show();
+        break;
     }
 }
 

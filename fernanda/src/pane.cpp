@@ -32,6 +32,11 @@ Pane::Pane(QWidget* parent)
         });
 }
 
+const QVector<QString> Pane::devGetEditedKeys()
+{
+    return delegate->paintEdited;
+}
+
 void Pane::nav(Nav direction)
 {
     QModelIndex next;
