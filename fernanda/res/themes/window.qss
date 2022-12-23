@@ -154,42 +154,42 @@ QSizeGrip
 	border: none;
 }
 
-#vScrollBar:vertical
+#hScrollBar:horizontal, #pvScrollBar:vertical, #vScrollBar:vertical
 {
 	background: @scrollBg;
 	margin: 0px 0 0px 0;
 }
 
-#vScrollBar::handle:vertical
+#hScrollBar::handle:horizontal, #pvScrollBar::handle:vertical, #vScrollBar::handle:vertical
 {
 	background: @scrollHandle;
 	min-height: 0px;
 }
 
-#vScrollBar::handle:vertical:hover
+#hScrollBar::handle:horizontal:hover, #pvScrollBar::handle:vertical:hover, #vScrollBar::handle:vertical:hover
 {
 	background: @scrollHandleHover;
 }
 
-#vScrollBar::handle:vertical:pressed
+#hScrollBar::handle:horizontal:pressed, #pvScrollBar::handle:vertical:pressed, #vScrollBar::handle:vertical:pressed
 {
 	background: @scrollHandlePress;
 }
 
-#vScrollBar::add-line:vertical, #vScrollBar::sub-line:vertical
+#hScrollBar::add-line:horizontal, #hScrollBar::sub-line:horizontal, #pvScrollBar::add-line:vertical, #pvScrollBar::sub-line:vertical, #vScrollBar::add-line:vertical, #vScrollBar::sub-line:vertical
 {
 	border: none;
 	height: 0px;
 }
 
-#vScrollBar::up-arrow:vertical, #vScrollBar::down-arrow:vertical
+#hScrollBar::left-arrow:horizontal, #hScrollBar::right-arrow:horizontal, #pvScrollBar::up-arrow:vertical, #pvScrollBar::down-arrow:vertical, #vScrollBar::up-arrow:vertical, #vScrollBar::down-arrow:vertical
 {
 	border: none;
 	height: 0px;
 	width: 0px;
 }
 
-#vScrollBar::add-page:vertical, #vScrollBar::sub-page:vertical
+#hScrollBar::add-page:horizontal, #hScrollBar::sub-page:horizontal, #pvScrollBar::add-page:vertical, #pvScrollBar::sub-page:vertical, #vScrollBar::add-page:vertical, #vScrollBar::sub-page:vertical
 {
 	background: none;
 }

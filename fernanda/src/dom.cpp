@@ -32,7 +32,7 @@ bool Dom::hasChanges()
 	return false;
 }
 
-void Dom::move(QString pivotKey, QString fulcrumKey, Io::Move pos)
+void Dom::move(QString pivotKey, QString fulcrumKey, Io::Move position)
 {
 	auto pivot = element<QDomElement>(pivotKey);
 	auto fulcrum = element<QDomElement>(fulcrumKey);
@@ -41,7 +41,7 @@ void Dom::move(QString pivotKey, QString fulcrumKey, Io::Move pos)
 	auto pivot_name = element<QString>(pivotKey, Element::Name);
 	if (isFile(pivot))
 		pivot_name = pivot_name + Io::ext;
-	switch (pos) {
+	switch (position) {
 	case Io::Move::Above:
 		fulcrum.parentNode().insertBefore(pivot, fulcrum);
 		movePaths(new_pivot_path, new_pivot_parent_path, pivot_name, fulcrumKey);
@@ -308,7 +308,7 @@ QVector<Io::ArcRename> Dom::prepareChildRenames_recursor(QDomElement node, FsPat
 			child_name = element<QString>(child_key, Element::Name) + Io::ext;
 		auto nearest_dir_key = element<QString>(child_key, Element::ParentDirKey);
 		auto nearest_dir_name = element<QString>(nearest_dir_key, Element::Name);
-		auto stem_path_name = Path::getName(stemPathParent);
+		auto stem_path_name = Path::getName<QString>(stemPathParent);
 		FsPath next_stem_path;
 		if (stem_path_name == nearest_dir_name || renameType == ChildRenames::InPlace)
 			next_stem_path = stemPathParent;

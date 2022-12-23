@@ -1,6 +1,7 @@
 # To-Do
 
 ## General
+- [ ] Remove all non-standard abbreviations (like "cur" for current)
 - [x] ~~Convert paths to `std::filesystem::path`~~
 - [x] ~~Activate dev menu via command arg~~
 - [ ] Redo Dependency Tree
@@ -50,6 +51,7 @@
 - [x] ~~Toggle-specific menu~~
 - [ ] Separate menu into its own class?
 - [ ] Auto-hide menu option
+- [ ] Auto-hide scrollbar
 - [x] ~~Order the items in menus Window and Editor (and General, if applicable)~~
 - [ ] Rename menu locals to reflect the alphabetical order of the items
 - [ ] Rename `viewToggles()` to match
@@ -72,9 +74,10 @@
 - [x] ~~Avoid passing entire document for cursor underpaint lol~~
 - [ ] Wrap for parentheses and other closables
 - [ ] If a filter was just applied, backspace should function as undo
-- [ ] Style horizontal scrollbar
+- [x] ~~Style horizontal scrollbar~~
 - [ ] Make thin cursor change color when there's a selection?
 - [x] ~~Block cursor should default to char width, then to average char width~~
+- [x] ~~Convert shadow to its own overlay, so that it won't interfere with LNA (like on Solarized themes)~~
 
 ### Indicator
 - [ ] Deactivate for extremely large strings / convert to non-automatic counting (refresh symbol)
@@ -90,7 +93,8 @@
 ### Pane
 - [ ] Persist selected-item highlight between saves/moves
 - [ ] `persistentEditor()` or an input dialog for `rename()`? (`openPersistentEditor(itemModel->indexFromItem(temp_item));`)
-- [ ] Style scrollbars
+- [x] ~~Style scrollbars~~
+- [x] ~~Nav / wrap-around function slightly busted~~
 
 ### PaneDelegate
 - [ ] For `paint()` and `updateEditorGeometry()` - these override public functions, and idk if that matters

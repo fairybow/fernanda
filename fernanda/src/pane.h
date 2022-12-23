@@ -15,6 +15,7 @@
 #include <QMouseEvent>
 #include <QPoint>
 #include <QResizeEvent>
+#include <QScrollBar>
 #include <QStandardItem>
 #include <QStandardItemModel>
 #include <QTreeView>
@@ -50,14 +51,15 @@ private:
 
     void expandItems_recursor(QStandardItem* item);
     void refresh();
-    void addTempItem(QPoint eventPos, Path::Type type);
+    void addTempItem(QPoint eventPosition, Path::Type type);
     QStandardItem* tempItem(Path::Type type);
     const QString rename();
 
 signals:
     bool askHasProject();
+    void askTitleCheck();
     void askSendToEditor(QString key);
-    void askDomMove(QString pivotKey, QString fulcrumKey, Io::Move pos);
+    void askDomMove(QString pivotKey, QString fulcrumKey, Io::Move position);
     void askAddElement(QString newName, Path::Type type, QString parentKey);
     void askRenameElement(QString newName, QString key);
     void askSetExpansion(QString key, bool isExpanded);

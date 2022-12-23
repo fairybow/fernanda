@@ -17,6 +17,7 @@
 #include <QCoreApplication>
 #include <QDesktopServices>
 #include <QFileDialog>
+#include <QGraphicsBlurEffect>
 #include <QMainWindow>
 #include <QMenuBar>
 #include <QMessageBox>
@@ -51,6 +52,7 @@ private:
     QStatusBar* statusBar = new QStatusBar(this);
     Splitter* splitter = new Splitter(this);
     Pane* pane = new Pane(this);
+    QLabel* shadow = new QLabel(this);
     QLabel* overlay = new QLabel(this);
     TextEditor* textEditor = new TextEditor(this);
     QLabel* underlay = new QLabel(this);
@@ -113,6 +115,7 @@ private:
     void toggleWidget(QWidget* widget, Ud::ConfigGroup group, Ud::ConfigVal valueType, bool value);
 
 private slots:
+    void adjustTitle();
     void setWindowStyle();
     void setEditorStyle();
     void setEditorFont();
@@ -152,7 +155,6 @@ signals:
     void updatePositions(const int cursorBlockNumber, const int cursorPosInBlock);
     void updateCounts(const QString text, const int blockCount);
     void updateSelection(const QString selectedText, const int lineCount);
-    void addStoryToTitle(FsPath path);
     void askEditorClose(bool isFinal = false);
 };
 

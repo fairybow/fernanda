@@ -1,8 +1,8 @@
-#overlay, #underlay
+#shadow
 {
-	border-top: 20px solid black;
+	border-top: 22px solid black;
 	border-left: 20px solid black;
-	border-right: 20px solid black;
+	border-right: 22px solid black;
 	border-bottom: 20px solid black;
 	border-top-color: qlineargradient(
 		x1:0,

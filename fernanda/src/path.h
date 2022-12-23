@@ -4,6 +4,7 @@
 
 #include <filesystem>
 #include <string>
+#include <type_traits>
 
 #include <QDir>
 #include <QFileInfo>
@@ -51,9 +52,17 @@ namespace Path
 		Fs::create_directories(parent);
 	}
 
-	inline const QString getName(Fs::path path)
+	template<typename T, typename U>
+	inline const T getName(U path)
 	{
-		return QString::fromStdString(path.stem().string());
+		if constexpr (std::is_same<T, QString>::value && std::is_same<U, QString>::value)
+			return QString::fromStdString(toFs(path).stem().string());
+		if constexpr (std::is_same<T, QString>::value && std::is_same<U, Fs::path>::value)
+			return QString::fromStdString(path.stem().string());
+		if constexpr (std::is_same<T, Fs::path>::value && std::is_same<U, QString>::value)
+			return toFs(path).stem();
+		if constexpr (std::is_same<T, Fs::path>::value && std::is_same<U, Fs::path>::value)
+			return path.stem();
 	}
 
 	inline void makeDirs(Fs::path dirPath)

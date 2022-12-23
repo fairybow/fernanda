@@ -39,7 +39,7 @@ namespace Res
             (resourceType == Type::Font)
                 ? path = Path::toFs(QFontDatabase::applicationFontFamilies(QFontDatabase::addApplicationFont(q_path)).at(0))
                 : path = Path::toFs(q_path);
-            auto label = Path::getName(path);
+            auto label = Path::getName<QString>(q_path);
             listOfPathPairs << DataPair{ path, label };
         }
     }

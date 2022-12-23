@@ -75,13 +75,13 @@
     <None Include="res\themes\editor.qss">
       <Filter>Resource Files\Stylesheets</Filter>
     </None>
-    <None Include="res\themes\window\Sandstone.fernanda_wintheme">
+    <None Include="res\themes\window\Solarized Dark.fernanda_wintheme">
       <Filter>Resource Files\Stylesheets\Window Themes</Filter>
     </None>
     <None Include="res\themes\editor\Pocket.fernanda_theme">
       <Filter>Resource Files\Stylesheets\Editor Themes</Filter>
     </None>
-    <None Include="res\themes\editor\Ink.fernanda_theme">
+    <None Include="res\themes\editor\Solarized Light.fernanda_theme">
       <Filter>Resource Files\Stylesheets\Editor Themes</Filter>
     </None>
     <None Include="res\themes\shadow.qss">
@@ -99,7 +99,7 @@
     <None Include="res\sample\Sample.fernanda_wintheme">
       <Filter>Resource Files\Stylesheets\Sample Themes</Filter>
     </None>
-    <None Include="res\themes\window\Olivine.fernanda_wintheme">
+    <None Include="res\themes\window\Solarized Light.fernanda_wintheme">
       <Filter>Resource Files\Stylesheets\Window Themes</Filter>
     </None>
     <None Include="res\themes\editor\Snooze.fernanda_theme">
@@ -112,6 +112,10 @@
       <Filter>Resource Files\Stylesheets\Editor Themes</Filter>
     </None>
     <None Include="util\win_pack.bat" />
+    <None Include="docs\palette.md" />
+    <None Include="res\themes\editor\Solarized Dark.fernanda_theme">
+      <Filter>Resource Files\Stylesheets\Editor Themes</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
@@ -328,9 +332,6 @@
     </QtRcc>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="res\themes\palette.md">
-      <Filter>Resource Files\Stylesheets</Filter>
-    </Text>
     <Text Include="docs\dependency_tree.md" />
     <Text Include="docs\todo.md" />
   </ItemGroup>

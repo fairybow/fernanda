@@ -34,11 +34,17 @@ public:
     QVector<QString> edits(QString currentText);
     bool hasChanges();
     void setItemExpansion(QString key, bool isExpanded);
-    void move(QString pivotKey, QString fulcrumKey, Io::Move pos);
+    void move(QString pivotKey, QString fulcrumKey, Io::Move position);
     void rename(QString newName, QString key);
     void add(QString newName, Path::Type type, QString parentKey);
     bool cut(QString key);
     void save(QString text = nullptr);
+
+    template<typename T>
+    inline const T name()
+    {
+        return Path::getName<T>(activeArcPath);
+    }
 
 private:
     Archiver* archiver = new Archiver;

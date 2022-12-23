@@ -84,7 +84,7 @@ void Archiver::add(FsPath arcPath, Io::ArcWrite textAndWPath)
 {
 	QTemporaryDir temp_dir;
 	auto& w_path = textAndWPath.writeRelPath;
-	auto temp_path = Path::toFs(temp_dir.path()) / Path::getName(w_path).toStdString();
+	auto temp_path = Path::toFs(temp_dir.path()) / Path::getName<FsPath>(w_path);
 	Io::writeFile(temp_path, textAndWPath.text);
 	Bit7zLibrary lib{ Ud::dll() };
 	BitFileCompressor compressor{ lib, format };
@@ -123,7 +123,7 @@ void Archiver::cut(FsPath arcPath, QVector<Io::ArcRename> cuts)
 		auto rel_path_str = rel_path.string();
 		if (cut.typeIfNewOrCut != Path::Type::Dir)
 		{
-			auto cut_path = Path::toFs((Path::getName(rel_path) + Io::tempExt));
+			auto cut_path = Path::toFs((Path::getName<QString>(rel_path) + Io::tempExt));
 			in_map[FsPath(".cut" / cut_path).string() ] = rel_path_str;
 		}
 		else

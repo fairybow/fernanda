@@ -90,10 +90,9 @@ private:
         if (dirty)
         {
             painter->setFont(italics);
-            painter->drawText(geo.text, name + "*");
+            //name = name + "*";
         }
-        else
-            painter->drawText(geo.text, name);
+        painter->drawText(geo.text, name);
     }
 };
 

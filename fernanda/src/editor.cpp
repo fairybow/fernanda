@@ -104,7 +104,6 @@ TextEditor::Action TextEditor::handleKeySwap(QString oldKey, QString newKey)
 
 void TextEditor::handleTextSwap(QString key, QString text)
 {
-    clear();
     setPlainText(text);
     recallCursors(key);
     recallUndoStacks(key);
@@ -215,13 +214,13 @@ void TextEditor::paintEvent(QPaintEvent* event)
 {
     QPlainTextEdit::paintEvent(event);
     QPainter painter(viewport());
-    auto cur_char = currentChar();
-    auto rect = reshapeCursor(cur_char);
+    auto current_char = currentChar();
+    auto rect = reshapeCursor(current_char);
     painter.fillRect(rect, recolorCursor());
-    if (!cur_char.isNull() && hasBlockCursor)
+    if (!current_char.isNull() && hasBlockCursor)
     {
         painter.setPen(recolorCursor(true));
-        painter.drawText(rect, cur_char);
+        painter.drawText(rect, current_char);
     }
 }
 
@@ -265,23 +264,23 @@ void TextEditor::keyPresses(QVector<QKeyEvent*> events)
 const QChar TextEditor::currentChar()
 {
     auto text = textCursor().block().text();
-    auto cur_pos = textCursor().positionInBlock();
-    if (cur_pos < text.size())
-        return text.at(cur_pos);
+    auto current_position = textCursor().positionInBlock();
+    if (current_position < text.size())
+        return text.at(current_position);
     return QChar();
 }
 
 const Keyfilter::ProximalChars TextEditor::proximalChars()
 {
     auto text = textCursor().block().text();
-    auto cur_pos = textCursor().positionInBlock();
+    auto current_position = textCursor().positionInBlock();
     auto result = Keyfilter::ProximalChars{};
-    if (cur_pos < text.size())
-        result.current = text.at(cur_pos);
-    if (cur_pos > 0)
-        result.previous = text.at(static_cast<qsizetype>(cur_pos) - 1);
-    if (cur_pos > 1)
-        result.beforeLast = text.at(static_cast<qsizetype>(cur_pos) - 2);
+    if (current_position < text.size())
+        result.current = text.at(current_position);
+    if (current_position > 0)
+        result.previous = text.at(static_cast<qsizetype>(current_position) - 1);
+    if (current_position > 1)
+        result.beforeLast = text.at(static_cast<qsizetype>(current_position) - 2);
     return result;
 }
 
@@ -309,12 +308,12 @@ void TextEditor::quoteWrap(QKeyEvent* event)
     if (cursor.hasSelection())
     {
         auto selection = cursor.selectedText();
-        auto start_pos = cursor.selectionStart();
-        auto end_pos = cursor.selectionEnd();
-        cursor.setPosition(start_pos);
+        auto start_position = cursor.selectionStart();
+        auto end_position = cursor.selectionEnd();
+        cursor.setPosition(start_position);
         setTextCursor(cursor);
         QPlainTextEdit::keyPressEvent(&quote);
-        cursor.setPosition(end_pos);
+        cursor.setPosition(end_position);
         setTextCursor(cursor);
         if (selection.endsWith(" "))
             keyPresses({ &right, &backspace, &quote });
@@ -430,14 +429,14 @@ void TextEditor::recallCursors(QString key)
         if (key == item.key)
         {
             auto cursor(textCursor());
-            auto cursor_pos = item.position;
-            auto anchor_pos = item.anchor;
-            if (cursor_pos == anchor_pos)
-                cursor.setPosition(cursor_pos);
+            auto cursor_position = item.position;
+            auto anchor_position = item.anchor;
+            if (cursor_position == anchor_position)
+                cursor.setPosition(cursor_position);
             else
             {
-                cursor.setPosition(anchor_pos, QTextCursor::MoveAnchor);
-                cursor.setPosition(cursor_pos, QTextCursor::KeepAnchor);
+                cursor.setPosition(anchor_position, QTextCursor::MoveAnchor);
+                cursor.setPosition(cursor_position, QTextCursor::KeepAnchor);
             }
             setTextCursor(cursor);
             cursorPositions.removeAll(item);

@@ -1,0 +1,28 @@
+@menuBg; = #073642;
+@menuHover; = #002b36;
+@menuFont; = #93a1a1;
+@menuFontHover; = #859900;
+
+@paneBg; = #002b36;
+@paneFont; = #93a1a1;
+
+@splitterHandle; = #073642;
+
+@statusBarBg; = #073642;
+@statusBarButton; = #073642;
+@statusBarButtonHover; = #002b36;
+@statusBarButtonFont; = #93a1a1;
+@statusBarButtonFontHover; = #859900;
+
+@indicatorFont; = #93a1a1;
+
+@scrollBg; = #586e75;
+@scrollButtonBg; = #073642;
+@scrollButtonHover; = #002b36;
+@scrollButtonFont; = #93a1a1;
+@scrollButtonFontHover; = #859900;
+@scrollHandle; = #073642;
+@scrollHandleHover; = #002b36;
+@scrollHandlePress; = #93a1a1;
+
+@border; = #002b36;

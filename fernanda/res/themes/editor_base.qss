@@ -1,9 +1,9 @@
-#overlay, #underlay
+#overlay, #shadow, #underlay
 {
 	background: transparent;
 	background-image: url(none);
 	background-repeat: repeat-xy;
-	margin-right: 16px;
+	margin-right: 15px;
 }
 
 #textEditor

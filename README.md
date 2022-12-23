@@ -32,19 +32,21 @@ Fernanda got its name because I just really like the name a lot. But, as it turn
 
 An early Windows release is available for testing, and an early Arch Linux package is also available on the AUR (courtesy of [@philipplenk](https://github.com/philipplenk)).
 
-Right now, I'm kind of going where the wind takes me. Fernanda is for drafting. Specifically, for me, it's for encouraging a more productive drafting headspace, and any features that seem like a must for making that happen easier, I'm going to try and add. Right now, in my mind, finished work can be revised in other programs. So, some things you might find in other binder-style writing programs aren't necessarily on the table for me right now (but also not necessarily out-of-the-question, either). I'm not interested in adding spellcheck, for example. I think for my purposes it would be distracting. Nor am I interested in any kind of highly-involved formatting or pre-publishing processes. I am, however, planning on adding a way to mark files for compilation for general export (one big file, or several if you want, where things more drafty than others, or notes, can be left out). Ways to view outlines or organize smaller notes or scraps (or even map them) is not necessarily out-of-the-question.
+Right now, I'm kind of going where the wind takes me. Fernanda is for drafting. Specifically, for me, it's for encouraging a more productive drafting headspace, and any features that seem like a must for making that happen easier, I'm going to try and add.
+
+In my mind, near-finished work can be revised in other programs. So, some things you might find in other binder-style writing programs aren't necessarily on the table for me right now (but also not necessarily out-of-the-question, either). I'm not interested in adding spellcheck, for example. I think for my purposes it would be distracting. Nor am I interested in any kind of highly-involved formatting or pre-publishing processes. I am, however, planning on adding a way to mark files for compilation for general export (one big file, or several if you want, where things more drafty than others, or notes, can be left out). Ways to view outlines or organize smaller notes or scraps (or even map them) is not necessarily out-of-the-question.
 
 If I think of something big, I'll try to add it right here. Otherwise, these things, of varying importance or levels of commitment, will also appear in [todo.md](https://github.com/fairybow/fernanda/blob/main/fernanda/docs/todo.md).
 
 - Persist undo/redo stacks between file changes
 - Separators and possibly customizable file icons, for better mental organization at-a-glance
+- Simple storage of links and research materials
 - Global word count
-- Exporting (compiling, too, for export)
-- Export to PDF (and possibly Word)
+- Exporting
 
 More to come.
 
-## :honeybee: **built with**
+## :honeybee: **build**
 
 Fernanda is built with:
 - C++
@@ -56,18 +58,24 @@ Fernanda's `.story` files rely on:
 - and, thus, 7-zip by [Igor Pavlov](https://www.7-zip.org/)
 
 Among the fonts used are:
-
 - Cascadia Mono by [@microsoft](https://github.com/microsoft/cascadia-code)
 - Cozette :purple_heart: by [@slavfox](https://github.com/slavfox/Cozette)
 - Day Roman by Apostrophic Labs
 - Dot Matrix by [Dionaea Fonts](https://dionaea.com/information/fonts.php)
 - Fixedsys Excelsior (with programming ligatures) by [@kika](https://github.com/kika/fixedsys)
 - Iosevka by [@be5invis](https://github.com/be5invis/Iosevka)
+- Mononoki by [@madmalik](https://github.com/madmalik/mononoki)
 - More Perfect DOS VGA by [@L∆MEUR](https://laemeur.sdf.org/fonts/)
 - Nouveau IBM by Arto Hatanp‰‰
 - and OpenDyslexic by [Abbie Gonzalez](https://opendyslexic.org/)
 
-Fernanda's `.story` files are 7-zip (`.7z`, non-compressed) archives. They can be associated with Fernanda and then opened in the usual ways. However, they can also be opened with [7-zip](https://www.7-zip.org/), and the contents copied elsewhere. If you want to rename, move, or delete items within a `.story` project file, be sure to delete `story.xml` so that it can be recreated with the new paths. You will, however, lose any parentings that are at the same directory level (like a file parented by another file).
+Solarized themes by [@altercation](https://github.com/altercation/solarized)
+
+## :star: **features**
+
+Fernanda's `.story` files are 7-zip (`.7z`, non-compressed) archives. They can be associated with Fernanda and then opened in the usual ways. However, they can also be opened with [7-zip](https://www.7-zip.org/), and the contents copied elsewhere. If you want to rename, move, or delete items within a `.story` project file, be sure to delete `story.xml` so that it can be recreated with the new paths. You will, however, lose any parentings/reorderings that are at the same directory level (like a file parented by another file).
+
+Fernanda also incorporates whatever `.ttf` and `.otf` fonts that you put in the user folder, along with custom themes (example themes can be created via the `Help` menu).
 
 ## :smiley_cat: **thanks**
 

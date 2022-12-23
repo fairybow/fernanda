@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <string>
+
 #include <QRegularExpression>
 #include <QString>
 
@@ -113,8 +115,8 @@ namespace Uni
 
 	inline const char* saveAnd(bool isQuit = false)
 	{
-		if (isQuit) return "Save and quit";
-		return "Save and change";
+		if (isQuit) return "  Save and quit  ";
+		return "  Save and change  ";
 	}
 
 	inline const QString samples()

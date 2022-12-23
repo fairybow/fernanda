@@ -1,28 +1,28 @@
-@statusBarButton; = #ffb9c2;
-@menuBg; = #ffb9c2;
-@scrollButtonBg; = #ffb9c2;
-@statusBarBg; = #ffb9c2;
-@scrollHandle; = #ffb9c2;
+@menuBg; = rgb(248, 248, 248);
+@menuHover; = #ccc;
+@menuFont; = #595959;
+@menuFontHover; = #222;
 
-@paneBg; = #ffcbb9;
-@splitterHandle; = #b5abf0;
+@paneBg; = ghostwhite;
+@paneFont; = #595959;
 
-@statusBarButtonHover; = #b5abf0;
-@menuHover; = #b5abf0;
-@scrollButtonHover; = #b5abf0;
-@scrollBg; = #b5abf0;
+@splitterHandle; = #f0f0f0;
 
-@menuFont; = #344a49;
+@statusBarBg; = #f0f0f0;
+@statusBarButton; = #f0f0f0;
+@statusBarButtonHover; = #ccc;
+@statusBarButtonFont; = #595959;
+@statusBarButtonFontHover; = #222;
 
-@statusBarButtonFont; = #344a49;
-@indicatorFont; = #344a49;
-@paneFont; = #344a49;
-@scrollButtonFont; = #344a49;
-@scrollHandleHover; = #344a49;
-@scrollHandlePress; = #344a49;
+@indicatorFont; = #595959;
 
-@statusBarButtonFontHover; = #ffefb9;
-@menuFontHover; = #ffefb9;
-@scrollButtonFontHover; = #ffefb9;
+@scrollBg; = #eaeaea;
+@scrollButtonBg; = #eee;
+@scrollButtonHover; = #ccc;
+@scrollButtonFont; = #7f7f7f;
+@scrollButtonFontHover; = #222;
+@scrollHandle; = #c5c5c5;
+@scrollHandleHover; = #bababa;
+@scrollHandlePress; = #a4a4a4;
 
-@border; = #b5abf0;
+@border; = #ccc;

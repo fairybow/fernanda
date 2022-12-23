@@ -5,9 +5,7 @@
 Fernanda::Fernanda(bool dev, FsPath story, QWidget* parent)
     : QMainWindow(parent)
 {
-    auto name = ferName(dev);
-    setWindowTitle(name);
-    Ud::setName(name);
+    Ud::setName(ferName(dev));
     //Ud::windowsReg();
     addWidgets();
     connections();
@@ -108,9 +106,11 @@ const QString Fernanda::ferName(bool dev)
 void Fernanda::addWidgets()
 {
     auto main_container = stackWidgets({ colorBar, splitter });
-    auto editor_container = stackWidgets({ overlay, textEditor, underlay });
+    auto editor_container = stackWidgets({ shadow, overlay, textEditor, underlay });
     splitter->addWidgets({ pane, editor_container });
     statusBar->setSizeGripEnabled(true);
+    shadow->setAttribute(Qt::WA_TransparentForMouseEvents);
+    shadow->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     overlay->setAttribute(Qt::WA_TransparentForMouseEvents);
     overlay->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     underlay->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -128,11 +128,17 @@ void Fernanda::addWidgets()
     statusBar->setMaximumHeight(22);
     menuBar->setObjectName("menuBar");
     statusBar->setObjectName("statusBar");
+    shadow->setObjectName("shadow");
     overlay->setObjectName("overlay");
     underlay->setObjectName("underlay");
     fontSlider->setObjectName("fontSlider");
     spacer->setObjectName("spacer");
     aot->setObjectName("aot");
+
+    auto effect = new QGraphicsBlurEffect();
+    effect->setBlurHints(QGraphicsBlurEffect::QualityHint);
+    effect->setBlurRadius(15);
+    shadow->setGraphicsEffect(effect);
 }
 
 QWidget* Fernanda::stackWidgets(QVector<QWidget*> widgets)
@@ -169,19 +175,17 @@ void Fernanda::connections()
     connect(pane, &Pane::askCutElement, this, &Fernanda::domCut);
     connect(pane, &Pane::askHasProject, this, &Fernanda::replyHasProject);
     connect(pane, &Pane::askSendToEditor, this, &Fernanda::handleEditorOpen);
+    connect(pane, &Pane::askTitleCheck, this, &Fernanda::adjustTitle);
     connect(textEditor, &TextEditor::askFontSliderZoom, this, &Fernanda::handleEditorZoom);
     connect(textEditor, &TextEditor::askHasProject, this, &Fernanda::replyHasProject);
     connect(textEditor, &TextEditor::textChanged, this, &Fernanda::sendEditedText);
+    connect(textEditor, &TextEditor::textChanged, this, &Fernanda::adjustTitle);
     connect(textEditor, &TextEditor::askOverlay, this, &Fernanda::triggerOverlay);
     connect(this, &Fernanda::startAutoTempSave, this, [&]() { autoTempSave->start(30000); });
     connect(autoTempSave, &QTimer::timeout, this, [&]() { activeStory.value().autoTempSave(textEditor->toPlainText()); });
     connect(pane, &Pane::askSetExpansion, this, [&](QString key, bool isExpanded) { activeStory.value().setItemExpansion(key, isExpanded); });
     connect(textEditor, &TextEditor::askNavNext, pane, [&]() { pane->nav(Pane::Nav::Next); });
     connect(textEditor, &TextEditor::askNavPrevious, pane, [&]() { pane->nav(Pane::Nav::Previous); });
-    connect(this, &Fernanda::addStoryToTitle, this, [&](FsPath path)
-        {
-            setWindowTitle(Path::getName(path) + " - " + ferName());
-        });
     connect(textEditor, &TextEditor::cursorPositionChanged, this, [&]()
         {
             updatePositions(textEditor->textCursor().blockNumber(), textEditor->textCursor().positionInBlock());
@@ -538,6 +542,7 @@ void Fernanda::makeDevMenu()
     auto* print_cursors = new QAction(tr("&Print cursor positions"), this);
     auto* print_cuts = new QAction(tr("&Print cuts"), this);
     auto* print_dom = new QAction(tr("&Print DOM"), this);
+    auto* print_dom_initial = new QAction(tr("&Print DOM (Initial)"), this);
     auto* print_edited_delegate = new QAction(tr("&Print edited keys (Delegate)"), this);
     auto* print_edited_story = new QAction(tr("&Print edited keys (Story)"), this);
     auto* print_renames = new QAction(tr("&Print renames"), this);
@@ -557,6 +562,11 @@ void Fernanda::makeDevMenu()
         {
             if (!activeStory.has_value()) return;
             devWrite("__DOM.xml", activeStory.value().devGetDom());
+        });
+    connect(print_dom_initial, &QAction::triggered, this, [&]()
+        {
+            if (!activeStory.has_value()) return;
+            devWrite("__DOM (Initial).xml", activeStory.value().devGetDom(Dom::Doc::Initial));
         });
     connect(print_edited_delegate, &QAction::triggered, this, [&]()
         {
@@ -584,6 +594,7 @@ void Fernanda::makeDevMenu()
     dev->addAction(print_cursors);
     dev->addAction(print_cuts);
     dev->addAction(print_dom);
+    dev->addAction(print_dom_initial);
     dev->addAction(print_edited_delegate);
     dev->addAction(print_edited_story);
     dev->addAction(print_renames);
@@ -682,7 +693,6 @@ void Fernanda::openStory(FsPath fileName, Story::Op opt)
     Ud::clear(Ud::userData(Ud::Op::GetTemp));
     activeStory = Story(fileName, opt);
     auto& story = activeStory.value();
-    addStoryToTitle(fileName);
     askEditorClose(true);
     sendItems(story.items());
     colorBar->green();
@@ -709,6 +719,21 @@ void Fernanda::actionCycle(QActionGroup* group)
     }
     else
         actions.first()->setChecked(true);
+}
+
+void Fernanda::adjustTitle()
+{
+    auto current_title = windowTitle();
+    auto title = ferName();
+    if (activeStory.has_value())
+    {
+        auto& story = activeStory.value();
+        (story.hasChanges())
+            ? title = "*" + story.name<QString>() + " - " + title
+            : title = story.name<QString>() + " - " + title;
+    }
+    if (current_title == title) return;
+    setWindowTitle(title);
 }
 
 const QString Fernanda::windowStyle(WinStyle baseOnly)
@@ -781,6 +806,7 @@ void Fernanda::setEditorStyle()
         }
         if (hasShadow)
             style_sheet = style_sheet + "\n\n" + Io::readFile(":/themes/shadow.qss");
+        shadow->setStyleSheet(style_sheet);
         overlay->setStyleSheet(style_sheet);
         underlay->setStyleSheet(style_sheet);
         textEditor->setStyleSheet(style_sheet);
@@ -895,7 +921,7 @@ void Fernanda::helpMakeSampleRes()
     alert.setWindowTitle("Hey!");
     alert.setText(Uni::samples());
     auto ok = alert.addButton(QMessageBox::Ok);
-    auto open = alert.addButton(tr("Open the user data folder"), QMessageBox::AcceptRole);
+    auto open = alert.addButton(tr("  Open the user data folder  "), QMessageBox::AcceptRole);
     alert.setDefaultButton(ok);
     alert.exec();
     if (alert.clickedButton() == open)
@@ -974,6 +1000,7 @@ void Fernanda::domAdd(QString newName, Path::Type type, QString parentKey)
     auto& story = activeStory.value();
     story.add(newName, type, parentKey);
     sendItems(story.items());
+    textEditor->textChanged();
 }
 
 void Fernanda::domRename(QString newName, QString key)

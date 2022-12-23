@@ -4,8 +4,6 @@
 
 #include "io.h"
 
-#include <type_traits>
-
 #include <QDomDocument>
 #include <QDomElement>
 #include <QUuid>
@@ -56,7 +54,7 @@ public:
     void set(QString xmlDoc);
     const QString string(Doc doc = Doc::Current);
     bool hasChanges();
-    void move(QString pivotKey, QString fulcrumKey, Io::Move pos);
+    void move(QString pivotKey, QString fulcrumKey, Io::Move position);
     void rename(QString newName, QString key);
     void add(QString newName, Path::Type type, QString parentKey);
     QVector<QString> cut(QString key);
@@ -84,7 +82,7 @@ public:
             break;
         case Element::Name:
             if constexpr (std::is_same<T, QString>::value)
-                result = Path::getName(filterPath(found_element));
+                result = Path::getName<QString>(filterPath(found_element));
             break;
         case Element::ParentDirKey:
             if constexpr (std::is_same<T, QString>::value)

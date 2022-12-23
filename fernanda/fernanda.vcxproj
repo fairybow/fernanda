@@ -110,6 +110,7 @@
     <None Include="..\.gitignore" />
     <None Include="..\README.md" />
     <None Include="cpp.hint" />
+    <None Include="docs\palette.md" />
     <None Include="res\sample\Sample.fernanda_theme" />
     <None Include="res\sample\Sample.fernanda_wintheme" />
     <None Include="res\themes\bar\green.qss" />
@@ -122,7 +123,8 @@
     <None Include="res\themes\editor\Grey.fernanda_theme" />
     <None Include="res\themes\editor\Pocket-Alt.fernanda_theme" />
     <None Include="res\themes\editor\Pocket.fernanda_theme" />
-    <None Include="res\themes\editor\Ink.fernanda_theme" />
+    <None Include="res\themes\editor\Solarized Dark.fernanda_theme" />
+    <None Include="res\themes\editor\Solarized Light.fernanda_theme" />
     <None Include="res\themes\editor\Snooze-Alt.fernanda_theme" />
     <None Include="res\themes\editor\Snooze.fernanda_theme" />
     <None Include="res\themes\editor_base.qss" />
@@ -130,8 +132,8 @@
     <None Include="res\themes\window.qss" />
     <None Include="res\themes\window\Dark.fernanda_wintheme" />
     <None Include="res\themes\window\Light.fernanda_wintheme" />
-    <None Include="res\themes\window\Olivine.fernanda_wintheme" />
-    <None Include="res\themes\window\Sandstone.fernanda_wintheme" />
+    <None Include="res\themes\window\Solarized Light.fernanda_wintheme" />
+    <None Include="res\themes\window\Solarized Dark.fernanda_wintheme" />
     <None Include="res\themes\window_base.qss" />
     <None Include="util\win_pack.bat" />
   </ItemGroup>
@@ -213,7 +215,6 @@
   <ItemGroup>
     <Text Include="docs\dependency_tree.md" />
     <Text Include="docs\todo.md" />
-    <Text Include="res\themes\palette.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

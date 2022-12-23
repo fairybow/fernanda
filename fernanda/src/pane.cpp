@@ -6,6 +6,8 @@ Pane::Pane(QWidget* parent)
     : QTreeView(parent)
 {
     setObjectName("pane");
+    horizontalScrollBar()->setObjectName("hScrollBar");
+    verticalScrollBar()->setObjectName("pvScrollBar");
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     setItemDelegate(delegate);
     setModel(itemModel);
@@ -25,10 +27,12 @@ Pane::Pane(QWidget* parent)
     connect(this, &Pane::expanded, this, [&](const QModelIndex& index)
         {
             askSetExpansion(Index::key(index), true);
+            askTitleCheck();
         });
     connect(this, &Pane::collapsed, this, [&](const QModelIndex& index)
         {
             askSetExpansion(Index::key(index), false);
+            askTitleCheck();
         });
 }
 
@@ -39,10 +43,13 @@ const QVector<QString> Pane::devGetEditedKeys()
 
 void Pane::nav(Nav direction)
 {
+    auto current_index = currentIndex();
+    if (!isExpanded(current_index))
+        expand(current_index);
     QModelIndex next;
     (direction == Nav::Previous)
-        ? next = indexAbove(currentIndex())
-        : next = indexBelow(currentIndex());
+        ? next = indexAbove(current_index)
+        : next = indexBelow(current_index);
     if (next.isValid())
         setCurrentIndex(next);
     else
@@ -51,21 +58,22 @@ void Pane::nav(Nav direction)
         auto valid = true;
         while (valid)
         {
+            auto last_valid_index = currentIndex();
             QModelIndex wrap_around;
             (direction == Nav::Previous)
-                ? wrap_around = indexBelow(currentIndex())
-                : wrap_around = indexAbove(currentIndex());
+                ? wrap_around = indexBelow(last_valid_index)
+                : wrap_around = indexAbove(last_valid_index);
             if (wrap_around.isValid())
                 setCurrentIndex(wrap_around);
             else
                 valid = false;
         }
     }
-    auto expanded = isExpanded(currentIndex());
-    if (Index::isDir(currentIndex()) && !expanded)
-        expand(currentIndex());
+    auto destination_index = currentIndex();
+    if (itemModel->itemFromIndex(destination_index)->rowCount() && !isExpanded(destination_index))
+        expand(destination_index);
     else
-        clicked(currentIndex());
+        clicked(destination_index);
 }
 
 void Pane::receiveItems(QVector<QStandardItem*> items)
@@ -96,24 +104,24 @@ void Pane::dropEvent(QDropEvent* event)
     auto drop = dropIndicatorPosition();
     auto pivot = currentIndex();
     auto fulcrum = indexAt(event->pos());
-    Io::Move pos{};
+    Io::Move position{};
     switch (drop) {
     case QAbstractItemView::AboveItem:
-        pos = Io::Move::Above;
+        position = Io::Move::Above;
         break;
     case QAbstractItemView::BelowItem:
-        pos = Io::Move::Below;
+        position = Io::Move::Below;
         break;
     case QAbstractItemView::OnItem:
         if (Index::isDir(pivot) && Index::isFile(fulcrum)) return;
-        pos = Io::Move::On;
+        position = Io::Move::On;
         expand(fulcrum);
         break;
     case QAbstractItemView::OnViewport:
-        pos = Io::Move::Viewport;
+        position = Io::Move::Viewport;
         break;
     }
-    askDomMove(Index::key(pivot), Index::key(fulcrum), pos);
+    askDomMove(Index::key(pivot), Index::key(fulcrum), position);
     event->ignore();
 }
 
@@ -121,8 +129,8 @@ void Pane::contextMenuEvent(QContextMenuEvent* event)
 {
     auto project = askHasProject();
     if (!project) return;
-    auto& pos = event->pos();
-    auto index = indexAt(pos);
+    auto& position = event->pos();
+    auto index = indexAt(position);
     auto menu = new QMenu(this);
     auto* rename_item = new QAction(tr("&Rename"), this);
     auto* cut_item = new QAction(tr("&Cut"), this);
@@ -138,11 +146,11 @@ void Pane::contextMenuEvent(QContextMenuEvent* event)
         });
     connect(new_folder, &QAction::triggered, this, [&]()
         {
-            addTempItem(pos, Path::Type::Dir);
+            addTempItem(position, Path::Type::Dir);
         });
     connect(new_file, &QAction::triggered, this, [&]()
         {
-            addTempItem(pos, Path::Type::File);
+            addTempItem(position, Path::Type::File);
         });
     if (Index::isFile(index))
     {
@@ -191,10 +199,10 @@ void Pane::refresh()
     dataChanged(QModelIndex(), QModelIndex());
 }
 
-void Pane::addTempItem(QPoint eventPos, Path::Type type)
+void Pane::addTempItem(QPoint eventPosition, Path::Type type)
 {
     auto temp_item = tempItem(type);
-    auto parent_index = indexAt(eventPos);
+    auto parent_index = indexAt(eventPosition);
     switch (type) {
     case Path::Type::Dir:
         if (parent_index.isValid() && Index::isDir(parent_index))

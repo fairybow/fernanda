@@ -27,7 +27,7 @@ const QVector<QString> Story::devGetEditedKeys()
 
 const Story::FsPath Story::devGetActiveTemp()
 {
-	return Ud::userData(Ud::Op::GetTemp) / activeArcPath.stem();
+	return Ud::userData(Ud::Op::GetTemp) / name<FsPath>();
 }
 
 QVector<QStandardItem*> Story::items()
@@ -87,9 +87,9 @@ void Story::setItemExpansion(QString key, bool isExpanded)
 	dom->write(key, isExpanded, Dom::Write::Expanded);
 }
 
-void Story::move(QString pivotKey, QString fulcrumKey, Io::Move pos)
+void Story::move(QString pivotKey, QString fulcrumKey, Io::Move position)
 {
-	dom->move(pivotKey, fulcrumKey, pos);
+	dom->move(pivotKey, fulcrumKey, position);
 }
 
 void Story::rename(QString newName, QString key)
@@ -266,7 +266,7 @@ const Story::FsPath Story::tempPath(QString key)
 {
 	auto rel_path = Path::toFs(key + Io::tempExt);
 	auto temps_dir = Ud::userData(Ud::Op::GetTemp);
-	auto proj_temp = temps_dir / activeArcPath.stem();
+	auto proj_temp = temps_dir / name<FsPath>();
 	return proj_temp / rel_path;
 }
 
@@ -298,7 +298,7 @@ void Story::bak()
 	auto underscore = "_";
 	auto timestamp = Ud::timestamp().replace(Uni::regex(Uni::Re::Forbidden), underscore).replace(Uni::regex(Uni::Re::Space), underscore).replace(Uni::regex(Uni::Re::NewLine), nullptr).toLower();
 	timestamp.replace(QRegularExpression("(__)"), underscore).replace(QRegularExpression("(_$)"), nullptr);
-	auto bak_file_name = Path::getName(activeArcPath) + ".story." + timestamp + ".bak";
+	auto bak_file_name = name<QString>() + ".story." + timestamp + ".bak";
 	auto bak_path = Ud::userData(Ud::Op::GetRollback) / Path::toFs(bak_file_name);
 	auto qf_bak = QFile(bak_path);
 	if (qf_bak.exists())
