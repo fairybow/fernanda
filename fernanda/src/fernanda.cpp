@@ -503,6 +503,7 @@ void Fernanda::makeToggleMenu()
     auto* cursor = toggle->addMenu(tr("&Cursor"));
     cursor->addAction(toggle_cursor_blink);
     cursor->addAction(toggle_block_cursor);
+    toggle->addAction(toggle_line_highlight);
     toggle->addAction(toggle_shadow);
     toggle->addAction(toggle_theme);
     toggle->addAction(toggle_keyfilter);

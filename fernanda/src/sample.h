@@ -43,7 +43,7 @@ namespace Sample
 	inline void makeRc(Fs::path path)
 	{
 		QVector<SampleRCPair> pairs{
-			SampleRCPair{ ":/sample/Kaushan Script.otf", Fs::path(path / "Kaushan Script.otf") },
+			SampleRCPair{ ":/sample/Dot Matrix.ttf", Fs::path(path / "Dot Matrix.ttf") },
 			SampleRCPair{ ":/sample/Sample.fernanda_theme", Fs::path(path / "Sample.fernanda_theme") },
 			SampleRCPair{ ":/sample/Sample.fernanda_wintheme", Fs::path(path / "Sample.fernanda_wintheme") }
 		};

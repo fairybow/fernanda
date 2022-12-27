@@ -213,6 +213,7 @@
     <QtRcc Include="res\themes.qrc" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="..\CMakeLists.txt" />
     <Text Include="docs\dependency_tree.md" />
     <Text Include="docs\todo.md" />
   </ItemGroup>

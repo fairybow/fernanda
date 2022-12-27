@@ -334,5 +334,6 @@
   <ItemGroup>
     <Text Include="docs\dependency_tree.md" />
     <Text Include="docs\todo.md" />
+    <Text Include="..\CMakeLists.txt" />
   </ItemGroup>
 </Project>

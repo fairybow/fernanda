@@ -206,8 +206,8 @@ void TextEditor::close(bool isFinal)
 void TextEditor::resizeEvent(QResizeEvent* event)
 {
     QPlainTextEdit::resizeEvent(event);
-    auto c_r = contentsRect();
-    lineNumberArea->setGeometry(QRect(c_r.left(), c_r.top(), lineNumberAreaWidth(), c_r.height()));
+    auto contents = contentsRect();
+    lineNumberArea->setGeometry(QRect(contents.left(), contents.top(), lineNumberAreaWidth(), contents.height()));
 }
 
 void TextEditor::paintEvent(QPaintEvent* event)

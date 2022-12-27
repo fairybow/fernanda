@@ -32,6 +32,9 @@
 - [ ] Temp save before cut?
 - [ ] Delete trailing spaces on save
 
+### Known issues
+- [ ] Known issue: Windows scale > 100% negates the effects of `setTextCursor(0)`
+
 ## Classes
 
 ### Archiver
