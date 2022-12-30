@@ -17,7 +17,7 @@ void Archiver::create(FsPath arcPath, QVector<Io::ArcWRPaths> wRPaths)
 		{
 			Path::makeDirs(temp_w_path.parent_path());
 			QFile::copy(entry.readFullPath.value(), temp_w_path);
-			QFile(temp_w_path).setPermissions(QFile::WriteUser);
+			QFile(temp_w_path).setPermissions(QFile::ReadUser | QFile::WriteUser);
 		}
 	}
 	Bit7zLibrary lib{ Ud::dll() };

@@ -4,7 +4,6 @@
 
 #include "path.h"
 
-#include <shlobj_core.h>
 
 #include <filesystem>
 #include <string>

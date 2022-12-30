@@ -55,7 +55,7 @@ namespace Sample
 			if (qf_target.exists())
 				qf_target.moveToTrash();
 			QFile::copy(source, target);
-			qf_target.setPermissions(QFile::WriteUser);
+			qf_target.setPermissions(QFile::ReadUser | QFile::WriteUser);
 		}
 	}
 }
