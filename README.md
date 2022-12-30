@@ -2,7 +2,7 @@
 
 <p align="center">
 	<kbd>
-		<img src="fernanda/docs/screens/screen_1.png" alt="PNG of 'Fernanda running on Windows 11.'" width="507px"/>
+		<img src="fernanda/docs/screens/main_screen.png" alt="PNG of 'Fernanda running on Windows 11.'" width="500px"/>
 		<br>Fernanda running on Windows 11. (Wallpaper: "Red sky background" by <a href="https://www.deviantart.com/masterteacher/art/Red-sky-background-356199141">MasterTeacher</a>)
 	</kbd>
 </p>
