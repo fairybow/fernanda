@@ -11,6 +11,8 @@
 #include <QRegularExpression>
 #include <QString>
 
+#include <qsystemdetection.h>
+
 namespace Path
 {
 	namespace Fs = std::filesystem;
@@ -38,12 +40,19 @@ namespace Path
 		return result;
 	}
 
+#ifdef Q_OS_LINUX
+	inline std::string toB7z(Fs::path path)
+	{
+		return path.string();
+	}
+#else
 	inline std::string toB7z(Fs::path path)
 	{
 		auto result = toQString(path);
 		result.replace(R"(/)", R"(\)");
 		return result.toStdString();
 	}
+#endif
 
 	inline void makeParent(Fs::path path)
 	{

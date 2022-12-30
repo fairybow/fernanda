@@ -67,3 +67,4 @@ target_link_libraries(fernanda PRIVATE Qt6::Xml)
 
 target_link_libraries(fernanda PRIVATE bit7z64)
 
+install(TARGETS fernanda RUNTIME)
