@@ -2,7 +2,7 @@
 
 <p align="center">
 	<kbd>
-		<img src="fernanda/docs/screens/screen_1.png" alt="PNG of 'Fernanda running on Windows 11.'" width="507px"/>
+		<img src="fernanda/docs/screens/screen_1.png" alt="PNG of 'Fernanda running on Windows 11.'" width="500px"/>
 		<br>Fernanda running on Windows 11. (Wallpaper: "Red sky background" by <a href="https://www.deviantart.com/masterteacher/art/Red-sky-background-356199141">MasterTeacher</a>)
 	</kbd>
 </p>
@@ -66,8 +66,8 @@ Among the fonts used are:
 - Fixedsys Excelsior (with programming ligatures) by [@kika](https://github.com/kika/fixedsys)
 - Iosevka by [@be5invis](https://github.com/be5invis/Iosevka)
 - Mononoki by [@madmalik](https://github.com/madmalik/mononoki)
-- More Perfect DOS VGA by [@L∆MEUR](https://laemeur.sdf.org/fonts/)
-- Nouveau IBM by Arto Hatanp‰‰
+- More Perfect DOS VGA by [@L√ÜMEUR](https://laemeur.sdf.org/fonts/)
+- Nouveau IBM by Arto Hatanp√§√§
 - and OpenDyslexic by [Abbie Gonzalez](https://opendyslexic.org/)
 
 Solarized themes by [@altercation](https://github.com/altercation/solarized)
