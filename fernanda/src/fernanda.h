@@ -1,4 +1,4 @@
-// fernanda.h, fernanda
+// fernanda.h, Fernanda
 
 #pragma once
 
@@ -158,4 +158,4 @@ signals:
     void askEditorClose(bool isFinal = false);
 };
 
-// fernanda.h, fernanda
+// fernanda.h, Fernanda

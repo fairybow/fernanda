@@ -1,4 +1,4 @@
-// dom.cpp, fernanda
+// dom.cpp, Fernanda
 
 #include "dom.h"
 
@@ -339,4 +339,4 @@ Dom::FsPath Dom::filterPath(QDomElement elem, Filter filter)
 	return result;
 }
 
-// dom.cpp, fernanda
+// dom.cpp, Fernanda

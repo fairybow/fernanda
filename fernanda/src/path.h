@@ -1,4 +1,4 @@
-// path.h, fernanda
+// path.h, Fernanda
 
 #pragma once
 
@@ -6,12 +6,12 @@
 #include <string>
 #include <type_traits>
 
+#include <qsystemdetection.h>
+
 #include <QDir>
 #include <QFileInfo>
 #include <QRegularExpression>
 #include <QString>
-
-#include <qsystemdetection.h>
 
 namespace Path
 {
@@ -41,17 +41,21 @@ namespace Path
 	}
 
 #ifdef Q_OS_LINUX
+
 	inline std::string toB7z(Fs::path path)
 	{
 		return path.string();
 	}
+
 #else
+
 	inline std::string toB7z(Fs::path path)
 	{
 		auto result = toQString(path);
 		result.replace(R"(/)", R"(\)");
 		return result.toStdString();
 	}
+
 #endif
 
 	inline void makeParent(Fs::path path)
@@ -81,4 +85,4 @@ namespace Path
 	}
 }
 
-// path.h, fernanda
+// path.h, Fernanda

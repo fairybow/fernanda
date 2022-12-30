@@ -1,4 +1,4 @@
-// archiver.cpp, fernanda
+// archiver.cpp, Fernanda
 
 #include "archiver.h"
 
@@ -174,4 +174,4 @@ void Archiver::blanks(FsPath arcPath, std::map<std::string, Path::Type> addition
 	compressor.compressDirectory(Path::toB7z(temp_dir_path / Io::storyRoot), Path::toB7z(arcPath));
 }
 
-// archiver.cpp, fernanda
+// archiver.cpp, Fernanda

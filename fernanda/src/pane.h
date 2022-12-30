@@ -1,4 +1,4 @@
-// pane.h, fernanda
+// pane.h, Fernanda
 
 #pragma once
 
@@ -66,4 +66,4 @@ signals:
     void askCutElement(QString key);
 };
 
-// pane.h, fernanda
+// pane.h, Fernanda

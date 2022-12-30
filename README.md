@@ -1,4 +1,4 @@
-# <img src="fernanda/res/icons/fernanda.ico" alt="Colorful conch shell icon." width="26px"/> fernanda
+# <img src="fernanda/res/icons/fernanda.ico" alt="Colorful conch shell icon." width="26px"/> Fernanda
 
 <p align="center">
 	<kbd>
@@ -7,14 +7,15 @@
 	</kbd>
 </p>
 <p align="center">
-	<a href="LICENSE"><img src="https://img.shields.io/github/license/fairybow/fernanda" alt="license: GPL-3.0"/></a>
-	<a href="https://www.qt.io/"><img src="https://img.shields.io/badge/Qt-6.4.1-green?logo=qt" alt="Qt: 6.4.1"/></a>
+	<a href="https://github.com/fairybow/fernanda/releases/"><img src="https://img.shields.io/github/v/release/fairybow/fernanda?include_prereleases&color=f34b7d" alt="releases"/></a>
+	<a href="LICENSE"><img src="https://img.shields.io/github/license/fairybow/fernanda?color=orange" alt="license: GPL-3.0"/></a>
+	<br>
+	<a href="https://www.qt.io/"><img src="https://img.shields.io/badge/Qt-6.4.1-00ff00?logo=qt" alt="Qt: 6.4.1"/></a>
 	<a href="https://github.com/rikyoz/bit7z"><img src="https://img.shields.io/badge/Bit7z-4.0.0_beta-blue" alt="Bit7z: 4.0.0-beta"/></a>
-	<a href="https://www.7-zip.org/"><img src="https://img.shields.io/badge/7zip-22.01-blueviolet" alt="7zip: 22.01"/></a>
-	<a href="https://shields.io/"><img src="https://img.shields.io/badge/omg-these_are_so_cute-ff69b4" alt="Shields.io"/></a>
+	<a href="https://www.7-zip.org/"><img src="https://img.shields.io/badge/7zip-22.01-ffbf00" alt="7zip: 22.01"/></a>
 </p>
 
-## :tea: **hi**
+## :tea: **Hello**
 
 Fernanda is a plain text editor for drafting long-form fiction. (At least, that's the plan.)
 
@@ -24,7 +25,7 @@ Fernanda's look was inspired by the good, quiet feeling of using [WordStar](http
 
 Fernanda got its name because I just really like the name a lot. But, as it turns out, Fernanda means an ["adventurous, bold journey"](https://en.wikipedia.org/wiki/Fernanda) (the kind one might be *called* to, say), and I think that's neat. <img src="fernanda/res/icons/fernanda.ico" alt="Colorful conch shell icon." width="16px"/>
 
-## :compass: **roadmap**
+## :compass: **Roadmap**
 
 - [Releases (Windows x64)](https://github.com/fairybow/fernanda/releases)
 
@@ -46,7 +47,7 @@ If I think of something big, I'll try to add it right here. Otherwise, these thi
 
 More to come.
 
-## :honeybee: **build**
+## :honeybee: **Build**
 
 Fernanda is built with:
 - C++
@@ -71,19 +72,19 @@ Among the fonts used are:
 
 Solarized themes by [@altercation](https://github.com/altercation/solarized)
 
-## :star: **features**
+## :star: **Features**
 
 Fernanda's `.story` files are 7-zip (`.7z`, non-compressed) archives. They can be associated with Fernanda and then opened in the usual ways. However, they can also be opened with [7-zip](https://www.7-zip.org/), and the contents copied elsewhere. If you want to rename, move, or delete items within a `.story` project file, be sure to delete `story.xml` so that it can be recreated with the new paths. You will, however, lose any parentings/reorderings that are at the same directory level (like a file parented by another file).
 
 Fernanda also incorporates whatever `.ttf` and `.otf` fonts that you put in the user folder, along with custom themes (example themes can be created via the `Help` menu).
 
-## :smiley_cat: **thanks**
+## :smiley_cat: **Thanks**
 
 A major thanks to [@philipplenk](https://codemetas.de/) for their teaching and interest and support in helping me work toward a small dream like this (and for helping me make Fernanda available for [Arch Linux](https://aur.archlinux.org/packages/fernanda)).
 
 A major thanks, too, to [@rikyoz](https://github.com/rikyoz/) for their tireless work on the very amazing [bit7z library](https://github.com/rikyoz/bit7z).
 
-## :heartpulse: **bye**
+## :heartpulse: **Bye**
 
 Older screens:
 

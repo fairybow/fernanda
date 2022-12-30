@@ -1,4 +1,4 @@
-// editor.cpp, fernanda
+// editor.cpp, Fernanda
 
 #include "editor.h"
 
@@ -478,4 +478,4 @@ void TextEditor::updateLineNumberArea(const QRect& rect, int dy)
         updateLineNumberAreaWidth(0);
 }
 
-// editor.cpp, fernanda
+// editor.cpp, Fernanda

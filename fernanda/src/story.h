@@ -1,4 +1,4 @@
-// story.h, fernanda
+// story.h, Fernanda
 
 #pragma once
 
@@ -73,4 +73,4 @@ private:
     void bak();
 };
 
-// story.h, fernanda
+// story.h, Fernanda

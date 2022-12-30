@@ -1,4 +1,4 @@
-// fernanda.cpp, fernanda
+// fernanda.cpp, Fernanda
 
 #include "fernanda.h"
 
@@ -6,7 +6,6 @@ Fernanda::Fernanda(bool dev, FsPath story, QWidget* parent)
     : QMainWindow(parent)
 {
     Ud::setName(ferName(dev));
-    //Ud::windowsReg();
     addWidgets();
     connections();
     Ud::userData();
@@ -98,8 +97,8 @@ const QString Fernanda::ferName(bool dev)
     if (dev)
         isDev = dev;
     (isDev)
-        ? result = "fernanda (dev)"
-        : result = "fernanda";
+        ? result = "Fernanda (dev)"
+        : result = "Fernanda";
     return result;
 }
 
@@ -518,12 +517,17 @@ void Fernanda::makeHelpMenu()
     auto* about = new QAction(tr("&About..."), this);
     auto* shortcuts = new QAction(tr("&Shortcuts..."), this);
     auto* open_docs = new QAction(tr("&Open documents..."), this);
+    auto* open_install = new QAction(tr("&Open installation folder..."), this);
     auto* open_ud = new QAction(tr("&Open user data..."), this);
     auto* sample_project = new QAction(tr("&Create sample project"), this);
     auto* sample_themes = new QAction(tr("&Create sample themes..."), this);
     connect(about, &QAction::triggered, this, &Fernanda::helpAbout);
     connect(shortcuts, &QAction::triggered, this, &Fernanda::helpShortcuts);
     connect(open_docs, &QAction::triggered, this, [&]() { openUd(Ud::userData(Ud::Op::GetDocs)); });
+    connect(open_install, &QAction::triggered, this, [&]()
+        {
+            openUd(Path::toFs(QCoreApplication::applicationDirPath()).parent_path());
+        });
     connect(open_ud, &QAction::triggered, this, [&]() { openUd(Ud::userData(Ud::Op::GetUserData)); });
     connect(sample_project, &QAction::triggered, this, &Fernanda::helpMakeSampleProject);
     connect(sample_themes, &QAction::triggered, this, &Fernanda::helpMakeSampleRes);
@@ -532,6 +536,7 @@ void Fernanda::makeHelpMenu()
     help->addAction(shortcuts);
     help->addSeparator();
     help->addAction(open_docs);
+    help->addAction(open_install);
     help->addAction(open_ud);
     help->addSeparator();
     help->addAction(sample_project);
@@ -548,6 +553,7 @@ void Fernanda::makeDevMenu()
     auto* print_edited_story = new QAction(tr("&Print edited keys (Story)"), this);
     auto* print_renames = new QAction(tr("&Print renames"), this);
     auto* open_docs = new QAction(tr("&Open documents..."), this);
+    auto* open_install = new QAction(tr("&Open installation folder..."), this);
     auto* open_temps = new QAction(tr("&Open temps..."), this);
     auto* open_ud = new QAction(tr("&Open user data..."), this);
     connect(print_cursors, &QAction::triggered, this, [&]()
@@ -585,6 +591,10 @@ void Fernanda::makeDevMenu()
             devWrite("__Renames.txt", renames.join("\n\n"));
         });
     connect(open_docs, &QAction::triggered, this, [&]() { openUd(Ud::userData(Ud::Op::GetDocs)); });
+    connect(open_install, &QAction::triggered, this, [&]()
+        {
+            openUd(Path::toFs(QCoreApplication::applicationDirPath()).parent_path());
+        });
     connect(open_temps, &QAction::triggered, this, [&]()
         {
             if (!activeStory.has_value()) return;
@@ -601,6 +611,7 @@ void Fernanda::makeDevMenu()
     dev->addAction(print_renames);
     dev->addSeparator();
     dev->addAction(open_docs);
+    dev->addAction(open_install);
     dev->addAction(open_temps);
     dev->addAction(open_ud);
 }
@@ -1064,4 +1075,4 @@ void Fernanda::triggerOverlay(TextEditor::Overlay state)
     }
 }
 
-// fernanda.cpp, fernanda
+// fernanda.cpp, Fernanda

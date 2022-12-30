@@ -1,4 +1,4 @@
-// keyfilter.h, fernanda
+// keyfilter.h, Fernanda
 
 #pragma once
 
@@ -145,4 +145,4 @@ private:
     }
 };
 
-// keyfilter.h, fernanda
+// keyfilter.h, Fernanda

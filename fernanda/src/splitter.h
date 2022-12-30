@@ -1,4 +1,4 @@
-// splitter.h, fernanda
+// splitter.h, Fernanda
 
 #pragma once
 
@@ -43,4 +43,4 @@ public:
     }
 };
 
-// splitter.h, fernanda
+// splitter.h, Fernanda

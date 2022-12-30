@@ -1,4 +1,4 @@
-// indicator.h, fernanda
+// indicator.h, Fernanda
 
 #pragma once
 
@@ -114,4 +114,4 @@ signals:
     void toggled();
 };
 
-// indicator.h, fernanda
+// indicator.h, Fernanda

@@ -19,6 +19,7 @@
 - [ ] Add border variables to stylesheets--for the most part, these can just be `transparent`, but allows for user to decide in customs
 - [ ] Hold current story file from being edited while Fernanda is open? (Not sure this is possible. Plus, will need a way to temporarily request access for `Archiver` for editing)
 - [ ] Export selected / all
+- [ ] Export to PDF using Markdown or Fountain
 - [ ] Total word count (export-marked or all)
 - [x] ~~Make Pallete.txt an .md~~
 - [ ] Is there a way to link swatches?

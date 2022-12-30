@@ -1,4 +1,4 @@
-// colorbar.cpp, fernanda
+// colorbar.cpp, Fernanda
 
 #include "colorbar.h"
 
@@ -82,4 +82,4 @@ void ColorBar::style(Color theme)
     bar->setStyleSheet(style_sheet);
 }
 
-// colorbar.cpp, fernanda
+// colorbar.cpp, Fernanda

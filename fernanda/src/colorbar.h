@@ -1,4 +1,4 @@
-// colorbar.h, fernanda
+// colorbar.h, Fernanda
 
 #pragma once
 
@@ -45,4 +45,4 @@ private:
     void style(Color theme);
 };
 
-// colorbar.h, fernanda
+// colorbar.h, Fernanda

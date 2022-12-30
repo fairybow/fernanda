@@ -1,4 +1,4 @@
-// pane.cpp, fernanda
+// pane.cpp, Fernanda
 
 #include "pane.h"
 
@@ -249,4 +249,4 @@ const QString Pane::rename()
     return nullptr;
 }
 
-// pane.cpp, fernanda
+// pane.cpp, Fernanda

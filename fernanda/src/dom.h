@@ -1,4 +1,4 @@
-// dom.h, fernanda
+// dom.h, Fernanda
 
 #pragma once
 
@@ -187,4 +187,4 @@ private:
     }
 };
 
-// dom.h, fernanda
+// dom.h, Fernanda

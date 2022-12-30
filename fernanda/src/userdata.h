@@ -1,13 +1,14 @@
-// userdata.h, fernanda
+// userdata.h, Fernanda
 
 #pragma once
 
 #include "path.h"
 
-
 #include <filesystem>
 #include <string>
 #include <time.h>
+
+#include <qsystemdetection.h>
 
 #include <QCoreApplication>
 #include <QDir>
@@ -85,8 +86,6 @@ namespace Ud
         QString appName;
     } dataVars;
 
-    void windowsReg(); // WIP
-    void linuxReg(); // WIP
     void setName(QString name);
     const Fs::path userData(Op operation = Op::Create);
     void saveConfig(ConfigGroup group, ConfigVal valueType, QVariant value);
@@ -98,4 +97,4 @@ namespace Ud
     std::string dll();
 }
 
-// userdata.h, fernanda
+// userdata.h, Fernanda

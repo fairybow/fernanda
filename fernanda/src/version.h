@@ -1,4 +1,4 @@
-// version.h, fernanda
+// version.h, Fernanda
 
 #pragma once
 
@@ -12,17 +12,16 @@
 #define VER_PRODUCTVERSION_STR      "0.0\0"
 
 #define VER_COMPANYNAME_STR         "@fairybow"
-#define VER_FILEDESCRIPTION_STR     "fernanda"
-#define VER_INTERNALNAME_STR        "fernanda"
+#define VER_FILEDESCRIPTION_STR     "Fernanda"
+#define VER_INTERNALNAME_STR        "Fernanda"
 #define VER_LEGALCOPYRIGHT_STR      "Copyright © 2022 @fairybow"
 #define VER_LEGALTRADEMARKS1_STR    "All Rights Reserved"
 #define VER_LEGALTRADEMARKS2_STR    VER_LEGALTRADEMARKS1_STR
 #define VER_ORIGINALFILENAME_STR    "fernanda.exe"
-#define VER_PRODUCTNAME_STR         "fernanda"
+#define VER_PRODUCTNAME_STR         "Fernanda"
 
 #define VER_COMPANYDOMAIN_STR       "https://github.com/fairybow/fernanda"
 
 #endif
 
-// version.h, fernanda
-// CRLF
+// version.h, Fernanda

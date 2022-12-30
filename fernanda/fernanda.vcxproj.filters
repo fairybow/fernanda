@@ -116,6 +116,7 @@
     <None Include="res\themes\editor\Solarized Dark.fernanda_theme">
       <Filter>Resource Files\Stylesheets\Editor Themes</Filter>
     </None>
+    <None Include="util\nsis\win_installer.nsi" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

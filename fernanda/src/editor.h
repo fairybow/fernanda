@@ -1,4 +1,4 @@
-// editor.h, fernanda
+// editor.h, Fernanda
 
 #pragma once
 
@@ -144,4 +144,4 @@ private:
     TextEditor* textEditor;
 };
 
-// editor.h, fernanda
+// editor.h, Fernanda

@@ -1,4 +1,4 @@
-// res.h, fernanda
+// res.h, Fernanda
 
 #pragma once
 
@@ -80,4 +80,4 @@ namespace Res
     }
 }
 
-// res.h, fernanda
+// res.h, Fernanda

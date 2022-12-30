@@ -1,4 +1,4 @@
-// main.cpp, fernanda
+// main.cpp, Fernanda
 
 #include "fernanda.h"
 
@@ -21,4 +21,4 @@ int main(int argc, char *argv[])
     return app.exec();
 }
 
-// main.cpp, fernanda
+// main.cpp, Fernanda

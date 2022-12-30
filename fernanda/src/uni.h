@@ -1,4 +1,4 @@
-// uni.h, fernanda
+// uni.h, Fernanda
 
 #pragma once
 
@@ -150,4 +150,4 @@ namespace Uni
 	}
 }
 
-// uni.h, fernanda
+// uni.h, Fernanda

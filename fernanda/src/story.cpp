@@ -1,4 +1,4 @@
-// story.cpp, fernanda
+// story.cpp, Fernanda
 
 #include "story.h"
 
@@ -306,4 +306,4 @@ void Story::bak()
 	QFile::copy(activeArcPath, bak_path);
 }
 
-// story.cpp, fernanda
+// story.cpp, Fernanda

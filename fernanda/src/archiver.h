@@ -1,4 +1,4 @@
-// archiver.h, fernanda
+// archiver.h, Fernanda
 
 #pragma once
 
@@ -42,4 +42,4 @@ private:
     void blanks(FsPath arcPath, std::map<std::string, Path::Type> additions);
 };
 
-// archiver.h, fernanda
+// archiver.h, Fernanda

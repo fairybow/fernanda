@@ -1,4 +1,4 @@
-// index.h, fernanda
+// index.h, Fernanda
 
 #pragma once
 
@@ -43,4 +43,4 @@ namespace Index
 	inline bool isFile(QModelIndex index) { return isThis(index, "file"); }
 }
 
-// index.h, fernanda
+// index.h, Fernanda

@@ -1,4 +1,4 @@
-// sample.h, fernanda
+// sample.h, Fernanda
 
 #pragma once
 
@@ -60,4 +60,4 @@ namespace Sample
 	}
 }
 
-// sample.h, fernanda
+// sample.h, Fernanda

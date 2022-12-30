@@ -1,4 +1,4 @@
-// delegate.h, fernanda
+// delegate.h, Fernanda
 
 #pragma once
 
@@ -90,10 +90,10 @@ private:
         if (dirty)
         {
             painter->setFont(italics);
-            //name = name + "*";
+            name = "*" + name;
         }
         painter->drawText(geo.text, name);
     }
 };
 
-// delegate.h, fernanda
+// delegate.h, Fernanda
