@@ -95,7 +95,7 @@ void Pane::receiveEditsList(QVector<QString> editedFiles)
 
 void Pane::mouseDoubleClickEvent(QMouseEvent* event)
 {
-    if (currentIndex().model()->hasChildren())
+    if (currentIndex().isValid() && currentIndex().model()->hasChildren())
         QTreeView::mouseDoubleClickEvent(event);
 }
 
@@ -131,7 +131,7 @@ void Pane::contextMenuEvent(QContextMenuEvent* event)
     if (!project) return;
     auto& position = event->pos();
     auto index = indexAt(position);
-    auto menu = new QMenu(this);
+    auto* menu = new QMenu(this);
     auto* rename_item = new QAction(tr("&Rename"), this);
     auto* cut_item = new QAction(tr("&Cut"), this);
     auto* new_folder = new QAction(tr("&New folder"), this);
