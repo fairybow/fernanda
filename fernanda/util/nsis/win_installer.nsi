@@ -64,7 +64,7 @@ Section "Install"
 	; Write docs
 	SetOutPath "$INSTDIR"
 	File "${F_DIR}\LICENSE"
-	File "${F_DIR}\README.md"
+	WriteINIStr "$INSTDIR\Fernanda - GitHub.url" "InternetShortcut" "URL" "https://github.com/fairybow/fernanda"
 
 	; Write data
 	SetOutPath "${DATA}"

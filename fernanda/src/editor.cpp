@@ -5,6 +5,8 @@
 TextEditor::TextEditor(QWidget* parent)
     : QPlainTextEdit(parent)
 {
+    setReadOnly(true);
+    viewport()->setCursor(Qt::ArrowCursor);
     lineNumberArea = new LineNumberArea(this);
     cursorBlink->setTimerType(Qt::VeryCoarseTimer);
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -96,6 +98,7 @@ TextEditor::Action TextEditor::handleKeySwap(QString oldKey, QString newKey)
     {
         setReadOnly(false);
         askOverlay(Overlay::Hide);
+        viewport()->setCursor(Qt::IBeamCursor);
     }
     else
         storeCursors(oldKey);
@@ -199,6 +202,7 @@ void TextEditor::close(bool isFinal)
     clear();
     setReadOnly(true);
     askOverlay(Overlay::Show);
+    viewport()->setCursor(Qt::ArrowCursor);
     if (isFinal)
         cursorPositions.clear();
 }
@@ -253,6 +257,12 @@ void TextEditor::keyPressEvent(QKeyEvent* event)
     cursor.endEditBlock();
     if (cursor.atEnd() && verticalScrollBar()->sliderPosition() != verticalScrollBar()->maximum())
         verticalScrollBar()->triggerAction(QAbstractSlider::SliderToMaximum);
+}
+
+void TextEditor::contextMenuEvent(QContextMenuEvent* event)
+{
+    if (askHasOverlay()) return;
+    QPlainTextEdit::contextMenuEvent(event);
 }
 
 void TextEditor::keyPresses(QVector<QKeyEvent*> events)

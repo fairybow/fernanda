@@ -7,6 +7,7 @@
 
 #include <QAbstractSlider>
 #include <QColor>
+#include <QContextMenuEvent>
 #include <QFont>
 #include <QFontMetrics>
 #include <QLatin1Char>
@@ -78,6 +79,7 @@ protected:
     void paintEvent(QPaintEvent* event) override;
     void wheelEvent(QWheelEvent* event) override;
     void keyPressEvent(QKeyEvent* event) override;
+    void contextMenuEvent(QContextMenuEvent* event) override;
 
 private:
     Keyfilter* keyfilter = new Keyfilter;
@@ -128,6 +130,7 @@ signals:
     void askNavNext();
     void startBlinker();
     void askOverlay(Overlay state);
+    bool askHasOverlay();
 };
 
 class LineNumberArea : public QWidget

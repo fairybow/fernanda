@@ -109,8 +109,8 @@ void Fernanda::addWidgets()
     splitter->addWidgets({ pane, editor_container });
     statusBar->setSizeGripEnabled(true);
     shadow->setAttribute(Qt::WA_TransparentForMouseEvents);
-    shadow->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     overlay->setAttribute(Qt::WA_TransparentForMouseEvents);
+    shadow->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     overlay->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     underlay->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     setMenuBar(menuBar);
@@ -121,6 +121,10 @@ void Fernanda::addWidgets()
     auto aotEffect = new QGraphicsOpacityEffect(this);
     aotEffect->setOpacity(0.8);
     aot->setGraphicsEffect(aotEffect);
+    auto effect = new QGraphicsBlurEffect();
+    effect->setBlurHints(QGraphicsBlurEffect::QualityHint);
+    effect->setBlurRadius(15);
+    shadow->setGraphicsEffect(effect);
     statusBar->addPermanentWidget(indicator, 0);
     statusBar->addPermanentWidget(spacer, 1);
     statusBar->addPermanentWidget(aot, 0);
@@ -133,11 +137,6 @@ void Fernanda::addWidgets()
     fontSlider->setObjectName("fontSlider");
     spacer->setObjectName("spacer");
     aot->setObjectName("aot");
-
-    auto effect = new QGraphicsBlurEffect();
-    effect->setBlurHints(QGraphicsBlurEffect::QualityHint);
-    effect->setBlurRadius(15);
-    shadow->setGraphicsEffect(effect);
 }
 
 QWidget* Fernanda::stackWidgets(QVector<QWidget*> widgets)
@@ -185,6 +184,7 @@ void Fernanda::connections()
     connect(pane, &Pane::askSetExpansion, this, [&](QString key, bool isExpanded) { activeStory.value().setItemExpansion(key, isExpanded); });
     connect(textEditor, &TextEditor::askNavNext, pane, [&]() { pane->nav(Pane::Nav::Next); });
     connect(textEditor, &TextEditor::askNavPrevious, pane, [&]() { pane->nav(Pane::Nav::Previous); });
+    connect(textEditor, &TextEditor::askHasOverlay, this, [&]() { return overlay->isVisible(); });
     connect(textEditor, &TextEditor::cursorPositionChanged, this, [&]()
         {
             updatePositions(textEditor->textCursor().blockNumber(), textEditor->textCursor().positionInBlock());

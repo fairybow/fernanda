@@ -82,6 +82,7 @@
 - [ ] Make thin cursor change color when there's a selection?
 - [x] ~~Block cursor should default to char width, then to average char width~~
 - [x] ~~Convert shadow to its own overlay, so that it won't interfere with LNA (like on Solarized themes)~~
+- [x] ~~Get rid of I-bar cursor on locked editor~~
 
 ### Indicator
 - [ ] Deactivate for extremely large strings / convert to non-automatic counting (refresh symbol)
