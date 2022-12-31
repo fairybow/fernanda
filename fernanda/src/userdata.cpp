@@ -239,7 +239,7 @@ std::string Ud::dll()
                 return candidate;
         }
     }
-    throw std::runtime_error("Unable to locate shared 7z library. Have you install all dependencies?");
+    throw std::runtime_error("Unable to locate shared 7z library. Have you installed all dependencies?");
 }
 
 #else
