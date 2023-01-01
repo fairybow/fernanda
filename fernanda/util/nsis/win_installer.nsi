@@ -4,6 +4,12 @@
 !include "FileFunc.nsh"
 !include "LogicLib.nsh"
 
+; Checkbox options (todo)
+; - add desktop shortcuts
+; - add start menu items
+; - add network firewall rule
+; - open on close
+
 ; ---------- Qt ----------
 !define Q_VERSION "6.4.1"
 !define Q_COMPILER "msvc2019_64"
@@ -20,6 +26,7 @@ DirText "Choose a directory"
 !define DATA "$INSTDIR\Data"
 !define PLATFORMS "${DATA}\Platforms"
 !define STYLES "${DATA}\Styles"
+!define TLS "${DATA}\TLS"
 !define F_DIR "C:\Dev\fernanda"
 !define Q_DIR "C:\Qt\${Q_VERSION}\${Q_COMPILER}"
 !define Q_BIN "${Q_DIR}\bin"
@@ -80,6 +87,8 @@ Section "Install"
 	File "${Q_PLUGINS}\platforms\qwindows.dll"
 	SetOutPath "${STYLES}"
 	File "${Q_PLUGINS}\styles\qwindowsvistastyle.dll"
+	SetOutPath "${TLS}"
+	File "${Q_PLUGINS}\tls\qschannelbackend.dll"
 
 	; Write shortcuts
 	CreateShortCut "$INSTDIR\Fernanda.lnk" "${F_EXE}"
@@ -96,6 +105,10 @@ Section "Install"
 	CreateDirectory "$SMPROGRAMS\${APP}"
 	CreateShortCut "$SMPROGRAMS\${APP}\Uninstall.lnk" "${UN_F_EXE}" "" "${UN_F_EXE}" 0
 	CreateShortCut "$SMPROGRAMS\${APP}\${APP}.lnk" "${F_EXE}" "" "${F_EXE}" 0
+
+	; Add application to the firewall exception list
+	; SimpleFC::AddApplication "${APP}" "${F_EXE}" 0 2 "" 1
+	; Pop $0
  
 	; Register uninstall info
 	WriteRegStr HKLM "${UN_F_REG}" "DisplayIcon" "${F_ICON}"
@@ -114,6 +127,10 @@ SectionEnd
 Section "Uninstall"
 
 	${unregisterExtension} ".story" "Fernanda Story File"
+
+	; Remove application from the firewall exception list
+	; SimpleFC::RemoveApplication "${F_EXE}"
+	; Pop $0
 
 	RMDir /r "$INSTDIR\*.*"
 	RMDir "$INSTDIR"
