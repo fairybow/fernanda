@@ -71,6 +71,7 @@ Section "Install"
 	File "${F_DIR}\x64\Release\fernanda.exe"
 	File "${Q_BIN}\Qt6Core.dll"
 	File "${Q_BIN}\Qt6Gui.dll"
+	File "${Q_BIN}\Qt6Network.dll"
 	File "${Q_BIN}\Qt6Widgets.dll"
 	File "${Q_BIN}\Qt6Xml.dll"
 
