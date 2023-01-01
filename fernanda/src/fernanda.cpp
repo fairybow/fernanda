@@ -181,6 +181,7 @@ void Fernanda::connections()
     connect(textEditor, &TextEditor::askOverlay, this, &Fernanda::triggerOverlay);
     connect(this, &Fernanda::startAutoTempSave, this, [&]() { autoTempSave->start(30000); });
     connect(autoTempSave, &QTimer::timeout, this, [&]() { activeStory.value().autoTempSave(textEditor->toPlainText()); });
+    connect(manager, &QNetworkAccessManager::finished, this, [](QNetworkReply* reply) { reply->deleteLater(); });
     connect(pane, &Pane::askSetExpansion, this, [&](QString key, bool isExpanded) { activeStory.value().setItemExpansion(key, isExpanded); });
     connect(textEditor, &TextEditor::askNavNext, pane, [&]() { pane->nav(Pane::Nav::Next); });
     connect(textEditor, &TextEditor::askNavPrevious, pane, [&]() { pane->nav(Pane::Nav::Previous); });
@@ -273,8 +274,8 @@ void Fernanda::makeSetMenu()
     };
     auto win_theme_list = Res::iterateResources(":/themes/window/", "*.fernanda_wintheme", user_data, Res::Type::WindowTheme);
     QVector<Res::DataPair> font_list;
-    auto ttfs = Res::iterateResources(":/fonts/", "*.ttf", user_data, Res::Type::Font);
-    font_list << Res::iterateResources(":/fonts/", "*.otf", user_data, Res::Type::Font, ttfs);
+    font_list << Res::iterateResources(":/fonts/", "*.otf", user_data, Res::Type::Font, font_list);
+    font_list << Res::iterateResources(":/fonts/", "*.ttf", user_data, Res::Type::Font, font_list);
     auto editor_theme_list = Res::iterateResources(":/themes/editor/", "*.fernanda_theme", user_data, Res::Type::EditorTheme);
     QVector<Res::DataPair> tab_list = {
         Res::DataPair{ "20", "20 px" },
@@ -515,6 +516,7 @@ void Fernanda::makeToggleMenu()
 void Fernanda::makeHelpMenu()
 {
     auto* about = new QAction(tr("&About..."), this);
+    auto* check_update = new QAction(tr("&Check for updates..."), this);
     auto* shortcuts = new QAction(tr("&Shortcuts..."), this);
     auto* open_docs = new QAction(tr("&Open documents..."), this);
     auto* open_install = new QAction(tr("&Open installation folder..."), this);
@@ -522,6 +524,7 @@ void Fernanda::makeHelpMenu()
     auto* sample_project = new QAction(tr("&Create sample project"), this);
     auto* sample_themes = new QAction(tr("&Create sample themes..."), this);
     connect(about, &QAction::triggered, this, &Fernanda::helpAbout);
+    connect(check_update, &QAction::triggered, this, &Fernanda::helpUpdate);
     connect(shortcuts, &QAction::triggered, this, &Fernanda::helpShortcuts);
     connect(open_docs, &QAction::triggered, this, [&]() { openUd(Ud::userData(Ud::Op::GetDocs)); });
     connect(open_install, &QAction::triggered, this, [&]()
@@ -533,6 +536,7 @@ void Fernanda::makeHelpMenu()
     connect(sample_themes, &QAction::triggered, this, &Fernanda::helpMakeSampleRes);
     auto* help = menuBar->addMenu(tr("&Help"));
     help->addAction(about);
+    help->addAction(check_update);
     help->addAction(shortcuts);
     help->addSeparator();
     help->addAction(open_docs);
@@ -962,6 +966,32 @@ void Fernanda::helpAbout()
     connect(qt, &QPushButton::clicked, this, QApplication::aboutQt);
     about.setDefaultButton(ok);
     about.exec();
+}
+
+void Fernanda::helpUpdate()
+{
+    auto request = QNetworkRequest(QUrl("https://api.github.com/repos/fairybow/fernanda/releases"));
+    auto reply = manager->get(request);
+    connect(reply, &QNetworkReply::finished, [=]()
+        {
+            QMessageBox check;
+            check.setWindowTitle("Version Check");
+            if (reply->error() == QNetworkReply::NoError)
+            {
+                auto document = QJsonDocument::fromJson(reply->readAll());
+                QList<QVariant> list = document.toVariant().toList();
+                QMap<QString, QVariant> map = list[0].toMap();
+                auto latest = map["tag_name"].toString();
+                (latest == QString(VER_FILEVERSION_STR))
+                    ? check.setText(Uni::version(Uni::Version::Latest))
+                    : check.setText(Uni::version(Uni::Version::Old));
+            }
+            else
+                check.setText(Uni::version(Uni::Version::Error));
+            auto ok = check.addButton(QMessageBox::Ok);
+            check.setDefaultButton(ok);
+            check.exec();
+        });
 }
 
 void Fernanda::devWrite(QString name, QString value)

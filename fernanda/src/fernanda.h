@@ -18,10 +18,14 @@
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QGraphicsBlurEffect>
+#include <QJsonDocument>
 #include <QMainWindow>
+#include <QMap>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QMoveEvent>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 #include <QShowEvent>
 #include <QShortcut>
 #include <QSizePolicy>
@@ -30,6 +34,7 @@
 #include <QStackedLayout>
 #include <QTextOption>
 #include <QTextTable>
+#include <QUrl>
 #include <QWidgetAction>
 
 class Fernanda : public QMainWindow
@@ -68,6 +73,7 @@ private:
     QLabel* spacer = new QLabel(this);
     QPushButton* aot = new QPushButton(this);
     QTimer* autoTempSave = new QTimer(this);
+    QNetworkAccessManager* manager = new QNetworkAccessManager(this);
 
     std::optional<Story> activeStory;
     bool isDev = false;
@@ -129,6 +135,7 @@ private slots:
     void helpMakeSampleRes();
     void helpShortcuts();
     void helpAbout();
+    void helpUpdate();
     void devWrite(QString name, QString value);
     void handleEditorOpen(QString key = nullptr);
     void sendEditedText();

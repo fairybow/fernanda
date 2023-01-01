@@ -5,3 +5,4 @@
 #define Q_OBJECT
 #define slots
 #define signals
+#define QStringLiteral(str) (QString(QtPrivate::qMakeStringPrivate(QT_UNICODE_LITERAL(str))))

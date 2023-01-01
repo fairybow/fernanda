@@ -52,6 +52,7 @@ More to come.
 Fernanda is built with:
 - C++
 - [Qt](https://www.qt.io/)
+- [NSIS](https://nsis.sourceforge.io/) (Windows installer)
 - and [Visual Studio Community](https://visualstudio.microsoft.com/vs/community/)
 
 Fernanda's `.story` files rely on:

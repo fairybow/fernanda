@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <string>
+#include "version.h"
 
 #include <QRegularExpression>
 #include <QString>
@@ -31,6 +31,12 @@ namespace Uni
 		ThemeSheetLine,
 		ThemeSheetValue,
 		ThemeSheetVariable
+	};
+
+	enum class Version {
+		Error,
+		Latest,
+		Old
 	};
 
 	inline const QString ico(Ico name)
@@ -144,9 +150,36 @@ namespace Uni
 		return QStringLiteral("<table><td>") + menuShortcuts() + QStringLiteral("</td><td>\n</td><td>") + windowShortcuts() + QStringLiteral("</td><td>\n</td><td>") + editorShortcuts() + QStringLiteral("</td><table>");
 	}
 
+	inline const QString repo()
+	{
+		return QStringLiteral("<a href='https://github.com/fairybow/fernanda'>github.com/fairybow/fernanda</a>");
+	}
+
+	inline const QString releases()
+	{
+		return QStringLiteral("<a href='https://github.com/fairybow/fernanda/releases/'>github.com/fairybow/fernanda/releases</a>");
+	}
+
 	inline const QString about()
 	{
-		return QStringLiteral("<b>Fernanda</b> is a personal project and a work-in-progress.<p><b>Version:</b> hella beta<p><a href='https://github.com/fairybow/fernanda'>github.com/fairybow/fernanda</a>");
+		return QStringLiteral("<b>Fernanda</b> is a personal project and a work-in-progress.<p><b>Version:</b> ") + VER_FILEVERSION_STR + "<p>" + repo();
+	}
+
+	inline const QString version(Version check)
+	{
+		QString result;
+		switch (check) {
+		case Version::Error:
+			result = QStringLiteral("Unable to verify version.<p><b>Check:</b> ") + releases();
+			break;
+		case Version::Latest:
+			result = QStringLiteral("You have the latest version!");
+			break;
+		case Version::Old:
+			result = QStringLiteral("You do not have the latest version.<p><b>Download:</b> ") + releases();
+			break;
+		}
+		return result;
 	}
 }
 
