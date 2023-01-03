@@ -27,7 +27,7 @@ namespace Sample
 	{
 		QVector<Io::ArcWRPaths> result;
 		auto rootPath = ":/sample/Candide/";
-		QDirIterator it(rootPath, QVector<QString>() << "*.*", QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files, QDirIterator::Subdirectories);
+		QDirIterator it(rootPath, QStringList() << "*.*", QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files, QDirIterator::Subdirectories);
 		while (it.hasNext())
 		{
 			it.next();

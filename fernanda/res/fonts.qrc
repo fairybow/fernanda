@@ -13,5 +13,6 @@
         <file>fonts/OpenDyslexic.otf</file>
         <file>fonts/Roboto.ttf</file>
         <file>fonts/Source Sans Pro.ttf</file>
+        <file>fonts/Ysabeau.ttf</file>
     </qresource>
 </RCC>

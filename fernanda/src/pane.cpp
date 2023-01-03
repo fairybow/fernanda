@@ -36,7 +36,7 @@ Pane::Pane(QWidget* parent)
         });
 }
 
-const QVector<QString> Pane::devGetEditedKeys()
+const QStringList Pane::devGetEditedKeys()
 {
     return delegate->paintEdited;
 }
@@ -86,7 +86,7 @@ void Pane::receiveItems(QVector<QStandardItem*> items)
     }
 }
 
-void Pane::receiveEditsList(QVector<QString> editedFiles)
+void Pane::receiveEditsList(QStringList editedFiles)
 {
     if (editedFiles == delegate->paintEdited) return;
     delegate->paintEdited = editedFiles;
@@ -184,6 +184,11 @@ void Pane::resizeEvent(QResizeEvent* event)
     refresh();
 }
 
+void Pane::refresh()
+{
+    dataChanged(QModelIndex(), QModelIndex());
+}
+
 void Pane::expandItems_recursor(QStandardItem* item)
 {
     auto index = item->index();
@@ -192,11 +197,6 @@ void Pane::expandItems_recursor(QStandardItem* item)
     if (item->hasChildren())
         for (auto i = 0; i < item->rowCount(); ++i)
             expandItems_recursor(item->child(i));
-}
-
-void Pane::refresh()
-{
-    dataChanged(QModelIndex(), QModelIndex());
 }
 
 void Pane::addTempItem(QPoint eventPosition, Path::Type type)

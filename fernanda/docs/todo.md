@@ -35,6 +35,9 @@
 
 ### Known issues
 - [ ] Known issue: Windows scale > 100% negates the effects of `setTextCursor(0)`
+- [ ] Known issue: Cycling fonts and themes, and then forcing repaint by editing open document (to be marked dirty or clean) is causing outlines (often blue, sometimes red) to appear around the icons in Pane (Delegate)
+- [ ] ^ Cycling themes not needed. Appears to be best reproducable by cycling editor fonts quickly and then typing (with light window theme)
+- [ ] ^ The issue may be largely solved, but cycling from Dark to Light does produce a dark blue outline around Open Folder and File icons (but not Closed Folder, from what I could tell?)
 
 ## Classes
 
@@ -64,6 +67,7 @@
 - [x] ~~Open UD folders from Help menu~~
 - [x] ~~Make Dev menu instead of Status Bar items~~
 - [x] ~~I don't think `toggleWidget()` or `toggleGlobals()` are slots~~
+- [ ] What can be connected to the `storyOpened()`/`storyClosed()` signals?
 
 ### Editor / LineNumberArea
 - [x] ~~Remove annoying white block under cursor -_-~~
@@ -83,6 +87,7 @@
 - [x] ~~Block cursor should default to char width, then to average char width~~
 - [x] ~~Convert shadow to its own overlay, so that it won't interfere with LNA (like on Solarized themes)~~
 - [x] ~~Get rid of I-bar cursor on locked editor~~
+- [x] ~~"Memory creep" from not deleting fonts~~
 
 ### Indicator
 - [ ] Deactivate for extremely large strings / convert to non-automatic counting (refresh symbol)
@@ -104,6 +109,7 @@
 ### PaneDelegate
 - [ ] For `paint()` and `updateEditorGeometry()` - these override public functions, and idk if that matters
 - [ ] `updateEditorGeometry()` is currently unused
+- [ ] May need to remove and re-add icons / labels. They seem to be doubling up sometimes--visible r/g/b or pink outlines?
 
 ### Splitter
 
@@ -127,7 +133,7 @@
 
 ### Res
 
-- [ ] There surely must be a smarter way to incorporate `.otf` into the fonts RC list (applies to MainWindow, too)
+- [x] ~~There surely must be a smarter way to incorporate `.otf` into the fonts RC list (applies to MainWindow, too)~~
 - [x] ~~Convert to `std::filesystem::path`~~
 
 ### Sample

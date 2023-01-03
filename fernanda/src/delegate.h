@@ -24,7 +24,7 @@ class PaneDelegate : public QStyledItemDelegate
 public:
     using QStyledItemDelegate::QStyledItemDelegate;
 
-    QVector<QString> paintEdited;
+    QStringList paintEdited;
     QSize paneSize;
 
 private:
@@ -34,65 +34,69 @@ private:
         QRect highlight;
     };
 
+    const Geometry getRectSizes(const QStyleOptionViewItem& option) const
+    {
+        auto option_rect = option.rect;
+        auto rect_height = option_rect.height();
+        auto rect_width = option_rect.width();
+        auto rect_top = option_rect.top();
+        auto rect_left = option_rect.left();
+        auto option_size = QSize(rect_height, rect_height);
+        auto size_height = option_size.height();
+        auto size_width = option_size.width();
+        auto icon_rect = QRect((rect_left - size_width + 15), rect_top, size_width, size_height);
+        auto text_rect = QRect((rect_left + 16), (rect_top + 2), rect_width, rect_height);
+        auto highlight_rect = QRect(0, rect_top, paneSize.width(), rect_height);
+        return Geometry{ icon_rect, text_rect, highlight_rect };
+    }
+
+    bool isDirty(QString key) const
+    {
+        for (auto& entry : paintEdited)
+            if (key == entry)
+                return true;
+        return false;
+    }
+
     const QColor highlight() const
     {
         return QColor(0, 0, 0, 33);
     }
 
-    const Geometry getRectSizes(const QStyleOptionViewItem& option) const
-    {
-        auto opt_r = option.rect;
-        auto r_h = opt_r.height();
-        auto r_w = opt_r.width();
-        auto r_t = opt_r.top();
-        auto r_l = opt_r.left();
-        auto opt_s = QSize(r_h, r_h);
-        auto s_h = opt_s.height();
-        auto s_w = opt_s.width();
-        auto icon_r = QRect((r_l - s_w + 15), r_t, s_w, s_h);
-        auto text_r = QRect((r_l + 16), (r_t + 2), r_w, r_h);
-        auto highlight_r = QRect(0, r_t, paneSize.width(), r_h);
-        return Geometry{ icon_r, text_r, highlight_r };
-    }
-
     void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override
     {
-        auto geo = getRectSizes(option);
-        editor->setGeometry(geo.text);
+        auto geometry = getRectSizes(option);
+        editor->setGeometry(geometry.text);
     }
 
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
     {
-        auto item_key = Index::key(index);
-        auto name = Index::name(index);
-        auto geo = getRectSizes(option);
-        auto dirty = false;
-        QFont font;
-        QFont italics;
-        italics.setItalic(true);
-        painter->setFont(font);
+        painter->save();
+        auto geometry = getRectSizes(option);
         if (option.state & QStyle::State_MouseOver || option.state & QStyle::State_Selected)
-            painter->fillRect(geo.highlight, highlight());
+            painter->fillRect(geometry.highlight, highlight());
+        auto name = Index::name(index);
         if (Index::isDir(index))
         {
-            if (option.state & QStyle::State_Open)
-                painter->drawText(geo.icon, Uni::ico(Uni::Ico::FolderOpen));
-            else
-                painter->drawText(geo.icon, Uni::ico(Uni::Ico::FolderClosed));
+            (option.state & QStyle::State_Open)
+                ? painter->drawText(geometry.icon, Uni::ico(Uni::Ico::FolderOpen))
+                : painter->drawText(geometry.icon, Uni::ico(Uni::Ico::FolderClosed));
         }
         else if (Index::isFile(index))
-            painter->drawText(geo.icon, Uni::ico(Uni::Ico::File));
-        else
-            painter->drawText(geo.icon, Uni::ico(Uni::Ico::QuestionMark));
-        for (auto& entry : paintEdited)
-            if (item_key == entry)
-                dirty = true;
-        if (dirty)
         {
-            painter->setFont(italics);
-            name = "*" + name;
+            painter->drawText(geometry.icon, Uni::ico(Uni::Ico::File));
+            if (isDirty(Index::key(index)))
+            {
+                QFont font = painter->font();
+                font.setItalic(true);
+                painter->setFont(font);
+                name = "*" + name;
+            }
         }
-        painter->drawText(geo.text, name);
+        else
+            painter->drawText(geometry.icon, Uni::ico(Uni::Ico::QuestionMark));
+        painter->drawText(geometry.text, name);
+        painter->restore();
     }
 };
 

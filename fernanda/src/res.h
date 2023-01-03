@@ -8,7 +8,6 @@
 #include <algorithm>
 
 #include <QDirIterator>
-#include <QFontDatabase>
 #include <QRegularExpressionMatch>
 #include <QRegularExpressionMatchIterator>
 #include <QStringList>
@@ -18,44 +17,35 @@ namespace Res
 {
     namespace Fs = std::filesystem;
 
-    enum class Type {
-        EditorTheme,
-        Font,
-        WindowTheme
-    };
-
     struct DataPair {
         Fs::path path;
         QString label;
     };
 
-    inline void collectResources(QDirIterator& iterator, Type resourceType, QVector<DataPair>& listOfPathPairs)
+    inline void collectResources(QDirIterator& iterator, QVector<DataPair>& listOfPathPairs)
     {
         while (iterator.hasNext())
         {
             iterator.next();
             auto q_path = iterator.filePath();
-            Fs::path path;
-            (resourceType == Type::Font)
-                ? path = Path::toFs(QFontDatabase::applicationFontFamilies(QFontDatabase::addApplicationFont(q_path)).at(0))
-                : path = Path::toFs(q_path);
             auto label = Path::getName<QString>(q_path);
-            listOfPathPairs << DataPair{ path, label };
+            listOfPathPairs << DataPair{ Path::toFs(q_path), Path::getName<QString>(q_path) };
         }
     }
 
-    inline const QVector<DataPair> iterateResources(Fs::path path, QString ext, Fs::path dataPath, Type resourceType, QVector<DataPair> existingList = QVector<DataPair>())
+    inline const QVector<DataPair> iterateResources(Fs::path path, QStringList extensions, Fs::path dataPath)
     {
         QVector<DataPair> dataAndLabels;
-        if (!existingList.isEmpty())
-            dataAndLabels << existingList;
-        QDirIterator assets(Path::toQString(path), QStringList() << ext, QDir::Files, QDirIterator::Subdirectories);
-        if (QDir(dataPath).exists())
+        for (auto& extension : extensions)
         {
-            QDirIterator user_assets(Path::toQString(dataPath), QStringList() << ext, QDir::Files, QDirIterator::Subdirectories);
-            collectResources(user_assets, resourceType, dataAndLabels);
+            QDirIterator assets(Path::toQString(path), QStringList() << extension, QDir::Files, QDirIterator::Subdirectories);
+            if (QDir(dataPath).exists())
+            {
+                QDirIterator user_assets(Path::toQString(dataPath), QStringList() << extension, QDir::Files, QDirIterator::Subdirectories);
+                collectResources(user_assets, dataAndLabels);
+            }
+            collectResources(assets, dataAndLabels);
         }
-        collectResources(assets, resourceType, dataAndLabels);
         std::sort(dataAndLabels.begin(), dataAndLabels.end(), [](auto& lhs, auto& rhs)
             {
                 return lhs.label < rhs.label;

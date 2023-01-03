@@ -26,6 +26,7 @@
 #include <QMoveEvent>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QPixmap>
 #include <QShowEvent>
 #include <QShortcut>
 #include <QSizePolicy>
@@ -105,6 +106,7 @@ private:
     void shortcuts();
     void makeMenuBar();
     void makeFileMenu();
+    void makeStoryMenu();
     void makeSetMenu();
     void makeToggleMenu();
     void makeHelpMenu();
@@ -157,12 +159,13 @@ signals:
     void sendBlockCursorToggle(bool checked);
     void sendCursorBlinkToggle(bool checked);
     void sendItems(QVector<QStandardItem*> items);
-    void sendEditsList(QVector<QString> editedFiles);
+    void sendEditsList(QStringList editedFiles);
     void startAutoTempSave();
     void updatePositions(const int cursorBlockNumber, const int cursorPosInBlock);
     void updateCounts(const QString text, const int blockCount);
     void updateSelection(const QString selectedText, const int lineCount);
     void askEditorClose(bool isFinal = false);
+    void storyMenuVisible(bool setVisible);
 };
 
 // fernanda.h, Fernanda

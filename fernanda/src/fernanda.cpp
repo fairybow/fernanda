@@ -229,6 +229,7 @@ void Fernanda::shortcuts()
 void Fernanda::makeMenuBar()
 {
     makeFileMenu();
+    makeStoryMenu();
     makeSetMenu();
     makeToggleMenu();
     makeHelpMenu();
@@ -265,6 +266,17 @@ void Fernanda::makeFileMenu()
     file->addAction(quit);
 }
 
+void Fernanda::makeStoryMenu()
+{
+    auto* item1 = new QAction(tr("&(Empty)"), this);
+    connect(item1, &QAction::triggered, this, [&]() {});
+    item1->setEnabled(false);
+    auto* story = menuBar->addMenu(tr("&Story"));
+    story->addAction(item1);
+    story->menuAction()->setVisible(false);
+    connect(this, &Fernanda::storyMenuVisible, story->menuAction(), &QAction::setVisible);
+}
+
 void Fernanda::makeSetMenu()
 {
     auto user_data = Ud::userData(Ud::Op::GetUserData);
@@ -272,11 +284,9 @@ void Fernanda::makeSetMenu()
         Res::DataPair{ "Top", "Top" },
         Res::DataPair{ "Bottom", "Bottom" }
     };
-    auto win_theme_list = Res::iterateResources(":/themes/window/", "*.fernanda_wintheme", user_data, Res::Type::WindowTheme);
-    QVector<Res::DataPair> font_list;
-    font_list << Res::iterateResources(":/fonts/", "*.otf", user_data, Res::Type::Font, font_list);
-    font_list << Res::iterateResources(":/fonts/", "*.ttf", user_data, Res::Type::Font, font_list);
-    auto editor_theme_list = Res::iterateResources(":/themes/editor/", "*.fernanda_theme", user_data, Res::Type::EditorTheme);
+    auto win_theme_list = Res::iterateResources(":/themes/window/", { "*.fernanda_wintheme" }, user_data);
+    auto font_list = Res::iterateResources(":/fonts/", { "*.otf", "*.ttf" }, user_data);
+    auto editor_theme_list = Res::iterateResources(":/themes/editor/", { "*.fernanda_theme" }, user_data);
     QVector<Res::DataPair> tab_list = {
         Res::DataPair{ "20", "20 px" },
         Res::DataPair{ "40", "40 px" },
@@ -518,9 +528,9 @@ void Fernanda::makeHelpMenu()
     auto* about = new QAction(tr("&About..."), this);
     auto* check_update = new QAction(tr("&Check for updates..."), this);
     auto* shortcuts = new QAction(tr("&Shortcuts..."), this);
-    auto* open_docs = new QAction(tr("&Open documents..."), this);
-    auto* open_install = new QAction(tr("&Open installation folder..."), this);
-    auto* open_ud = new QAction(tr("&Open user data..."), this);
+    auto* open_docs = new QAction(tr("&Documents..."), this);
+    auto* open_install = new QAction(tr("&Installation folder..."), this);
+    auto* open_ud = new QAction(tr("&User data..."), this);
     auto* sample_project = new QAction(tr("&Create sample project"), this);
     auto* sample_themes = new QAction(tr("&Create sample themes..."), this);
     connect(about, &QAction::triggered, this, &Fernanda::helpAbout);
@@ -536,12 +546,15 @@ void Fernanda::makeHelpMenu()
     connect(sample_themes, &QAction::triggered, this, &Fernanda::helpMakeSampleRes);
     auto* help = menuBar->addMenu(tr("&Help"));
     help->addAction(about);
+#ifndef Q_OS_LINUX
     help->addAction(check_update);
+#endif
     help->addAction(shortcuts);
     help->addSeparator();
-    help->addAction(open_docs);
-    help->addAction(open_install);
-    help->addAction(open_ud);
+    auto* open = help->addMenu(tr("&Open"));
+    open->addAction(open_docs);
+    open->addAction(open_install);
+    open->addAction(open_ud);
     help->addSeparator();
     help->addAction(sample_project);
     help->addAction(sample_themes);
@@ -709,6 +722,7 @@ void Fernanda::openStory(FsPath fileName, Story::Op opt)
     Ud::clear(Ud::userData(Ud::Op::GetTemp));
     activeStory = Story(fileName, opt);
     auto& story = activeStory.value();
+    storyMenuVisible(true);
     askEditorClose(true);
     sendItems(story.items());
     colorBar->green();
@@ -836,9 +850,9 @@ void Fernanda::setEditorFont()
 {
     if (auto selection = editorFonts->checkedAction(); selection != nullptr)
     {
-        auto font = selection->data().toString();
-        textEditor->setFont(font, fontSlider->value());
-        Ud::saveConfig(Ud::ConfigGroup::Editor, Ud::ConfigVal::Font, font);
+        auto path = selection->data();
+        textEditor->handleFont(Path::toFs(path), fontSlider->value());
+        Ud::saveConfig(Ud::ConfigGroup::Editor, Ud::ConfigVal::Font, path);
     }
 }
 
@@ -961,6 +975,7 @@ void Fernanda::helpAbout()
     about.setStyleSheet(windowStyle(WinStyle::BaseOnly));
     about.setWindowTitle("About");
     about.setText(Uni::about());
+    about.setIconPixmap(QPixmap(":/icons/fernanda_64.png"));
     auto ok = about.addButton(QMessageBox::Ok);
     auto qt = about.addButton(tr("About Qt"), QMessageBox::AcceptRole);
     connect(qt, &QPushButton::clicked, this, QApplication::aboutQt);

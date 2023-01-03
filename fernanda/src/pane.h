@@ -32,12 +32,12 @@ public:
         Previous
     };
 
-    const QVector<QString> devGetEditedKeys();
+    const QStringList devGetEditedKeys();
     void nav(Nav direction);
 
 public slots:
     void receiveItems(QVector<QStandardItem*> items);
-    void receiveEditsList(QVector<QString> editedFiles);
+    void receiveEditsList(QStringList editedFiles);
 
 protected:
     void mouseDoubleClickEvent(QMouseEvent* event) override;
@@ -49,8 +49,8 @@ private:
     QStandardItemModel* itemModel = new QStandardItemModel(this);
     PaneDelegate* delegate = new PaneDelegate(this);
 
-    void expandItems_recursor(QStandardItem* item);
     void refresh();
+    void expandItems_recursor(QStandardItem* item);
     void addTempItem(QPoint eventPosition, Path::Type type);
     QStandardItem* tempItem(Path::Type type);
     const QString rename();

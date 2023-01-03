@@ -20,7 +20,7 @@ QVector<Io::ArcRename> Story::devGetRenames()
 	return dom->renames();
 }
 
-const QVector<QString> Story::devGetEditedKeys()
+const QStringList Story::devGetEditedKeys()
 {
 	return editedKeys;
 }
@@ -68,7 +68,7 @@ void Story::autoTempSave(QString text)
 	tempSave(activeKey, text);
 }
 
-QVector<QString> Story::edits(QString currentText)
+QStringList Story::edits(QString currentText)
 {
 	(cleanText != currentText)
 		? amendEditsList(AmendEdits::Add)

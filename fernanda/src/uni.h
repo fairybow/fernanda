@@ -162,7 +162,7 @@ namespace Uni
 
 	inline const QString about()
 	{
-		return QStringLiteral("<b>Fernanda</b> is a personal project and a work-in-progress.<p><b>Version:</b> ") + VER_FILEVERSION_STR + "<p>" + repo();
+		return QStringLiteral("<h3><b>About Fernanda</b></h3><p>Fernanda is a plain text editor for drafting long-form fiction. (At least, that's the plan.)<p>It's a personal project and a work-in-progress.<p><h3><b>Version</b></h3>") + VER_FILEVERSION_STR + "<p>See " + repo() + " for more information.";
 	}
 
 	inline const QString version(Version check)
@@ -173,7 +173,7 @@ namespace Uni
 			result = QStringLiteral("Unable to verify version.<p><b>Check:</b> ") + releases();
 			break;
 		case Version::Latest:
-			result = QStringLiteral("You have the latest version!");
+			result = QStringLiteral("You have the latest version.");
 			break;
 		case Version::Old:
 			result = QStringLiteral("You do not have the latest version.<p><b>Download:</b> ") + releases();

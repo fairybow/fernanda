@@ -7,10 +7,10 @@
 	</kbd>
 </p>
 <p align="center">
-	<a href="https://github.com/fairybow/fernanda/releases/"><img src="https://img.shields.io/github/v/release/fairybow/fernanda?include_prereleases&color=f34b7d" alt="releases"/></a>
+	<a href="https://github.com/fairybow/fernanda/releases/"><img src="https://img.shields.io/github/v/release/fairybow/fernanda?include_prereleases&color=f34b7d" alt="release"/></a>
 	<a href="LICENSE"><img src="https://img.shields.io/github/license/fairybow/fernanda?color=orange" alt="license: GPL-3.0"/></a>
 	<br>
-	<a href="https://www.qt.io/"><img src="https://img.shields.io/badge/Qt-6.4.1-00ff00?logo=qt" alt="Qt: 6.4.1"/></a>
+	<a href="https://www.qt.io/"><img src="https://img.shields.io/badge/Qt-6.4.1-brightgreen?logo=qt" alt="Qt: 6.4.1"/></a>
 	<a href="https://github.com/rikyoz/bit7z"><img src="https://img.shields.io/badge/Bit7z-4.0.0_beta-blue" alt="Bit7z: 4.0.0-beta"/></a>
 	<a href="https://www.7-zip.org/"><img src="https://img.shields.io/badge/7zip-22.01-ffbf00" alt="7zip: 22.01"/></a>
 </p>
@@ -52,8 +52,8 @@ More to come.
 Fernanda is built with:
 - C++
 - [Qt](https://www.qt.io/)
-- [NSIS](https://nsis.sourceforge.io/) (Windows installer)
-- and [Visual Studio Community](https://visualstudio.microsoft.com/vs/community/)
+- [Visual Studio Community](https://visualstudio.microsoft.com/vs/community/)
+- and [NSIS](https://nsis.sourceforge.io/)
 
 Fernanda's `.story` files rely on:
 - Bit7z by [@rikyoz](https://github.com/rikyoz/bit7z)
@@ -61,17 +61,18 @@ Fernanda's `.story` files rely on:
 
 Among the fonts used are:
 - Cascadia Mono by [@microsoft](https://github.com/microsoft/cascadia-code)
-- Cozette :purple_heart: by [@slavfox](https://github.com/slavfox/Cozette)
+- Cozette :purple_heart: by [@slavfox](https://github.com/slavfox/Cozette) (vectorized bitmap font, so looks crisp only at certain sizes)
 - Day Roman by Apostrophic Labs
-- Dot Matrix by [Dionaea Fonts](https://dionaea.com/information/fonts.php)
-- Fixedsys Excelsior (with programming ligatures) by [@kika](https://github.com/kika/fixedsys)
+- Dot Matrix by [Dionaea Fonts](https://dionaea.com/information/fonts.php) (`Help > Create sample themes...`)
+- Fixedsys Excelsior by [@kika](https://github.com/kika/fixedsys)
 - Iosevka by [@be5invis](https://github.com/be5invis/Iosevka)
 - Mononoki by [@madmalik](https://github.com/madmalik/mononoki)
-- More Perfect DOS VGA by [@L∆MEUR](https://laemeur.sdf.org/fonts/)
+- More Perfect DOS VGA by [Zeh Fernando](https://zehfernando.com/) and [@L∆MEUR](https://laemeur.sdf.org/fonts/)
 - Nouveau IBM by Arto Hatanp‰‰
-- and OpenDyslexic by [Abbie Gonzalez](https://opendyslexic.org/)
+- OpenDyslexic by [Abbie Gonzalez](https://opendyslexic.org/)
+- and Ysabeau by [@CatharsisFonts](https://github.com/CatharsisFonts/Ysabeau)
 
-Solarized themes by [@altercation](https://github.com/altercation/solarized)
+Solarized theme palettes by [@altercation](https://github.com/altercation/solarized)
 
 ## :star: **Features**
 

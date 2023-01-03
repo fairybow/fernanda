@@ -135,9 +135,9 @@ void Dom::add(QString newName, Path::Type type, QString parentKey)
 	write(key, Path::toQString(path, true), Write::Rename);
 }
 
-QVector<QString> Dom::cut(QString key)
+QStringList Dom::cut(QString key)
 {
-	QVector<QString> result;
+	QStringList result;
 	result << key;
 	auto elem = element<QDomElement>(key);
 	result << childKeys_recursor(elem);
@@ -282,7 +282,7 @@ void Dom::movePaths(FsPath& newPivotPath, FsPath& newPivotParentPath, QString pi
 	newPivotPath = newPivotParentPath / Path::toFs(pivotName);
 }
 
-QVector<QString> Dom::childKeys_recursor(QDomElement node, QVector<QString> result)
+QStringList Dom::childKeys_recursor(QDomElement node, QStringList result)
 {
 	auto child_node = node.firstChildElement();
 	while (!child_node.isNull())

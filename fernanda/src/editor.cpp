@@ -36,9 +36,9 @@ TextEditor::TextEditor(QWidget* parent)
     highlightCurrentLine();
 }
 
-const QVector<QString> TextEditor::devGetCursorPositions()
+const QStringList TextEditor::devGetCursorPositions()
 {
-    QVector<QString> result;
+    QStringList result;
     result << "Current document will not be present!";
     int i = 0;
     for (auto& set : cursorPositions)
@@ -146,13 +146,30 @@ void TextEditor::scrollNavClicked(Scroll direction)
         : askNavPrevious();
 }
 
-void TextEditor::setFont(QString font, int size)
+void TextEditor::handleFont(FsPath fontPath, int size)
 {
+    /*auto id = QFontDatabase::addApplicationFont(Path::toQString(fontPath));
+    const QString font = QFontDatabase::applicationFontFamilies(id).at(0);
     QFont q_font(font);
     q_font.setStyleStrategy(QFont::PreferAntialias);
     q_font.setHintingPreference(QFont::HintingPreference::PreferNoHinting);
     q_font.setPointSize(size);
-    QPlainTextEdit::setFont(q_font);
+    setFont(q_font);
+    lineNumberArea->setFont(q_font);*/
+
+    QFont q_font;
+    q_font.setStyleStrategy(QFont::PreferAntialias);
+    q_font.setHintingPreference(QFont::HintingPreference::PreferNoHinting);
+    auto family = Path::toQString(fontPath.stem());
+    if (!QFontDatabase::hasFamily(family))
+    {
+        auto id = QFontDatabase::addApplicationFont(Path::toQString(fontPath));
+        q_font = QFontDatabase::applicationFontFamilies(id).at(0);
+    }
+    else
+        q_font = QFontDatabase::font(family, nullptr, 0);
+    q_font.setPointSize(size);
+    setFont(q_font);
     lineNumberArea->setFont(q_font);
 }
 

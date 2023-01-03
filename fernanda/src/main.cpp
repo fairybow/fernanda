@@ -13,7 +13,9 @@ int main(int argc, char *argv[])
             opener = Path::toFs(arg);
     Fernanda window(app.arguments().contains("-dev"), opener);
     {
-        QFont font;
+        auto font = app.font();
+        font.setStyleStrategy(QFont::PreferAntialias);
+        font.setHintingPreference(QFont::HintingPreference::PreferNoHinting);
         font.setPointSizeF(9);
         app.setFont(font);
     }

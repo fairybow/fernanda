@@ -25,13 +25,13 @@ public:
 
     const QString devGetDom(Dom::Doc doc = Dom::Doc::Current);
     QVector<Io::ArcRename> devGetRenames();
-    const QVector<QString> devGetEditedKeys();
+    const QStringList devGetEditedKeys();
     const FsPath devGetActiveTemp();
     QVector<QStandardItem*> items();
     const QString key();
     const QString tempSaveOld_openNew(QString newKey, QString oldText = nullptr);
     void autoTempSave(QString text);
-    QVector<QString> edits(QString currentText);
+    QStringList edits(QString currentText);
     bool hasChanges();
     void setItemExpansion(QString key, bool isExpanded);
     void move(QString pivotKey, QString fulcrumKey, Io::Move position);
@@ -53,7 +53,7 @@ private:
     FsPath activeArcPath;
     QString activeKey = nullptr;
     QString cleanText = nullptr;
-    QVector<QString> editedKeys;
+    QStringList editedKeys;
 
     enum class AmendEdits {
         Add,

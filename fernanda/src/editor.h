@@ -3,12 +3,16 @@
 #pragma once
 
 #include "keyfilter.h"
+#include "path.h"
 #include "uni.h"
+
+#include <filesystem>
 
 #include <QAbstractSlider>
 #include <QColor>
 #include <QContextMenuEvent>
 #include <QFont>
+#include <QFontDatabase>
 #include <QFontMetrics>
 #include <QLatin1Char>
 #include <QObject>
@@ -30,6 +34,8 @@
 
 class TextEditor : public QPlainTextEdit
 {
+    using FsPath = std::filesystem::path;
+
     Q_OBJECT
 
 public:
@@ -55,14 +61,14 @@ public:
     QString cursorColorHex;
     QString cursorUnderColorHex;
 
-    const QVector<QString> devGetCursorPositions();
+    const QStringList devGetCursorPositions();
     void lineNumberAreaPaintEvent(QPaintEvent* event);
     int lineNumberAreaWidth();
     Action handleKeySwap(QString oldKey, QString newKey);
     void handleTextSwap(QString key, QString text);
     int selectedLineCount();
     void scrollNavClicked(Scroll direction);
-    void setFont(QString font, int size);
+    void handleFont(FsPath fontPath, int size);
 
 public slots:
     void toggleLineHighlight(bool checked);
@@ -138,10 +144,16 @@ class LineNumberArea : public QWidget
 public:
     LineNumberArea(TextEditor* editor) : QWidget(editor), textEditor(editor) {}
 
-    QSize sizeHint() const override { return QSize(textEditor->lineNumberAreaWidth(), 0); }
+    QSize sizeHint() const override
+    {
+        return QSize(textEditor->lineNumberAreaWidth(), 0);
+    }
 
 protected:
-    void paintEvent(QPaintEvent* event) override { textEditor->lineNumberAreaPaintEvent(event); }
+    void paintEvent(QPaintEvent* event) override
+    {
+        textEditor->lineNumberAreaPaintEvent(event);
+    }
 
 private:
     TextEditor* textEditor;
