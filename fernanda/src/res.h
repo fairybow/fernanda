@@ -10,7 +10,6 @@
 #include <QDirIterator>
 #include <QRegularExpressionMatch>
 #include <QRegularExpressionMatchIterator>
-#include <QStringList>
 #include <QVector>
 
 namespace Res

@@ -38,10 +38,15 @@
     <Filter Include="Resource Files\Stylesheets\Sample Themes">
       <UniqueIdentifier>{58f267fe-da2f-47a1-9f74-967be5f1a6c8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Docs">
+      <UniqueIdentifier>{1373b218-cb6e-4516-af8a-6a7620a77718}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utilities">
+      <UniqueIdentifier>{1f28c557-9bae-4a87-8d91-126db766873e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore" />
-    <None Include="..\README.md" />
     <None Include="res\themes\bar\green.qss">
       <Filter>Resource Files\Stylesheets\Bar Stylesheets</Filter>
     </None>
@@ -111,12 +116,21 @@
     <None Include="res\themes\editor\Pocket-Alt.fernanda_theme">
       <Filter>Resource Files\Stylesheets\Editor Themes</Filter>
     </None>
-    <None Include="util\win_pack.bat" />
-    <None Include="docs\palette.md" />
     <None Include="res\themes\editor\Solarized Dark.fernanda_theme">
       <Filter>Resource Files\Stylesheets\Editor Themes</Filter>
     </None>
-    <None Include="util\nsis\win_installer.nsi" />
+    <None Include="..\README.md">
+      <Filter>Docs</Filter>
+    </None>
+    <None Include="docs\palette.md">
+      <Filter>Docs</Filter>
+    </None>
+    <None Include="util\nsis\win_installer.nsi">
+      <Filter>Utilities</Filter>
+    </None>
+    <None Include="util\win_pack.bat">
+      <Filter>Utilities</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
@@ -147,6 +161,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\dom.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\uni.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\keyfilter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\indicator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -314,6 +337,9 @@
     <QtMoc Include="src\indicator.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="src\popup.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="res\fonts.qrc">
@@ -333,8 +359,12 @@
     </QtRcc>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="docs\dependency_tree.md" />
-    <Text Include="docs\todo.md" />
     <Text Include="..\CMakeLists.txt" />
+    <Text Include="docs\todo.md">
+      <Filter>Docs</Filter>
+    </Text>
+    <Text Include="docs\dependencies.md">
+      <Filter>Docs</Filter>
+    </Text>
   </ItemGroup>
 </Project>

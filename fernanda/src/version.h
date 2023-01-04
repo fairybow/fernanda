@@ -2,12 +2,12 @@
 
 #pragma once
 
-#define VER_FILEVERSION             0,7,0,12
-#define VER_FILEVERSION_STR         "v0.7.0-beta12"
+#define VER_FILEVERSION             0,7,1,13
+#define VER_FILEVERSION_STR         "v0.7.1-beta13"
 #define VER_PRODUCTVERSION          VER_FILEVERSION
 #define VER_PRODUCTVERSION_STR      VER_FILEVERSION_STR
 #define VER_COMPANYNAME_STR         "@fairybow"
-#define VER_FILEDESCRIPTION_STR     "Plain text editor for drafting long-form fiction."
+#define VER_FILEDESCRIPTION_STR     "Fernanda (64 bit)"
 #define VER_INTERNALNAME_STR        "Fernanda"
 #define VER_LEGALCOPYRIGHT_STR      "Copyright \xa9 2022 @fairybow"
 #define VER_LEGALTRADEMARKS1_STR    "All Rights Reserved"

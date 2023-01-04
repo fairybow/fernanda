@@ -54,20 +54,19 @@ void Fernanda::closeEvent(QCloseEvent* event)
 bool Fernanda::confirmStoryClose(bool isQuit)
 {
     if (!activeStory.has_value() || !activeStory.value().hasChanges()) return true;
-    QMessageBox alert;
-    alert.setStyleSheet(windowStyle(WinStyle::BaseOnly));
-    alert.setWindowTitle("Hey!");
-    alert.setText(Uni::change(isQuit));
-    alert.addButton(QMessageBox::Yes);
-    auto no = alert.addButton(QMessageBox::No);
-    auto save_and = alert.addButton(tr(Uni::saveAnd(isQuit)), QMessageBox::ActionRole);
-    alert.setDefaultButton(no);
-    alert.exec();
-    if (alert.clickedButton() == no)
-        return false;
-    else if (alert.clickedButton() == save_and)
+    auto result = false;
+    switch (Popup::confirm(isQuit)) {
+    case Popup::OnClose::Close:
+        result = true;
+        break;
+    case Popup::OnClose::Return:
+        break;
+    case Popup::OnClose::SaveAndClose:
         fileSave();
-    return true;
+        result = true;
+        break;
+    }
+    return result;
 }
 
 void Fernanda::openUd(FsPath path)
@@ -129,14 +128,14 @@ void Fernanda::addWidgets()
     statusBar->addPermanentWidget(spacer, 1);
     statusBar->addPermanentWidget(aot, 0);
     statusBar->setMaximumHeight(22);
-    menuBar->setObjectName("menuBar");
-    statusBar->setObjectName("statusBar");
-    shadow->setObjectName("shadow");
-    overlay->setObjectName("overlay");
-    underlay->setObjectName("underlay");
-    fontSlider->setObjectName("fontSlider");
-    spacer->setObjectName("spacer");
-    aot->setObjectName("aot");
+    menuBar->setObjectName(QStringLiteral("menuBar"));
+    statusBar->setObjectName(QStringLiteral("statusBar"));
+    shadow->setObjectName(QStringLiteral("shadow"));
+    overlay->setObjectName(QStringLiteral("overlay"));
+    underlay->setObjectName(QStringLiteral("underlay"));
+    fontSlider->setObjectName(QStringLiteral("fontSlider"));
+    spacer->setObjectName(QStringLiteral("spacer"));
+    aot->setObjectName(QStringLiteral("aot"));
 }
 
 QWidget* Fernanda::stackWidgets(QVector<QWidget*> widgets)
@@ -204,26 +203,45 @@ void Fernanda::connections()
 
 void Fernanda::shortcuts()
 {
-    connect(new QShortcut(Qt::Key_F11, this), &QShortcut::activated, this, &Fernanda::cycleCoreEditorThemes);
-    connect(new QShortcut(Qt::ALT | Qt::Key_F10, this), &QShortcut::activated, this, [&]() { actionCycle(editorFonts); });
-    connect(new QShortcut(Qt::ALT | Qt::Key_F11, this), &QShortcut::activated, this, [&]() { actionCycle(editorThemes); });
-    connect(new QShortcut(Qt::ALT | Qt::Key_F12, this), &QShortcut::activated, this, [&]() { actionCycle(windowThemes); });
-    connect(new QShortcut(Qt::ALT | Qt::Key_Insert, this), &QShortcut::activated, this, [&]()
+    auto cycle_core_themes = new QShortcut(Qt::Key_F11, this);
+    auto cycle_fonts = new QShortcut(Qt::ALT | Qt::Key_F10, this);
+    auto cycle_editor_themes = new QShortcut(Qt::ALT | Qt::Key_F11, this);
+    auto cycle_window_themes = new QShortcut(Qt::ALT | Qt::Key_F12, this);
+    auto nav_previous = new QShortcut(Qt::ALT | Qt::Key_Insert, this);
+    auto nav_next = new QShortcut(Qt::ALT | Qt::Key_Delete, this);
+    auto zoom_out = new QShortcut(Qt::ALT | Qt::Key_Minus, this);
+    auto zoom_in = new QShortcut(Qt::ALT | Qt::Key_Equal, this);
+    connect(cycle_core_themes, &QShortcut::activated, this, &Fernanda::cycleCoreEditorThemes);
+    connect(cycle_fonts, &QShortcut::activated, this, [&]() { actionCycle(editorFonts); });
+    connect(cycle_editor_themes, &QShortcut::activated, this, [&]() { actionCycle(editorThemes); });
+    connect(cycle_window_themes, &QShortcut::activated, this, [&]() { actionCycle(windowThemes); });
+    connect(nav_previous, &QShortcut::activated, this, [&]()
         {
             textEditor->scrollNavClicked(TextEditor::Scroll::Previous);
         });
-    connect(new QShortcut(Qt::ALT | Qt::Key_Delete, this), &QShortcut::activated, this, [&]()
+    connect(nav_next, &QShortcut::activated, this, [&]()
         {
             textEditor->scrollNavClicked(TextEditor::Scroll::Next);
         });
-    connect(new QShortcut(Qt::ALT | Qt::Key_Minus, this), &QShortcut::activated, this, [&]()
+    connect(zoom_out, &QShortcut::activated, this, [&]()
         {
             handleEditorZoom(TextEditor::Zoom::Out);
         });
-    connect(new QShortcut(Qt::ALT | Qt::Key_Equal, this), &QShortcut::activated, this, [&]()
+    connect(zoom_in, &QShortcut::activated, this, [&]()
         {
             handleEditorZoom(TextEditor::Zoom::In);
         });
+    for (auto& shortcut : {
+        cycle_core_themes,
+        cycle_fonts,
+        cycle_editor_themes,
+        cycle_window_themes,
+        nav_previous,
+        nav_next,
+        zoom_out,
+        zoom_in
+        })
+        shortcut->setAutoRepeat(false);
 }
 
 void Fernanda::makeMenuBar()
@@ -533,9 +551,9 @@ void Fernanda::makeHelpMenu()
     auto* open_ud = new QAction(tr("&User data..."), this);
     auto* sample_project = new QAction(tr("&Create sample project"), this);
     auto* sample_themes = new QAction(tr("&Create sample themes..."), this);
-    connect(about, &QAction::triggered, this, &Fernanda::helpAbout);
+    connect(about, &QAction::triggered, this, [&]() { Popup::about(this); });
     connect(check_update, &QAction::triggered, this, &Fernanda::helpUpdate);
-    connect(shortcuts, &QAction::triggered, this, &Fernanda::helpShortcuts);
+    connect(shortcuts, &QAction::triggered, this, [&]() { Popup::shortcuts(); });
     connect(open_docs, &QAction::triggered, this, [&]() { openUd(Ud::userData(Ud::Op::GetDocs)); });
     connect(open_install, &QAction::triggered, this, [&]()
         {
@@ -946,66 +964,36 @@ void Fernanda::helpMakeSampleRes()
     auto path = Ud::userData(Ud::Op::GetUserData);
     Sample::makeRc(path);
     colorBar->pastels();
-    QMessageBox alert;
-    alert.setStyleSheet(windowStyle(WinStyle::BaseOnly));
-    alert.setWindowTitle("Hey!");
-    alert.setText(Uni::samples());
-    auto ok = alert.addButton(QMessageBox::Ok);
-    auto open = alert.addButton(tr("  Open the user data folder  "), QMessageBox::AcceptRole);
-    alert.setDefaultButton(ok);
-    alert.exec();
-    if (alert.clickedButton() == open)
+    switch (Popup::sample()) {
+    case Popup::Action::Accept:
+        break;
+    case Popup::Action::Open:
         openUd(path);
-}
-
-void Fernanda::helpShortcuts()
-{
-    QMessageBox shortcuts;
-    shortcuts.setStyleSheet(windowStyle(WinStyle::BaseOnly));
-    shortcuts.setWindowTitle("Shortcuts");
-    shortcuts.setText(Uni::shortcuts());
-    auto ok = shortcuts.addButton(QMessageBox::Ok);
-    shortcuts.setDefaultButton(ok);
-    shortcuts.exec();
-}
-
-void Fernanda::helpAbout()
-{
-    QMessageBox about;
-    about.setStyleSheet(windowStyle(WinStyle::BaseOnly));
-    about.setWindowTitle("About");
-    about.setText(Uni::about());
-    about.setIconPixmap(QPixmap(":/icons/fernanda_64.png"));
-    auto ok = about.addButton(QMessageBox::Ok);
-    auto qt = about.addButton(tr("About Qt"), QMessageBox::AcceptRole);
-    connect(qt, &QPushButton::clicked, this, QApplication::aboutQt);
-    about.setDefaultButton(ok);
-    about.exec();
+        break;
+    }
 }
 
 void Fernanda::helpUpdate()
 {
-    auto request = QNetworkRequest(QUrl("https://api.github.com/repos/fairybow/fernanda/releases"));
+    auto request = QNetworkRequest(QUrl(QStringLiteral("https://api.github.com/repos/fairybow/fernanda/releases")));
     auto reply = manager->get(request);
     connect(reply, &QNetworkReply::finished, [=]()
         {
-            QMessageBox check;
-            check.setWindowTitle("Version Check");
+            Uni::Version result{};
+            QString latest = nullptr;
             if (reply->error() == QNetworkReply::NoError)
             {
                 auto document = QJsonDocument::fromJson(reply->readAll());
                 QList<QVariant> list = document.toVariant().toList();
                 QMap<QString, QVariant> map = list[0].toMap();
-                auto latest = map["tag_name"].toString();
+                latest = map["tag_name"].toString();
                 (latest == QString(VER_FILEVERSION_STR))
-                    ? check.setText(Uni::version(Uni::Version::Latest))
-                    : check.setText(Uni::version(Uni::Version::Old));
+                    ? result = Uni::Version::Latest
+                    : result = Uni::Version::Old;
             }
             else
-                check.setText(Uni::version(Uni::Version::Error));
-            auto ok = check.addButton(QMessageBox::Ok);
-            check.setDefaultButton(ok);
-            check.exec();
+                result = Uni::Version::Error;
+            Popup::update(result, latest);
         });
 }
 
@@ -1022,7 +1010,8 @@ void Fernanda::handleEditorOpen(QString key)
         old_key = activeStory.value().key();
     auto action = textEditor->handleKeySwap(old_key, key);
     switch (action) {
-    case TextEditor::Action::None: break;
+    case TextEditor::Action::None:
+        break;
     case TextEditor::Action::AcceptNew:
         {
             auto text = activeStory.value().tempSaveOld_openNew(key, textEditor->toPlainText());
@@ -1087,8 +1076,8 @@ void Fernanda::cycleCoreEditorThemes()
     auto current_theme = editorThemes->checkedAction();
     auto text = current_theme->text();
     auto break_it = false;
-    auto theme_1 = "Amber";
-    auto theme_2 = "Green";
+    auto theme_1 = QStringLiteral("Amber");
+    auto theme_2 = QStringLiteral("Green");
     for (auto& action : actions)
     {
         auto action_text = action->text();
@@ -1096,7 +1085,7 @@ void Fernanda::cycleCoreEditorThemes()
             break_it = true;
         else if (text == theme_1 && action_text == theme_2)
             break_it = true;
-        else if (text == theme_2 && action_text == "Grey")
+        else if (text == theme_2 && action_text == QStringLiteral("Grey"))
             break_it = true;
         if (break_it)
         {

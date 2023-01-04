@@ -5,7 +5,7 @@ project(fernanda VERSION 0.0.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets Xml)
+find_package(Qt6 REQUIRED COMPONENTS Network Widgets Xml)
 
 qt_standard_project_setup()
 
@@ -34,6 +34,7 @@ qt_add_executable(fernanda
     src/keyfilter.h
     src/pane.h
     src/path.h
+    src/popup.h
     src/res.h
     src/sample.h
     src/splitter.h
@@ -47,9 +48,12 @@ qt_add_executable(fernanda
     src/dom.cpp
     src/editor.cpp
     src/fernanda.cpp
+    src/indicator.cpp
+    src/keyfilter.cpp
     src/main.cpp
     src/pane.cpp
     src/story.cpp
+    src/uni.cpp
     src/userdata.cpp
     
     res/fonts.qrc
@@ -62,6 +66,7 @@ qt_add_executable(fernanda
 
 target_include_directories(fernanda PRIVATE include)
 target_include_directories(fernanda PRIVATE src)
+target_link_libraries(fernanda PRIVATE Qt6::Network)
 target_link_libraries(fernanda PRIVATE Qt6::Widgets)
 target_link_libraries(fernanda PRIVATE Qt6::Xml)
 

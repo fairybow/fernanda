@@ -6,13 +6,13 @@
 #include "editor.h"
 #include "indicator.h"
 #include "pane.h"
+#include "popup.h"
 #include "res.h"
 #include "splitter.h"
 #include "story.h"
 
 #include <QAbstractButton>
 #include <QActionGroup>
-#include <QApplication>
 #include <QCloseEvent>
 #include <QCoreApplication>
 #include <QDesktopServices>
@@ -22,11 +22,9 @@
 #include <QMainWindow>
 #include <QMap>
 #include <QMenuBar>
-#include <QMessageBox>
 #include <QMoveEvent>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
-#include <QPixmap>
 #include <QShowEvent>
 #include <QShortcut>
 #include <QSizePolicy>
@@ -135,8 +133,6 @@ private slots:
     void fileSave();
     void helpMakeSampleProject();
     void helpMakeSampleRes();
-    void helpShortcuts();
-    void helpAbout();
     void helpUpdate();
     void devWrite(QString name, QString value);
     void handleEditorOpen(QString key = nullptr);

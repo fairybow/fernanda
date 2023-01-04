@@ -14,7 +14,6 @@
 #include <QStyle>
 #include <QStyledItemDelegate>
 #include <QStyleOptionViewItem>
-#include <QVector>
 #include <QWidget>
 
 class PaneDelegate : public QStyledItemDelegate

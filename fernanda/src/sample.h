@@ -4,13 +4,7 @@
 
 #include "io.h"
 
-#include <filesystem>
-#include <string>
-
-#include <QDir>
 #include <QDirIterator>
-#include <QFile>
-#include <QString>
 #include <QStringList>
 #include <QVector>
 

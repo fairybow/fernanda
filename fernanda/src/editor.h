@@ -6,8 +6,6 @@
 #include "path.h"
 #include "uni.h"
 
-#include <filesystem>
-
 #include <QAbstractSlider>
 #include <QColor>
 #include <QContextMenuEvent>

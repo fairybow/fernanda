@@ -17,6 +17,7 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <QString>
+#include <QStringList>
 #include <QVariant>
 
 namespace Ud

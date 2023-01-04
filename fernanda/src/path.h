@@ -10,7 +10,6 @@
 
 #include <QDir>
 #include <QFileInfo>
-#include <QRegularExpression>
 #include <QString>
 
 namespace Path

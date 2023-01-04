@@ -148,18 +148,7 @@ void TextEditor::scrollNavClicked(Scroll direction)
 
 void TextEditor::handleFont(FsPath fontPath, int size)
 {
-    /*auto id = QFontDatabase::addApplicationFont(Path::toQString(fontPath));
-    const QString font = QFontDatabase::applicationFontFamilies(id).at(0);
-    QFont q_font(font);
-    q_font.setStyleStrategy(QFont::PreferAntialias);
-    q_font.setHintingPreference(QFont::HintingPreference::PreferNoHinting);
-    q_font.setPointSize(size);
-    setFont(q_font);
-    lineNumberArea->setFont(q_font);*/
-
     QFont q_font;
-    q_font.setStyleStrategy(QFont::PreferAntialias);
-    q_font.setHintingPreference(QFont::HintingPreference::PreferNoHinting);
     auto family = Path::toQString(fontPath.stem());
     if (!QFontDatabase::hasFamily(family))
     {
@@ -168,6 +157,8 @@ void TextEditor::handleFont(FsPath fontPath, int size)
     }
     else
         q_font = QFontDatabase::font(family, nullptr, 0);
+    q_font.setStyleStrategy(QFont::PreferAntialias);
+    q_font.setHintingPreference(QFont::HintingPreference::PreferNoHinting);
     q_font.setPointSize(size);
     setFont(q_font);
     lineNumberArea->setFont(q_font);

@@ -5,7 +5,6 @@
 #include "io.h"
 
 #include <QProgressBar>
-#include <QString>
 #include <QTimeLine>
 #include <QTimer>
 #include <QVBoxLayout>
