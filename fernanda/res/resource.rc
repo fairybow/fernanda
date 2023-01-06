@@ -2,7 +2,7 @@
 #include "../src/version.h"
 
 IDI_ICON1		ICON		DISCARDABLE	"icons/fernanda.ico"
-IDI_ICON2		ICON		DISCARDABLE	"icons/story.ico"
+//IDI_ICON2		ICON		DISCARDABLE	"icons/story.ico"
 
 VS_VERSION_INFO VERSIONINFO
 FILEVERSION     VER_FILEVERSION
