@@ -131,6 +131,9 @@
     <None Include="util\win_pack.bat">
       <Filter>Utilities</Filter>
     </None>
+    <None Include="util\nsis\FileAssociation.nsh">
+      <Filter>Utilities</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

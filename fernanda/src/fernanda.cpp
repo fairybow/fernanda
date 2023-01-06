@@ -120,7 +120,7 @@ void Fernanda::addWidgets()
     auto aotEffect = new QGraphicsOpacityEffect(this);
     aotEffect->setOpacity(0.8);
     aot->setGraphicsEffect(aotEffect);
-    auto effect = new QGraphicsBlurEffect();
+    auto effect = new QGraphicsBlurEffect(this);
     effect->setBlurHints(QGraphicsBlurEffect::QualityHint);
     effect->setBlurRadius(15);
     shadow->setGraphicsEffect(effect);
@@ -263,6 +263,11 @@ void Fernanda::makeFileMenu()
     auto* quit = new QAction(tr("&Quit"), this);
     save->setShortcut(Qt::CTRL | Qt::Key_S);
     quit->setShortcut(Qt::CTRL | Qt::Key_Q);
+    for (auto& action : {
+        save,
+        quit
+        })
+        action->setAutoRepeat(false);
     connect(new_story, &QAction::triggered, this, [&]()
         {
             auto file_name = QFileDialog::getSaveFileName(this, tr("Create a new story..."), Path::toQString(Ud::userData(Ud::Op::GetDocs)), tr("Fernanda story file (*.story)"));

@@ -7,7 +7,6 @@
 ; Checkbox options (todo)
 ; - add desktop shortcuts
 ; - add start menu items
-; - add network firewall rule
 ; - open on close
 
 ; ---------- Qt ----------
@@ -56,7 +55,7 @@ DirText "Choose a directory"
 ; ---------- Functions ----------
 Function CheckExists
 	${If} ${FileExists} "$INSTDIR\*"
-		MessageBox MB_YESNO `"$INSTDIR" already exists. Overwrite?` IDYES YES
+		MessageBox MB_YESNO `"$INSTDIR" already exists. Update?` IDYES YES
 		Abort
 	YES:
 		RMDir /r "$INSTDIR"
@@ -95,7 +94,6 @@ Section "Install"
 	CreateShortCut "$INSTDIR\Fernanda (dev).lnk" "${F_EXE}" "-dev"
 
 	; Register file extension
-	${unregisterExtension} ".story" "Fernanda Story File"
 	${registerExtension} "${F_EXE}" ".story" "Fernanda Story File"
 
 	; Create desktop shortcut
@@ -105,10 +103,6 @@ Section "Install"
 	CreateDirectory "$SMPROGRAMS\${APP}"
 	CreateShortCut "$SMPROGRAMS\${APP}\Uninstall.lnk" "${UN_F_EXE}" "" "${UN_F_EXE}" 0
 	CreateShortCut "$SMPROGRAMS\${APP}\${APP}.lnk" "${F_EXE}" "" "${F_EXE}" 0
-
-	; Add application to the firewall exception list
-	; SimpleFC::AddApplication "${APP}" "${F_EXE}" 0 2 "" 1
-	; Pop $0
  
 	; Register uninstall info
 	WriteRegStr HKLM "${UN_F_REG}" "DisplayIcon" "${F_ICON}"
