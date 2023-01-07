@@ -1,10 +1,12 @@
 # To-Do
 
 ## General
+- [x] ~~Mutex for running only one instance (sorta)~~
+- [ ] Installer script needs to detect if Fernanda is running
 - [ ] Remove all non-standard abbreviations (like "cur" for current)
 - [x] ~~Convert paths to `std::filesystem::path`~~
 - [x] ~~Activate dev menu via command arg~~
-- [ ] Redo Dependency Tree
+- [x] ~~Redo Dependency Tree~~
 - [ ] Moveable documents folder
 - [ ] Popup if temps exist on start (but would need to reload last project first, and then check if temps exist?)
 - [ ] Add dialogs to free functions?

@@ -1,9 +1,16 @@
 // main.cpp, Fernanda
 
 #include "fernanda.h"
+#include "startcop.h"
 
 int main(int argc, char *argv[])
 {
+    StartCop process_name("fernanda.app");
+    if (process_name.exists())
+    {
+        StartCop::setFocus();
+        return 0;
+    }
     QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
     QApplication::setDesktopSettingsAware(true);
     QApplication app(argc, argv);
