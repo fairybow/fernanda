@@ -293,28 +293,13 @@ main
 
 ### startcop.h
 ```
-#include <string>
-
-#include <qsystemdetection.h>
-
-#include <QByteArray>
-#include <QCryptographicHash>
+#include <QApplication>
+#include <QLocalServer>
+#include <QLocalSocket>
 #include <QObject>
-#include <QSharedMemory>
+#include <Qt>
 #include <QString>
-#include <QStringList>
-#include <QSystemSemaphore>
-
-#ifdef Q_OS_WINDOWS
-
-#include <windows.h>
-#include <winuser.h>
-
-#else
-
-//
-
-#endif
+#include <QWidget>
 ```
 
 ### story.h

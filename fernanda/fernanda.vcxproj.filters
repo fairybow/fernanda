@@ -317,9 +317,6 @@
     <ClInclude Include="src\story.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\startcop.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\fernanda.h">
@@ -344,6 +341,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="src\popup.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="src\startcop.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

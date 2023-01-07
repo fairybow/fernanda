@@ -199,7 +199,7 @@
     <ClInclude Include="src\path.h" />
     <QtMoc Include="src\splitter.h" />
     <QtMoc Include="src\popup.h" />
-    <ClInclude Include="src\startcop.h" />
+    <QtMoc Include="src\startcop.h" />
     <ClInclude Include="src\story.h" />
     <ClInclude Include="src\uni.h" />
     <ClInclude Include="src\version.h" />

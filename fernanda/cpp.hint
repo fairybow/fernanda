@@ -6,4 +6,3 @@
 #define slots
 #define signals
 #define QStringLiteral(str) (QString(QtPrivate::qMakeStringPrivate(QT_UNICODE_LITERAL(str))))
-#define Q_DISABLE_COPY(Class) Class(const Class &) = delete; Class &operator=(const Class &) = delete;

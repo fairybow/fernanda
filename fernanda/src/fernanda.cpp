@@ -128,6 +128,7 @@ void Fernanda::addWidgets()
     statusBar->addPermanentWidget(spacer, 1);
     statusBar->addPermanentWidget(aot, 0);
     statusBar->setMaximumHeight(22);
+    setObjectName(QStringLiteral("mainWindow"));
     menuBar->setObjectName(QStringLiteral("menuBar"));
     statusBar->setObjectName(QStringLiteral("statusBar"));
     shadow->setObjectName(QStringLiteral("shadow"));
