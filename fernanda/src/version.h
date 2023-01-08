@@ -2,12 +2,12 @@
 
 #pragma once
 
-#define VER_FILEVERSION             0,8,1,16
-#define VER_FILEVERSION_STR         "v0.8.1-beta16"
+#define VER_FILEVERSION             0,8,2,17
+#define VER_FILEVERSION_STR         "v0.8.2-beta17"
 #define VER_PRODUCTVERSION          VER_FILEVERSION
 #define VER_PRODUCTVERSION_STR      VER_FILEVERSION_STR
 #define VER_COMPANYNAME_STR         "@fairybow"
-#define VER_FILEDESCRIPTION_STR     "Fernanda (64 bit)"
+#define VER_FILEDESCRIPTION_STR     "Fernanda"
 #define VER_INTERNALNAME_STR        "Fernanda"
 #define VER_LEGALCOPYRIGHT_STR      "Copyright \xa9 2022 @fairybow"
 #define VER_LEGALTRADEMARKS1_STR    "All Rights Reserved"

@@ -21,7 +21,7 @@ TextEditor::TextEditor(QWidget* parent)
     scrollPrevious->setText(Uni::ico(Uni::Ico::TriangleUp));
     scrollNext->setText(Uni::ico(Uni::Ico::TriangleDown));
     scrollDown->setText(Uni::ico(Uni::Ico::TriangleDown));
-    for (auto& button : { scrollUp, scrollPrevious, scrollNext, scrollDown })
+    for (const auto& button : { scrollUp, scrollPrevious, scrollNext, scrollDown })
         button->setMinimumHeight(30);
     setObjectName("textEditor");
     lineNumberArea->setObjectName("lineNumberArea");
@@ -39,7 +39,7 @@ TextEditor::TextEditor(QWidget* parent)
 const QStringList TextEditor::devGetCursorPositions()
 {
     QStringList result;
-    result << "Current document will not be present!";
+    result << QStringLiteral("Current document will not be present!");
     int i = 0;
     for (auto& set : cursorPositions)
     {
@@ -444,22 +444,22 @@ void TextEditor::storeCursors(QString key)
 void TextEditor::recallCursors(QString key)
 {
     for (auto& item : cursorPositions)
-        if (key == item.key)
+    {
+        if (key != item.key) continue;
+        auto cursor(textCursor());
+        auto cursor_position = item.position;
+        auto anchor_position = item.anchor;
+        if (cursor_position == anchor_position)
+            cursor.setPosition(cursor_position);
+        else
         {
-            auto cursor(textCursor());
-            auto cursor_position = item.position;
-            auto anchor_position = item.anchor;
-            if (cursor_position == anchor_position)
-                cursor.setPosition(cursor_position);
-            else
-            {
-                cursor.setPosition(anchor_position, QTextCursor::MoveAnchor);
-                cursor.setPosition(cursor_position, QTextCursor::KeepAnchor);
-            }
-            setTextCursor(cursor);
-            cursorPositions.removeAll(item);
-            break;
+            cursor.setPosition(anchor_position, QTextCursor::MoveAnchor);
+            cursor.setPosition(cursor_position, QTextCursor::KeepAnchor);
         }
+        setTextCursor(cursor);
+        cursorPositions.removeAll(item);
+        break;
+    }
 }
 
 void TextEditor::recallUndoStacks(QString key) // WIP

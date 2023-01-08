@@ -131,11 +131,11 @@ void Pane::contextMenuEvent(QContextMenuEvent* event)
     if (!project) return;
     auto& position = event->pos();
     auto index = indexAt(position);
-    auto* menu = new QMenu(this);
-    auto* rename_item = new QAction(tr("&Rename"), this);
-    auto* cut_item = new QAction(tr("&Cut"), this);
-    auto* new_folder = new QAction(tr("&New folder"), this);
-    auto* new_file = new QAction(tr("&New file"), this);
+    auto menu = new QMenu(this);
+    auto rename_item = new QAction(tr("&Rename"), this);
+    auto cut_item = new QAction(tr("&Cut"), this);
+    auto new_folder = new QAction(tr("&New folder"), this);
+    auto new_file = new QAction(tr("&New file"), this);
     connect(rename_item, &QAction::triggered, this, [&]()
         {
             askRenameElement(rename(), Index::key(currentIndex()));

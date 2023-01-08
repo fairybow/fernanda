@@ -11,7 +11,7 @@ Indicator::Indicator(QWidget* parent)
     counts->setGraphicsEffect(opacity(0.8));
     layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
-    for (auto& widget : { positions, separator, counts })
+    for (const auto& widget : { positions, separator, counts })
     {
         widget->setObjectName(QStringLiteral("indicator"));
         layout->addWidget(widget);

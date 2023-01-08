@@ -57,7 +57,7 @@ void ColorBar::run(Color theme)
     if (theme == Color::None) return;
     if (!hasColorBar) return;
     style(theme);
-    auto* bar_fill = new QTimeLine(125, this);
+    auto bar_fill = new QTimeLine(125, this);
     connect(bar_fill, &QTimeLine::frameChanged, bar, &QProgressBar::setValue);
     bar_fill->setFrameRange(0, 100);
     bar->show();

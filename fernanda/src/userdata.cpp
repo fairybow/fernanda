@@ -23,7 +23,7 @@ const Ud::Fs::path Ud::userData(Op operation)
         result = config;
         break;
     case Op::Create:
-        for (auto& data_folder : { user_data, active_temp, backup, dll, rollback, user_docs})
+        for (const auto& data_folder : { user_data, active_temp, backup, dll, rollback, user_docs })
             Path::makeDirs(data_folder);
         result = Fs::path();
         break;
@@ -213,7 +213,7 @@ const QString Ud::valueName(ConfigVal valueType)
 
 void Ud::clear(Fs::path dirPath, bool clearSelf)
 {
-    for (auto& item : Fs::directory_iterator(dirPath))
+    for (const auto& item : Fs::directory_iterator(dirPath))
         Fs::remove_all(item);
     if (!clearSelf) return;
     Fs::remove(dirPath);
@@ -244,7 +244,7 @@ std::string Ud::dll()
 
 #else
 
-std::string Ud::dll()
+const std::string Ud::dll()
 {
     auto dll_path = userData(Op::GetDLL) / "7z.dll";
     if (!QFile(dll_path).exists())

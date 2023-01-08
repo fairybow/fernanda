@@ -51,7 +51,7 @@ private:
 
     bool isDirty(QString key) const
     {
-        for (auto& entry : paintEdited)
+        for (const auto& entry : paintEdited)
             if (key == entry)
                 return true;
         return false;

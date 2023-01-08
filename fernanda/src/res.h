@@ -58,12 +58,10 @@ namespace Res
         while (matches.hasNext())
         {
             QRegularExpressionMatch match = matches.next();
-            if (match.hasMatch())
-            {
-                QString variable = match.captured(0).replace(Uni::regex(Uni::Re::ThemeSheetValue), nullptr);
-                QString value = match.captured(0).replace(Uni::regex(Uni::Re::ThemeSheetVariable), nullptr);
-                styleSheet.replace(QRegularExpression(variable), value);
-            }
+            if (!match.hasMatch()) continue;
+            QString variable = match.captured(0).replace(Uni::regex(Uni::Re::ThemeSheetValue), nullptr);
+            QString value = match.captured(0).replace(Uni::regex(Uni::Re::ThemeSheetVariable), nullptr);
+            styleSheet.replace(QRegularExpression(variable), value);
         }
         return styleSheet;
     }
