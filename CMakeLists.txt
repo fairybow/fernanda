@@ -22,7 +22,7 @@ FetchContent_MakeAvailable(bit7z)
 
 qt_add_executable(fernanda
     
-	src/archiver.h
+    src/archiver.h
     src/colorbar.h
     src/delegate.h
     src/dom.h
@@ -38,6 +38,7 @@ qt_add_executable(fernanda
     src/res.h
     src/sample.h
     src/splitter.h
+    src/startcop.h
     src/story.h
     src/uni.h
     src/userdata.h
