@@ -599,7 +599,7 @@ void Fernanda::makeDevMenu()
     auto open_ud = new QAction(tr("&Open user data..."), this);
     connect(print_cursors, &QAction::triggered, this, [&]()
         {
-            devWrite("__Cursor positions.txt", textEditor->devGetCursorPositions().join("\n\n"));
+            devWrite("__Cursor positions.txt", textEditor->devGetCursorPositions().join(Uni::newLines()));
         });
     connect(print_cuts, &QAction::triggered, this, [&]()
         {
@@ -618,18 +618,18 @@ void Fernanda::makeDevMenu()
         });
     connect(print_edited_delegate, &QAction::triggered, this, [&]()
         {
-            devWrite("__Edited keys (Delegate).txt", pane->devGetEditedKeys().join("\n\n"));
+            devWrite("__Edited keys (Delegate).txt", pane->devGetEditedKeys().join(Uni::newLines()));
         });
     connect(print_edited_story, &QAction::triggered, this, [&]()
         {
             if (!activeStory.has_value()) return;
-            devWrite("__Edited keys (Story).txt", activeStory.value().devGetEditedKeys().join("\n\n"));
+            devWrite("__Edited keys (Story).txt", activeStory.value().devGetEditedKeys().join(Uni::newLines()));
         });
     connect(print_renames, &QAction::triggered, this, [&]()
         {
             if (!activeStory.has_value()) return;
             auto renames = devPrintRenames(activeStory.value().devGetRenames());
-            devWrite("__Renames.txt", renames.join("\n\n"));
+            devWrite("__Renames.txt", renames.join(Uni::newLines()));
         });
     connect(open_docs, &QAction::triggered, this, [&]() { openUd(Ud::userData(Ud::Op::GetDocs)); });
     connect(open_install, &QAction::triggered, this, [&]()
@@ -797,7 +797,7 @@ const QString Fernanda::windowStyle(WinStyle baseOnly)
         if (hasWinTheme && baseOnly != WinStyle::BaseOnly)
         {
             auto theme_sheet = Io::readFile(theme_path);
-            style_sheet = style_sheet + "\n\n" + Res::createStyleSheetFromTheme(Io::readFile(":/themes/window.qss"), theme_sheet);
+            style_sheet = style_sheet + Uni::newLines() + Res::createStyleSheetFromTheme(Io::readFile(":/themes/window.qss"), theme_sheet);
         }
         sendScrollsToggle(hasWinTheme);
         Ud::saveConfig(Ud::ConfigGroup::Window, Ud::ConfigVal::WinTheme, Path::toQString(theme_path));
@@ -850,14 +850,14 @@ void Fernanda::setEditorStyle()
         if (hasTheme)
         {
             auto theme_sheet = Io::readFile(theme_path);
-            style_sheet = style_sheet + "\n\n" + Res::createStyleSheetFromTheme(Io::readFile(":/themes/editor.qss"), theme_sheet);
+            style_sheet = style_sheet + Uni::newLines() + Res::createStyleSheetFromTheme(Io::readFile(":/themes/editor.qss"), theme_sheet);
             QRegularExpressionMatch match_cursor = Uni::regex(Uni::Re::ThemeSheetCursor).match(theme_sheet);
             QRegularExpressionMatch match_under_cursor = Uni::regex(Uni::Re::ThemeSheetCursorUnder).match(theme_sheet);
             cursor_color = match_cursor.captured(2);
             under_cursor_color = match_under_cursor.captured(2);
         }
         if (hasShadow)
-            style_sheet = style_sheet + "\n\n" + Io::readFile(":/themes/shadow.qss");
+            style_sheet = style_sheet + Uni::newLines() + Io::readFile(":/themes/shadow.qss");
         shadow->setStyleSheet(style_sheet);
         overlay->setStyleSheet(style_sheet);
         underlay->setStyleSheet(style_sheet);

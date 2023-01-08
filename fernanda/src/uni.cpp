@@ -88,8 +88,31 @@ const QRegularExpression Uni::regex(Re operation)
 	case Re::ThemeSheetVariable:
 		result = QRegularExpression(QStringLiteral("(@.*=\\s)"));
 		break;
+	case Re::UrlBeginning:
+		result = QRegularExpression(QStringLiteral("(https:\\/\\/|www.)"));
+		break;
 	}
 	return result;
+}
+
+const QString Uni::multiplyThese(QString character, int defaultArg)
+{
+	if (defaultArg < 1)
+		defaultArg = 1;
+	QString result;
+	for (auto i = 0; i < defaultArg; ++i)
+		result.append(character);
+	return result;
+}
+
+const QString Uni::spaces(int spaces)
+{
+	return multiplyThese(" ", 3);
+}
+
+const QString Uni::newLines(int lines)
+{
+	return multiplyThese("\n", 2);
 }
 
 const QString Uni::heading(const char* text)
@@ -104,7 +127,7 @@ const QString Uni::bold(const char* text)
 
 const QString Uni::pad(const char* text)
 {
-	QString padding = QStringLiteral("   ");
+	QString padding = spaces();
 	return padding + text + padding;
 }
 
@@ -121,9 +144,11 @@ const QString Uni::table(QStringList columns)
 	return result;
 }
 
-const QString Uni::link(const char* url, const char* name)
+const QString Uni::link(const char* url, QString displayName)
 {
-	return QStringLiteral("<a href='") + url + QStringLiteral("'>") + name + QStringLiteral("</a>");
+	if (displayName.isEmpty())
+		displayName = QString(url).replace(regex(Re::UrlBeginning), nullptr);
+	return QStringLiteral("<a href='") + url + QStringLiteral("'>") + displayName + QStringLiteral("</a>");
 }
 
 const QString Uni::change(bool isQuit)
@@ -152,8 +177,8 @@ const QString Uni::samples()
 {
 	return
 	{
-		QStringLiteral("A sample font, window theme, and editor theme have been added to your user data folder.")
-		% QStringLiteral("You'll need to ") + bold("restart") + QStringLiteral(" to see custom themes and fonts incorporated.")
+		QStringLiteral("A sample font, window theme, and editor theme have been added to your user data folder.") %
+		QStringLiteral("You'll need to ") + bold("restart") + QStringLiteral(" to see custom themes and fonts incorporated.")
 	};
 }
 
@@ -161,9 +186,9 @@ const QString Uni::menuShortcuts()
 {
 	return
 	{
-		bold("Menu:")
-		% QStringLiteral("Ctrl + S: Save story")
-		/ QStringLiteral("Ctrl + Q: Quit")
+		bold("Menu:") %
+		QStringLiteral("Ctrl + S: Save story") /
+		QStringLiteral("Ctrl + Q: Quit")
 	};
 }
 
@@ -171,17 +196,17 @@ const QString Uni::windowShortcuts()
 {
 	return
 	{
-		bold("Window:")
-		% QStringLiteral("F11: Cycle editor themes (Amber, Green, Grey)")
-		/ QStringLiteral("Alt + F10: Cycle fonts")
-		/ QStringLiteral("Alt + F11: Cycle editor themes (all)")
-		/ QStringLiteral("Alt + F12: Cycle window themes")
-		/ QStringLiteral("Alt + Insert: Nav previous")
-		/ QStringLiteral("Alt + Delete: Nav next")
-		/ QStringLiteral("Alt + Minus (-) /")
-		/ QStringLiteral("Ctrl + Mouse Wheel Down: Decrease font size")
-		/ QStringLiteral("Alt + Plus (+) /")
-		/ QStringLiteral("Ctrl + Mouse Wheel Up: Increase font size")
+		bold("Window:") %
+		QStringLiteral("F11: Cycle editor themes (Amber, Green, Grey)") /
+		QStringLiteral("Alt + F10: Cycle fonts") /
+		QStringLiteral("Alt + F11: Cycle editor themes (all)") /
+		QStringLiteral("Alt + F12: Cycle window themes") /
+		QStringLiteral("Alt + Insert: Nav previous") /
+		QStringLiteral("Alt + Delete: Nav next") /
+		QStringLiteral("Alt + Minus (-) /") /
+		QStringLiteral("Ctrl + Mouse Wheel Down: Decrease font size") /
+		QStringLiteral("Alt + Plus (+) /") /
+		QStringLiteral("Ctrl + Mouse Wheel Up: Increase font size")
 	};
 }
 
@@ -189,10 +214,10 @@ inline const QString Uni::editorShortcuts()
 {
 	return
 	{
-		bold("Editor:")
-		% QStringLiteral("Ctrl + Y: Redo")
-		/ QStringLiteral("Ctrl + Z: Undo")
-		/ QStringLiteral("Ctrl + Shift + C: Wrap selection or block in quotes")
+		bold("Editor:") %
+		QStringLiteral("Ctrl + Y: Redo") /
+		QStringLiteral("Ctrl + Z: Undo") /
+		QStringLiteral("Ctrl + Shift + C: Wrap selection or block in quotes")
 	};
 }
 
@@ -203,24 +228,24 @@ const QString Uni::shortcuts()
 
 const QString Uni::repo()
 {
-	return link("https://github.com/fairybow/fernanda", "github.com/fairybow/fernanda");
+	return link("https://github.com/fairybow/fernanda");
 }
 
 const QString Uni::releases()
 {
-	return link("https://github.com/fairybow/fernanda/releases/", "github.com/fairybow/fernanda/releases");
+	return link("https://github.com/fairybow/fernanda/releases");
 }
 
 const QString Uni::about()
 {
 	return
 	{
-		heading("About Fernanda")
-		% QStringLiteral("Fernanda is a plain text editor for drafting long-form fiction. (At least, that's the plan.)")
-		% QStringLiteral("It's a personal project and a work-in-progress.")
-		% heading("Version")
-		% VER_FILEVERSION_STR
-		% QStringLiteral("See ") + repo() + QStringLiteral(" for more information.")
+		heading("About Fernanda") %
+		QStringLiteral("Fernanda is a plain text editor for drafting long-form fiction. (At least, that's the plan.)") %
+		QStringLiteral("It's a personal project and a work-in-progress.") %
+		heading("Version") %
+		VER_FILEVERSION_STR %
+		QStringLiteral("See ") + repo() + QStringLiteral(" for more information.")
 	};
 }
 
@@ -228,18 +253,18 @@ const QString Uni::version(Version check, QString latestVersion)
 {
 	QString base =
 	{
-		heading("Version")
-		% bold("Current version:")
-		/ VER_FILEVERSION_STR
+		heading("Version") %
+		bold("Current version:") /
+		VER_FILEVERSION_STR
 	};
 	QString message;
 	switch (check) {
 	case Version::Error:
 		message =
 		{
-			QStringLiteral("Unable to verify version.")
-			% bold("Check:")
-			/ releases()
+			QStringLiteral("Unable to verify version.") %
+			bold("Check:") /
+			releases()
 		};
 		break;
 	case Version::Latest:
@@ -248,18 +273,18 @@ const QString Uni::version(Version check, QString latestVersion)
 	case Version::Old:
 		message =
 		{
-			bold("New version:")
-			/ latestVersion
-			% QStringLiteral("You do not have the latest version.")
-			% bold("Download:")
-			/ releases()
+			bold("New version:") /
+			latestVersion %
+			QStringLiteral("You do not have the latest version.") %
+			bold("Download:") /
+			releases()
 		};
 		break;
 	}
 	return
 	{
-		base
-		% message
+		base %
+		message
 	};
 }
 

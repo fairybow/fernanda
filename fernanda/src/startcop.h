@@ -2,6 +2,15 @@
 
 #pragma once
 
+/*#include <qsystemdetection.h>
+
+#ifdef Q_OS_WINDOWS
+
+#include <windows.h>
+#include <winuser.h>
+
+#endif*/
+
 #include <QApplication>
 #include <QLocalServer>
 #include <QLocalSocket>
@@ -53,6 +62,15 @@ private slots:
             if (widget->objectName() != "mainWindow") continue;
             if (widget->windowState() == Qt::WindowMinimized)
                 widget->setWindowState((widget->windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
+
+/*#ifdef Q_OS_WINDOWS
+
+            auto name = widget->windowTitle().toStdWString();
+            auto handle = FindWindow(0, name.c_str());
+            SwitchToThisWindow(handle, FALSE); // [This function is not intended for general use. It may be altered or unavailable in subsequent versions of Windows.]
+
+#endif*/
+
             widget->activateWindow();
             break;
         }

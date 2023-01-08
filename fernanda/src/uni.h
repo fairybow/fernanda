@@ -30,7 +30,8 @@ namespace Uni
 		ThemeSheetCursorUnder,
 		ThemeSheetLine,
 		ThemeSheetValue,
-		ThemeSheetVariable
+		ThemeSheetVariable,
+		UrlBeginning
 	};
 	enum class Version {
 		Error,
@@ -44,11 +45,14 @@ namespace Uni
 	const QString operator/(QString lhs, QString rhs);
 	const QString ico(Ico name);
 	const QRegularExpression regex(Re operation);
+	const QString multiplyThese(QString character, int defaultArg = 1);
+	const QString spaces(int spaces = 3);
+	const QString newLines(int lines = 2);
 	const QString heading(const char* text);
 	const QString bold(const char* text);
 	const QString pad(const char* text);
 	const QString table(QStringList columns);
-	const QString link(const char* url, const char* name);
+	const QString link(const char* url, QString displayName = nullptr);
 	const QString change(bool isQuit = false);
 	const QString saveAndButtons(bool isQuit = false);
 	const QString openUdButton();

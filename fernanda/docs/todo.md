@@ -113,7 +113,13 @@
 - [ ] `updateEditorGeometry()` is currently unused
 - [ ] May need to remove and re-add icons / labels. They seem to be doubling up sometimes--visible r/g/b or pink outlines?
 
+### Popup
+
 ### Splitter
+
+### StartCop
+
+- [ ] Accept args (on file click, prompt to save if needed and open new file; possibly also switch to dev mode)
 
 ### Story
 
